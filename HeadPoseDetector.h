@@ -11,6 +11,10 @@
 #include <fstream>
 #include <QDebug>
 #include <QtNetwork>
+#include <FlightAgxSettings.h>
+#include <queue>
+#include <mutex>
+#include <opencv2/tracking/tracker.hpp>
 
 //R, T
 typedef std::pair<Eigen::Matrix3d, Eigen::Vector3d> Pose;
@@ -35,9 +39,7 @@ public:
 class LandmarkDetector {
     dlib::shape_predictor predictor;
 public:
-    LandmarkDetector(
-        std::string model_path = "C:\\Users\\plane\\Develop\\FlightAgentX\\assets\\shape_predictor_68_face_landmarks.dat"
-            ) {
+    LandmarkDetector(std::string model_path) {
         dlib::deserialize(model_path.c_str()) >> predictor;
     }
 
@@ -51,10 +53,15 @@ class HeadPoseDetector {
     LandmarkDetector * lmd = nullptr;
     bool is_running = false;
     std::thread th;
-    bool enable_preview = true;
+
+    std::mutex detect_mtx;
+    bool frame_pending_detect = false;
+    cv::Mat frame_need_to_detect;
+
+    std::thread detect_thread;
+
     std::pair<bool, Pose> solve_face_pose(CvPts landmarks, cv::Mat & frame);
 
-    cv::Mat K, D;
     cv::Mat rvec_init, tvec_init;
     std::vector<cv::Point3f> model_points_68;
 
@@ -63,27 +70,22 @@ class HeadPoseDetector {
     bool first_solve_pose = true;
     Eigen::Vector3d Tinit;
     QUdpSocket * udpsock;
+
+    std::vector<cv::Mat> frames;
+
+    cv::Rect2d last_roi;
+    int frame_count = 0;
+
+    cv::Ptr<cv::Tracker> tracker;
+
 public:
-    HeadPoseDetector(std::string model = "C:\\Users\\plane\\Develop\\FlightAgentX\\assets\\model.txt") {
+    HeadPoseDetector() {
         is_running = false;
         fd = new FaceDetector;
-        lmd = new LandmarkDetector;
-        Eigen::Matrix3d K_eigen;
-        Eigen::VectorXd D_eigen(5);
-        K_eigen << 520.70925933,   0.,         319.58341522,
-                  0.,         520.3492704,  231.99546224,
-                  0.,           0.,           1.   ;
-//        K_eigen.transpose()
-        D_eigen << 0.19808774, -0.68766424, -0.00180889,  0.0008008 ,  0.7539345;
-
+        lmd = new LandmarkDetector(settings->landmark_model);
 
         rvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -3.14392813);
         tvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -500);
-
-        cv::eigen2cv(K_eigen, K);
-        D_eigen = D_eigen.transpose();
-        cv::eigen2cv(D_eigen, D);
-        
 
         Rface << 0,  1, 0,
                     0,  0, -1, 
@@ -93,10 +95,7 @@ public:
                 -1, 0, 0,
                  0, 1, 0;
 
-        //Rface = Rface.transpose();
-        //Rcam = Rcam.transpose();
-
-        std::ifstream model_file (model);
+        std::ifstream model_file (settings->model);
         if (model_file.is_open())
         {
             double px, py, pz;
@@ -119,6 +118,7 @@ public:
 
     std::pair<bool, Pose6DoF> detect_head_pose(cv::Mat & frame);
     void run_thread();
+    void run_detect_thread();
     void reset();
     
     void start();

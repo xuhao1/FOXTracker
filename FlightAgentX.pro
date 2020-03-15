@@ -12,17 +12,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-INCLUDEPATH += C:\Users\plane\source\opencv\build\include
+INCLUDEPATH += C:\Users\plane\source\opencv\opencv-build-86\install\include
 INCLUDEPATH += C:\Users\plane\source\eigen-3.3.7
 INCLUDEPATH += C:\Users\plane\source\dlib\
 
 
 
-win32:CONFIG(debug, debug|release): LIBS += C:\Users\plane\source\opencv\build\x64\vc14\lib\opencv_world420d.lib
-win32:CONFIG(debug, debug|release): LIBS += C:\Users\plane\source\dlib\build\dlib\Debug\dlib19.19.99_debug_64bit_msvc1916.lib
+#win32:CONFIG(debug, debug|release): LIBS += C:\Users\plane\source\opencv\build\x64\vc14\lib\opencv_world420d.lib
+win32:CONFIG(debug, debug|release): LIBS += C:\Users\plane\source\dlib\build\dlib\Debug\dlib19.19.99_debug_32bit_msvc1916.lib
+win32:CONFIG(release, debug|release): LIBS += C:\Users\plane\source\dlib\build\dlib\Release\dlib19.19.99_release_32bit_msvc1916.lib
 
-win32:CONFIG(release, debug|release): LIBS += C:\Users\plane\source\opencv\build\x64\vc14\lib\opencv_world420.lib
-win32:CONFIG(release, debug|release): LIBS += C:\Users\plane\source\dlib\build\dlib\Release\dlib19.19.99_release_64bit_msvc1916.lib
+#win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\source\opencv\opencv-build-86\install\x86\vc15\lib \
+#    -lopencv_core420 -lopencv_highgui420 -lopencv_tracking420 -lopencv_video420 -lopencv_imgproc420
+
+win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\source\opencv\opencv-build-86\install\x86\vc15\lib \
+    -lopencv_core420 -lopencv_highgui420 -lopencv_tracking420 -lopencv_video420 -lopencv_imgproc420 -lopencv_videoio420 -lopencv_calib3d420
+
+win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\source\opencv\opencv-build-86\install\x86\vc15\lib \
+    -lopencv_core420d -lopencv_highgui420d -lopencv_tracking420d -lopencv_video420d -lopencv_imgproc420d -lopencv_videoio420d -lopencv_calib3d420d
+
 
 SOURCES += \
     HeadPoseDetector.cpp \
@@ -30,6 +38,7 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    FlightAgxSettings.h \
     HeadPoseDetector.h \
     mainwindow.h
 

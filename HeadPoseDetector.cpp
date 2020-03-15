@@ -2,6 +2,7 @@
 #include<dlib/opencv.h>
 #include <QDebug>
 #include <iostream>
+#include <windows.h>
 
 using namespace cv;
 using namespace std;
@@ -29,7 +30,7 @@ static Eigen::Vector3d R2ypr(const Eigen::Matrix3d &R, int degress = true)
 
 void HeadPoseDetector::run_thread() {
     VideoCapture cap;
-    if(!cap.open(0, cv::CAP_DSHOW))
+    if(!cap.open(settings->camera_id, cv::CAP_DSHOW))
         return;
     cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
@@ -56,7 +57,7 @@ void HeadPoseDetector::run_thread() {
             udpsock->writeDatagram((char*)data, sizeof(double)*6, QHostAddress("127.0.0.1"), 4242);
         }
 
-        if (enable_preview) {
+        if (settings->enable_preview) {
             imshow("Preview", frame);
             if( waitKey(10) == 27 ) {
                 is_running = false;
@@ -85,11 +86,60 @@ void HeadPoseDetector::start() {
     th = std::thread([&]{
         this->run_thread();
     });
+
+    detect_thread = std::thread([&]{
+        this->run_detect_thread();
+    });
+}
+
+void HeadPoseDetector::run_detect_thread() {
+    while(is_running) {
+        if (frame_pending_detect) {
+           //Detect the roi
+           cv::Rect2d roi = fd->detect(frame_need_to_detect);
+           //Track to now image
+           cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
+
+           if (roi.width < 1 && roi.height < 1) {
+               frame_pending_detect = false;
+               continue;
+           }
+
+           tracker->init(frame_need_to_detect, roi);
+           bool success_track = true;
+
+           detect_mtx.lock();
+           qDebug() << "Track " << frames.size() << "frames";
+           for (auto & frame : frames) {
+                bool success = tracker->update(frame, roi);
+                if (!success) {
+                    success_track = false;
+                    break;
+                }
+           }
+
+           if(!success_track) {
+               continue;
+           }
+
+
+           last_roi = roi;
+           //delete this->tracker;
+           this->tracker = tracker;
+           frame_pending_detect = false;
+           detect_mtx.unlock();
+
+        } else {
+            Sleep(10);
+        }
+    }
 }
 
 void HeadPoseDetector::stop() {
     is_running = false;
     th.join();
+    detect_thread.join();
+    //delete this->tracker;
 }
 
 void HeadPoseDetector::reset() {
@@ -99,21 +149,67 @@ void HeadPoseDetector::reset() {
 }
 
 std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
-    cv::Rect2d roi = fd->detect(frame);
+    TicToc tic;
+    Eigen::Vector3d eul, T;
+    cv::Rect2d roi;
+    frame_count ++;
+    if (first_solve_pose) {
+        roi = fd->detect(frame);
+        if (roi.width > 1.0 && roi.height > 1.0) {
+            tracker = cv::TrackerMOSSE::create();
+            tracker->init(frame_need_to_detect, roi);
+        } else {
+            return make_pair(false, make_pair(eul, T));
+        }
+
+    } else {
+        detect_mtx.lock();
+        bool new_add_pending_detect = false;
+        if (frame_count % settings->detect_duration == 0 && !frame_pending_detect) {
+            frame_pending_detect = true;
+            frame_need_to_detect = frame;
+            new_add_pending_detect = true;
+        }
+
+        if (!new_add_pending_detect && frame_pending_detect) {
+            //We add frames to help tracker
+            frames.push_back(frame);
+        }
+
+        roi = last_roi;
+        qDebug()<< "Using tracker";
+        bool success = tracker->update(frame_need_to_detect, roi);
+        if (!success && !frame_pending_detect) {
+            //Directly redetct in this thread
+            roi = fd->detect(frame);
+            if (roi.width > 1.0 && roi.height > 1.0) {
+                last_roi = roi;
+                //delete tracker;
+                tracker = cv::TrackerMOSSE::create();
+                tracker->init(frame_need_to_detect, roi);
+            }
+        }
+
+        if (success) {
+            last_roi = roi;
+        }
+
+        detect_mtx.unlock();
+    }
+
+    if (roi.width < 1 || roi.height < 1) {
+        return make_pair(false, make_pair(eul, T));
+    }
+
     CvPts landmarks = lmd->detect(frame, roi);
     auto ret = this->solve_face_pose(landmarks, frame);
-    Eigen::Vector3d eul, T;
+
     if (ret.first) {
         auto pose = ret.second;
         eul = R2ypr(pose.first);
-        // auto eul = pose.first.eulerAngles(2, 1, 0) * 180 / M_PI;
-        //Eigen::Vector3d eul;
-        //eul.x() = _eul.z();
-        //eul.y() = _eul.y();
-        //eul.z() = _eul.x();
 
         char rot[100] = {0};
-        char translation[100] = {0};
+//        char translation[100] = {0};
 
         sprintf(rot, "Y %3.1f P %3.1f R %3.1f", eul.x(), eul.y(), eul.z());
         cv::putText(frame, rot, cv::Point(50, 70), cv::FONT_HERSHEY_SCRIPT_SIMPLEX, 1.0,
@@ -121,7 +217,7 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
 
         T = pose.second;
 
-        if (enable_preview) {
+        if (settings->enable_preview) {
             cv::rectangle(frame, cv::Point2d(roi.x, roi.y),
                 cv::Point2d(roi.x + roi.width, roi.y + roi.height), cv::Scalar(255, 0, 0), 2);
             for (auto pt: landmarks) {
@@ -130,14 +226,14 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
         }
         return make_pair(true, make_pair(eul, T));
     }
-    return make_pair(true, make_pair(eul, T));
+    return make_pair(false, make_pair(eul, T));
 }
 
 std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, cv::Mat & frame) {
     bool success = false;
     auto rvec = rvec_init.clone();
     auto tvec = tvec_init.clone();
-    success = cv::solvePnP(model_points_68, landmarks, K, D, rvec, tvec, true);
+    success = cv::solvePnP(model_points_68, landmarks, settings->K, settings->D, rvec, tvec, true);
 
     if (success) {
         if (first_solve_pose) {
@@ -148,8 +244,8 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, cv::Mat
         qDebug() << "pnp Solve failed";
     }
 
-    if (success && enable_preview) {
-        cv::drawFrameAxes(frame, K, D, rvec, tvec, 30);
+    if (success && settings->enable_preview) {
+        cv::drawFrameAxes(frame, settings->K, settings->D, rvec, tvec, 30);
     }
 
     Eigen::Vector3d T;
@@ -160,7 +256,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, cv::Mat
     cv::cv2eigen(tvec/1000.0, T);
     T = T - Tinit;
     cv::cv2eigen(Rcv, R);
-//    std::cout << "R" << R <<std::endl<<std::endl;
     R = Rcam*R*Rface;
     return make_pair(success, make_pair(R, T));
 }
