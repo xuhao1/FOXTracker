@@ -17,6 +17,7 @@ INCLUDEPATH += C:\Users\plane\source\eigen-3.3.7
 INCLUDEPATH += C:\Users\plane\source\dlib\
 
 CONFIG += force_debug_info
+RC_ICONS = icon.ico
 
 #win32:CONFIG(debug, debug|release): LIBS += C:\Users\plane\source\opencv\build\x64\vc14\lib\opencv_world420d.lib
 win32:CONFIG(debug, debug|release): LIBS += C:\Users\plane\source\dlib\build\dlib\Debug\dlib19.19.99_debug_32bit_msvc1916.lib
@@ -52,3 +53,6 @@ TRANSLATIONS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    main.qrc

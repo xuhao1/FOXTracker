@@ -83,7 +83,11 @@ class HeadPoseDetector {
 
     cv::Ptr<cv::Tracker> tracker;
 
+    cv::Mat preview_image;
+
 public:
+
+
     HeadPoseDetector() {
         is_running = false;
         fd = new FaceDetector;
@@ -128,5 +132,10 @@ public:
     
     void start();
     void stop();
+
+    cv::Mat & get_preview_image() {
+        return preview_image;
+    }
+
 };
 #endif // HEADPOSEDETECTOR_H

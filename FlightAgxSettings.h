@@ -15,6 +15,7 @@ public:
     std::string landmark_model;
     int camera_id = 0;
     bool enable_multithread_detect = true;
+    int retrack_queue_size = 1;
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);
