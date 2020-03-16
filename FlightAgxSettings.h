@@ -9,7 +9,7 @@ class FlightAgxSettings {
 public:
     cv::Mat K;
     cv::Mat D;
-    int detect_duration = 10000000000;
+    int detect_duration = 10;
     bool enable_preview = true;
     std::string model;
     std::string landmark_model;

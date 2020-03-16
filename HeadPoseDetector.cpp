@@ -96,30 +96,47 @@ void HeadPoseDetector::run_detect_thread() {
     while(is_running) {
         if (frame_pending_detect) {
            //Detect the roi
+           qDebug() << "frame_pending_detect";
+           TicToc tic;
            cv::Rect2d roi = fd->detect(frame_need_to_detect);
+           qDebug() << "Detect cost" << tic.toc() << "ms";
            //Track to now image
-           cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
 
            if (roi.width < 1 && roi.height < 1) {
                frame_pending_detect = false;
+               qDebug() << "Detect failed in thread";
                continue;
+           } else {
+               qDebug() << "Detect OK in thread";
            }
+
+
+           cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
+           detect_mtx.lock();
 
            tracker->init(frame_need_to_detect, roi);
            bool success_track = true;
 
-           detect_mtx.lock();
            qDebug() << "Track " << frames.size() << "frames";
-           for (auto & frame : frames) {
-                bool success = tracker->update(frame, roi);
-                if (!success) {
-                    success_track = false;
-                    break;
-                }
-           }
+           TicToc tic_retrack;
+//           for (auto & frame : frames) {
+//                bool success = tracker->update(frame, roi);
+//                if (!success) {
+//                    success_track = false;
+//                    break;
+//                }
+//           }
 
+           if (frames.size() > 0) {
+               success_track = tracker->update(frames.back(), roi);
+           }
+           frames.clear();
            if(!success_track) {
+               qDebug() << "Tracker failed in detect thread";
+               detect_mtx.unlock();
                continue;
+           } else {
+               qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms";
            }
 
 
@@ -157,13 +174,12 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
         roi = fd->detect(frame);
         if (roi.width > 1.0 && roi.height > 1.0) {
             tracker = cv::TrackerMOSSE::create();
-            tracker->init(frame_need_to_detect, roi);
+            tracker->init(frame, roi);
         } else {
             return make_pair(false, make_pair(eul, T));
         }
 
     } else {
-        detect_mtx.lock();
         bool new_add_pending_detect = false;
         if (frame_count % settings->detect_duration == 0 && !frame_pending_detect) {
             frame_pending_detect = true;
@@ -171,29 +187,35 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
             new_add_pending_detect = true;
         }
 
+        //qDebug() << "L186 Wait for lock";
+        detect_mtx.lock();
         if (!new_add_pending_detect && frame_pending_detect) {
             //We add frames to help tracker
             frames.push_back(frame);
         }
 
         roi = last_roi;
-        qDebug()<< "Using tracker";
-        bool success = tracker->update(frame_need_to_detect, roi);
+        TicToc tic;
+        bool success = tracker->update(frame, roi);
+        qDebug()<< "Using tracker" << tic.toc() << "ms status" << success;
+
         if (!success && !frame_pending_detect) {
             //Directly redetct in this thread
+            TicToc tic;
             roi = fd->detect(frame);
+            qDebug()<< "Tracker failed; Turn to detection" << tic.toc() << "ms";
+
             if (roi.width > 1.0 && roi.height > 1.0) {
                 last_roi = roi;
                 //delete tracker;
                 tracker = cv::TrackerMOSSE::create();
-                tracker->init(frame_need_to_detect, roi);
+                tracker->init(frame, roi);
             }
         }
 
         if (success) {
             last_roi = roi;
         }
-
         detect_mtx.unlock();
     }
 
@@ -201,7 +223,9 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
         return make_pair(false, make_pair(eul, T));
     }
 
+    TicToc tic1;
     CvPts landmarks = lmd->detect(frame, roi);
+    qDebug()<< "Landmark" << tic1.toc() << "ms";
     auto ret = this->solve_face_pose(landmarks, frame);
 
     if (ret.first) {
