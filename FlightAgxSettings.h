@@ -14,6 +14,7 @@ public:
     std::string model;
     std::string landmark_model;
     int camera_id = 0;
+    bool enable_multithread_detect = true;
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);

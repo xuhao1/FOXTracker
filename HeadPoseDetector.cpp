@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <iostream>
 #include <windows.h>
+#include <exception>
 
 using namespace cv;
 using namespace std;
@@ -66,7 +67,8 @@ void HeadPoseDetector::run_thread() {
     }
 }
 
-CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
+CvPts LandmarkDetector::detect(cv::Mat frame, cv::Rect roi) {
+    qDebug() << "Detecting landmark";
     CvPts pts;
     dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
     dlib::rectangle rect(roi.x, roi.y, roi.x + roi.width, roi.y + roi.height);
@@ -75,6 +77,7 @@ CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
         auto p = shape.part(i);
         pts.push_back(cv::Point2d(p.x(), p.y()));
     }
+    qDebug() << "Finish landmark";
     return pts;
 }
 
@@ -87,9 +90,11 @@ void HeadPoseDetector::start() {
         this->run_thread();
     });
 
-    detect_thread = std::thread([&]{
-        this->run_detect_thread();
-    });
+    if( settings->enable_multithread_detect) {
+        detect_thread = std::thread([&]{
+            this->run_detect_thread();
+        });
+    }
 }
 
 void HeadPoseDetector::run_detect_thread() {
@@ -98,7 +103,10 @@ void HeadPoseDetector::run_detect_thread() {
            //Detect the roi
            qDebug() << "frame_pending_detect";
            TicToc tic;
-           cv::Rect2d roi = fd->detect(frame_need_to_detect);
+           detect_frame_mtx.lock();
+           cv::Mat _frame = frame_need_to_detect.clone();
+           detect_frame_mtx.unlock();
+           cv::Rect2d roi = fd->detect(_frame, last_roi);
            qDebug() << "Detect cost" << tic.toc() << "ms";
            //Track to now image
 
@@ -114,7 +122,7 @@ void HeadPoseDetector::run_detect_thread() {
            cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            detect_mtx.lock();
 
-           tracker->init(frame_need_to_detect, roi);
+           tracker->init(_frame, roi);
            bool success_track = true;
 
            qDebug() << "Track " << frames.size() << "frames";
@@ -130,9 +138,11 @@ void HeadPoseDetector::run_detect_thread() {
            if (frames.size() > 0) {
                success_track = tracker->update(frames.back(), roi);
            }
+
            frames.clear();
            if(!success_track) {
                qDebug() << "Tracker failed in detect thread";
+               frame_pending_detect = false;
                detect_mtx.unlock();
                continue;
            } else {
@@ -171,7 +181,7 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
     cv::Rect2d roi;
     frame_count ++;
     if (first_solve_pose) {
-        roi = fd->detect(frame);
+        roi = fd->detect(frame, last_roi);
         if (roi.width > 1.0 && roi.height > 1.0) {
             tracker = cv::TrackerMOSSE::create();
             tracker->init(frame, roi);
@@ -181,42 +191,67 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
 
     } else {
         bool new_add_pending_detect = false;
-        if (frame_count % settings->detect_duration == 0 && !frame_pending_detect) {
-            frame_pending_detect = true;
-            frame_need_to_detect = frame;
-            new_add_pending_detect = true;
+        bool in_thread_detected = false;
+        if (frame_count % settings->detect_duration == 0) {
+            if (settings->enable_multithread_detect && !frame_pending_detect) {
+                frame_pending_detect = true;
+                detect_frame_mtx.lock();
+                frame.copyTo(frame_need_to_detect);
+                detect_frame_mtx.unlock();
+
+                new_add_pending_detect = true;
+            }
+
+            if (!settings->enable_multithread_detect) {
+                roi = fd->detect(frame, last_roi);
+                if (roi.width > 1.0 && roi.height > 1.0) {
+                    in_thread_detected = true;
+                    last_roi = roi;
+                    tracker = cv::TrackerMOSSE::create();
+                    tracker->init(frame, roi);
+                }
+            }
         }
 
-        //qDebug() << "L186 Wait for lock";
-        detect_mtx.lock();
-        if (!new_add_pending_detect && frame_pending_detect) {
+        if (settings->enable_multithread_detect) {
+            detect_mtx.lock();
+        }
+        if (!new_add_pending_detect && frame_pending_detect && settings->enable_multithread_detect) {
             //We add frames to help tracker
-            frames.push_back(frame);
+            frames.push_back(frame.clone());
         }
 
         roi = last_roi;
         TicToc tic;
-        bool success = tracker->update(frame, roi);
-        qDebug()<< "Using tracker" << tic.toc() << "ms status" << success;
+        if (!in_thread_detected) {
+            bool success = tracker->update(frame, roi);
+            qDebug()<< "Using tracker" << tic.toc() << "ms status" << success;
 
-        if (!success && !frame_pending_detect) {
-            //Directly redetct in this thread
-            TicToc tic;
-            roi = fd->detect(frame);
-            qDebug()<< "Tracker failed; Turn to detection" << tic.toc() << "ms";
+            if (!success && !frame_pending_detect) {
+                qDebug() << "Will detect in main thread";
+                TicToc tic;
+                roi = fd->detect(frame, last_roi);
+                qDebug()<< "Tracker failed; Turn to detection" << tic.toc() << "ms";
 
-            if (roi.width > 1.0 && roi.height > 1.0) {
-                last_roi = roi;
-                //delete tracker;
-                tracker = cv::TrackerMOSSE::create();
-                tracker->init(frame, roi);
+                if (roi.width > 1.0 && roi.height > 1.0) {
+                    last_roi = roi;
+                    tracker = cv::TrackerMOSSE::create();
+                    tracker->init(frame, roi);
+                    success = true;
+                }
             }
-        }
 
-        if (success) {
-            last_roi = roi;
+            if (success) {
+                last_roi = roi;
+                detect_mtx.unlock();
+            } else {
+                //std::cout << "Will unlock" << std::endl;
+                detect_mtx.unlock();
+                return make_pair(false, make_pair(eul, T));
+            }
+        } else {
+            detect_mtx.unlock();
         }
-        detect_mtx.unlock();
     }
 
     if (roi.width < 1 || roi.height < 1) {
@@ -225,7 +260,6 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
 
     TicToc tic1;
     CvPts landmarks = lmd->detect(frame, roi);
-    qDebug()<< "Landmark" << tic1.toc() << "ms";
     auto ret = this->solve_face_pose(landmarks, frame);
 
     if (ret.first) {
@@ -284,20 +318,56 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, cv::Mat
     return make_pair(success, make_pair(R, T));
 }
 
-cv::Rect2d FaceDetector::detect(cv::Mat & frame) {
-    dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
-    std::vector<dlib::rectangle> dets = detector(dlib_img);
-    if (dets.size() > 0) {
-        auto det = dets[0];
-        double aera = (det.right()-det.left())*(det.bottom()-det.top());
-        for (auto _box : dets) {
-            double _aera = (_box.right()-_box.left())*(_box.bottom()-_box.top());
-            if (_aera > aera) {
-                det = _box;
-            }
+inline cv::Rect2d rect2roi(dlib::rectangle ret) {
+    return cv::Rect2d(ret.left(), ret.top(), ret.right() - ret.left(), ret.bottom() - ret.top());
+}
+
+std::mutex dlib_mtx;
+
+cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d last_roi) {
+    try {
+        qDebug() << "Tring detecting.... wait lock";
+        if (!dlib_mtx.try_lock()) {
+            return cv::Rect2d(0, 0, 0, 0);
+        } else {
         }
-        return cv::Rect2d(det.left(), det.top(), det.right() - det.left(), det.bottom() - det.top());
+        qDebug() << "CPY Frame"  << "\n";
+        qDebug() << frame.cols<<"\n";
+        qDebug() << "Detecting face..." << frame.cols <<"DEP"<< frame.depth() << "\n";
+        if (frame.cols == 0) {
+            dlib_mtx.unlock();
+            return cv::Rect2d(0, 0, 0, 0);
+        }
+        dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
+        std::vector<dlib::rectangle> dets = detector(dlib_img);
+        qDebug() << "Finish dlib..." << dets.size();
+        dlib_mtx.unlock();
+
+        if (dets.size() > 0) {
+            auto det = dets[0];
+            double overlap = (rect2roi(det) & last_roi).area();
+            double aera = (det.right()-det.left())*(det.bottom()-det.top());
+
+            for (auto _box : dets) {
+                double _aera = (_box.right()-_box.left())*(_box.bottom()-_box.top());
+                double _overlap = (rect2roi(_box) & last_roi).area();
+                qDebug() << "Overlap" << _overlap;
+                if (_aera > aera && (_overlap > overlap || overlap <= 0)) {
+                    det = _box;
+                    overlap = _overlap;
+                }
+            }
+            qDebug() << "Finish etecting face...";
+
+            return rect2roi(det);
+        }
+        qDebug() << "Failed detecting face...";
+
+        return cv::Rect2d(0, 0, 0, 0);
+    } catch (...) {
+        dlib_mtx.unlock();
+        qDebug() << "Catch dlib detect failed...";
+        return cv::Rect2d(0, 0, 0, 0);
     }
 
-    return cv::Rect2d(0, 0, 0, 0);
 }

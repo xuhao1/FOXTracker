@@ -21,8 +21,10 @@ typedef std::pair<Eigen::Matrix3d, Eigen::Vector3d> Pose;
 
 //Yaw Pitch Roll X Y Z
 typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> Pose6DoF;
-
 typedef std::vector<cv::Point2f> CvPts;
+
+extern std::mutex dlib_mtx;
+
 class FaceDetector {
     dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
 public:
@@ -33,7 +35,7 @@ public:
 
     }
 
-    virtual cv::Rect2d detect(cv::Mat & frame);
+    virtual cv::Rect2d detect(cv::Mat frame, cv::Rect2d last_roi);
 };
 
 class LandmarkDetector {
@@ -45,7 +47,7 @@ public:
 
     virtual ~LandmarkDetector() {}
 
-    virtual CvPts detect(cv::Mat & frame, cv::Rect roi);
+    virtual CvPts detect(cv::Mat frame, cv::Rect roi);
 };
 
 class HeadPoseDetector {
@@ -55,6 +57,9 @@ class HeadPoseDetector {
     std::thread th;
 
     std::mutex detect_mtx;
+
+    std::mutex detect_frame_mtx;
+
     bool frame_pending_detect = false;
     cv::Mat frame_need_to_detect;
 
