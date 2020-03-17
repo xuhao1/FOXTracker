@@ -15,13 +15,7 @@
 #include <queue>
 #include <mutex>
 #include <opencv2/tracking/tracker.hpp>
-
-//R, T
-typedef std::pair<Eigen::Matrix3d, Eigen::Vector3d> Pose;
-
-//Yaw Pitch Roll X Y Z
-typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> Pose6DoF;
-typedef std::vector<cv::Point2f> CvPts;
+#include <fagx_datatype.h>
 
 extern std::mutex dlib_mtx;
 

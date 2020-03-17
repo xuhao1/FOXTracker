@@ -1,7 +1,7 @@
 QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-CONFIG += c++11
+CONFIG += c++17
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -37,13 +37,22 @@ SOURCES += \
     HeadPoseDetector.cpp \
     PoseDataSender.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    freetrack/ftnoir_protocol_ft.cpp \
+    freetrack/freetrackclient/freetrackclient.c \
+    freetrack/shm.cpp \
+    freetrack/csv/csv.cpp
 
 HEADERS += \
     FlightAgxSettings.h \
     HeadPoseDetector.h \
     PoseDataSender.h \
-    mainwindow.h
+    fagx_datatype.h \
+    mainwindow.h \
+    freetrack/ftnoir_protocol_ft.h \
+    freetrack/freetrackclient/fttypes.h \
+    freetrack/shm.h \
+    freetrack/csv/csv.h
 
 FORMS += \
     mainwindow.ui

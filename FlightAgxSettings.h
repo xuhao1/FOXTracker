@@ -1,8 +1,8 @@
 #ifndef FLIGHTAGXSETTINGS_H
 #define FLIGHTAGXSETTINGS_H
 #include <opencv2/opencv.hpp>
-#include <opencv2/core/eigen.hpp>
 #include <Eigen/Eigen>
+#include <opencv2/core/eigen.hpp>
 #include <chrono>
 
 class FlightAgxSettings {
@@ -20,6 +20,10 @@ public:
     bool send_posedata_udp = true;
     int port = 4242;
     std::string udp_host = "127.0.0.1";
+    std::string trackir_path = "";
+    std::string support_games_csv = "";
+    bool use_ft = true;
+    bool use_npclient = true;
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);
