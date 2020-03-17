@@ -29,40 +29,37 @@ static Eigen::Vector3d R2ypr(const Eigen::Matrix3d &R, int degress = true)
 
 }
 
-void HeadPoseDetector::run_thread() {
-    VideoCapture cap;
-    if(!cap.open(settings->camera_id, cv::CAP_DSHOW))
+
+void HeadPoseTrackDetectWorker::run() {
+    is_running = true;
+//    hd->run_detect_thrad();
+}
+
+void HeadPoseTrackDetectWorker::stop() {
+    is_running = false;
+}
+
+void HeadPoseDetector::loop() {
+    Mat frame;
+    cap >> frame;
+    if( frame.empty() )
         return;
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+    auto ret = detect_head_pose(frame);
+    auto pose = ret.second;
+    auto eul = R2ypr(pose.first);
 
-    while(is_running) {
-        Mat frame;
-        cap >> frame;
-        if( frame.empty() )
-            break;
-        auto ret = detect_head_pose(frame);
 
-         if (ret.first) {
-            auto pose = ret.second;
-            //Send packet
-            //Debug only
-            double data[6] = {0};
-            data[0] = - pose.second.x()*100;
-            data[1] = pose.second.y()*100;
-            data[2] = - pose.second.z()*100;
+    if (ret.first) {
+        this->on_detect_pose6d(t, make_pair(eul, pose.second));
+        this->on_detect_pose(t, pose);
+    }
 
-            data[3] = pose.first.x();
-            data[4] = pose.first.y();
-            data[5] = pose.first.z();
-            udpsock->writeDatagram((char*)data, sizeof(double)*6, QHostAddress("127.0.0.1"), 4242);
-        }
-
-        if (settings->enable_preview) {
-            frame.copyTo(preview_image);
-        }
+    if (settings->enable_preview) {
+        frame.copyTo(preview_image);
     }
 }
+
 
 CvPts LandmarkDetector::detect(cv::Mat frame, cv::Rect roi) {
     CvPts pts;
@@ -76,27 +73,10 @@ CvPts LandmarkDetector::detect(cv::Mat frame, cv::Rect roi) {
     return pts;
 }
 
-void HeadPoseDetector::start() {
-    if (is_running) {
-        return;
-    }
-    is_running = true;
-    th = std::thread([&]{
-        this->run_thread();
-    });
-
-    if( settings->enable_multithread_detect) {
-        detect_thread = std::thread([&]{
-            this->run_detect_thread();
-        });
-    }
-}
 
 void HeadPoseDetector::run_detect_thread() {
     while(is_running) {
         if (frame_pending_detect) {
-           //Detect the roi
-//           qDebug() << "frame_pending_detect";
            TicToc tic;
            detect_frame_mtx.lock();
            cv::Mat _frame = frame_need_to_detect.clone();
@@ -136,12 +116,12 @@ void HeadPoseDetector::run_detect_thread() {
 
            frames.clear();
            if(!success_track) {
-               qDebug() << "Tracker failed in detect thread";
+//               qDebug() << "Tracker failed in detect thread";
                frame_pending_detect = false;
                detect_mtx.unlock();
                continue;
            } else {
-               //qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms";
+//               qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms";
            }
 
 
@@ -157,10 +137,41 @@ void HeadPoseDetector::run_detect_thread() {
     }
 }
 
-void HeadPoseDetector::stop() {
+
+void HeadPoseDetector::start_slot() {
+    t0 = QDateTime::currentMSecsSinceEpoch()/1000.0;
+    if (is_running) {
+        return;
+    }
+
+    is_running = true;
+
+    if( settings->enable_multithread_detect) {
+        detect_thread = std::thread([&]{
+            this->run_detect_thread();
+        });
+    }
+
+    this->run_thread();
+}
+
+void HeadPoseDetector::run_thread() {
+    if(!cap.open(settings->camera_id, cv::CAP_DSHOW))
+        return;
+    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    main_loop_timer = new QTimer;
+    main_loop_timer->moveToThread(&mainThread);
+    connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()), Qt::DirectConnection);
+
+    main_loop_timer->start(1/settings->fps);
+}
+
+void HeadPoseDetector::stop_slot() {
+    qDebug() << "Stoooop...";
     is_running = false;
-    th.join();
     detect_thread.join();
+    main_loop_timer->stop();
     //delete this->tracker;
 }
 
@@ -170,9 +181,11 @@ void HeadPoseDetector::reset() {
     start();
 }
 
-std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
+std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
     TicToc tic;
-    Eigen::Vector3d eul, T;
+    Eigen::Matrix3d R;
+    Eigen::Vector3d T;
+
     cv::Rect2d roi;
     frame_count ++;
     if (first_solve_pose) {
@@ -181,7 +194,7 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
             tracker = cv::TrackerMOSSE::create();
             tracker->init(frame, roi);
         } else {
-            return make_pair(false, make_pair(eul, T));
+            return make_pair(false, make_pair(R, T));
         }
 
     } else {
@@ -233,13 +246,13 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
         } else {
             //std::cout << "Will unlock" << std::endl;
             detect_mtx.unlock();
-            return make_pair(false, make_pair(eul, T));
+            return make_pair(false, make_pair(R, T));
         }
 
     }
 
     if (roi.width < 1 || roi.height < 1) {
-        return make_pair(false, make_pair(eul, T));
+        return make_pair(false, make_pair(R, T));
     }
 
     TicToc tic1;
@@ -248,15 +261,9 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
 
     if (ret.first) {
         auto pose = ret.second;
-        eul = R2ypr(pose.first);
-
         char rot[100] = {0};
-
-//        sprintf(rot, "Y %3.1f P %3.1f R %3.1f", eul.x(), eul.y(), eul.z());
-//        cv::putText(frame, rot, cv::Point(50, 70), cv::FONT_HERSHEY_SCRIPT_SIMPLEX, 1.0,
-//                     Scalar(255, 0, 0), 2, 4);
-
         T = pose.second;
+        R = pose.first;
 
         if (settings->enable_preview) {
             cv::rectangle(frame, cv::Point2d(roi.x, roi.y),
@@ -265,9 +272,10 @@ std::pair<bool, Pose6DoF> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
                 cv::circle(frame, pt, 1, cv::Scalar(0, 255, 0), -1);
             }
         }
-        return make_pair(true, make_pair(eul, T));
+
+        return make_pair(true, make_pair(R, T));
     }
-    return make_pair(false, make_pair(eul, T));
+    return make_pair(false, make_pair(R, T));
 }
 
 std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, cv::Mat & frame) {
@@ -309,19 +317,16 @@ std::mutex dlib_mtx;
 
 cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d last_roi) {
     try {
-//        qDebug() << "Tring detecting.... wait lock";
         if (!dlib_mtx.try_lock()) {
             return cv::Rect2d(0, 0, 0, 0);
         } else {
         }
-//        qDebug() << "Detecting face..." << frame.cols <<"DEP"<< frame.depth() << "\n";
         if (frame.cols == 0) {
             dlib_mtx.unlock();
             return cv::Rect2d(0, 0, 0, 0);
         }
         dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
         std::vector<dlib::rectangle> dets = detector(dlib_img);
-//        qDebug() << "Finish dlib..." << dets.size();
         dlib_mtx.unlock();
 
         if (dets.size() > 0) {
@@ -338,11 +343,11 @@ cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d last_roi) {
                     overlap = _overlap;
                 }
             }
-//            qDebug() << "Finish Detecting face...";
+            //qDebug() << "Finish Detecting face...";
 
             return rect2roi(det);
         }
-//        qDebug() << "Failed detecting face...";
+        //qDebug() << "Failed detecting face...";
 
         return cv::Rect2d(0, 0, 0, 0);
     } catch (...) {

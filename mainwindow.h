@@ -5,7 +5,7 @@
 #include <HeadPoseDetector.h>
 #include <QTimer>
 #include <QSystemTrayIcon>
-
+#include <PoseDataSender.h>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -14,12 +14,12 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    HeadPoseDetector hd;
+    PoseDataSender data_sender;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    HeadPoseDetector hd;
 public slots:
-    void DisplayImage();
     void on_show();
     void on_exit();
 private slots:
@@ -31,6 +31,11 @@ private slots:
 
     void on_gamemode_clicked();
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
+
+    void DisplayImage();
+
+    void on_pose6d_data(double t, Pose6DoF _pose);
+
 private:
     QTimer* Timer;
     bool camera_preview_enabled = false;

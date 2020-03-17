@@ -35,12 +35,14 @@ win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\source\opencv\openc
 
 SOURCES += \
     HeadPoseDetector.cpp \
+    PoseDataSender.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     FlightAgxSettings.h \
     HeadPoseDetector.h \
+    PoseDataSender.h \
     mainwindow.h
 
 FORMS += \

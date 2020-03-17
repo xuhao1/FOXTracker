@@ -50,11 +50,28 @@ public:
     virtual CvPts detect(cv::Mat frame, cv::Rect roi);
 };
 
-class HeadPoseDetector {
+class HeadPoseDetector;
+
+class HeadPoseTrackDetectWorker: public QObject {
+    Q_OBJECT
+
+    HeadPoseDetector * hd;
+    bool is_running = false;
+public slots:
+    void run();
+    void stop();
+
+public:
+    HeadPoseTrackDetectWorker(HeadPoseDetector * _hd): hd(_hd) {}
+};
+
+class HeadPoseDetector: public QObject {
+    Q_OBJECT
+
     FaceDetector * fd = nullptr;
     LandmarkDetector * lmd = nullptr;
     bool is_running = false;
-    std::thread th;
+    cv::VideoCapture cap;
 
     std::mutex detect_mtx;
 
@@ -65,6 +82,10 @@ class HeadPoseDetector {
 
     std::thread detect_thread;
 
+    QThread mainThread;
+    QTimer * main_loop_timer;
+    QThread detectThread;
+
     std::pair<bool, Pose> solve_face_pose(CvPts landmarks, cv::Mat & frame);
 
     cv::Mat rvec_init, tvec_init;
@@ -74,7 +95,6 @@ class HeadPoseDetector {
 
     bool first_solve_pose = true;
     Eigen::Vector3d Tinit;
-    QUdpSocket * udpsock;
 
     std::vector<cv::Mat> frames;
 
@@ -85,6 +105,7 @@ class HeadPoseDetector {
 
     cv::Mat preview_image;
 
+    double t0;
 public:
 
 
@@ -121,21 +142,39 @@ public:
             exit(-1);
         }
 
-        udpsock = new QUdpSocket(nullptr);
-        //udpsock->bind(QHostAddress::LocalHost, 4242);
+
+        connect(this, SIGNAL(start()),
+                this, SLOT(start_slot()));
+
+        connect(this, SIGNAL(stop()),
+                this, SLOT(stop_slot()));
+        this->moveToThread(&mainThread);
+        mainThread.start();
     }
 
-    std::pair<bool, Pose6DoF> detect_head_pose(cv::Mat & frame);
+    std::pair<bool, Pose> detect_head_pose(cv::Mat & frame);
+
     void run_thread();
+
     void run_detect_thread();
     void reset();
-    
-    void start();
-    void stop();
 
+public:
     cv::Mat & get_preview_image() {
         return preview_image;
     }
+
+signals:
+    void start();
+    void stop();
+
+    void on_detect_pose6d(double t, Pose6DoF pose);
+    void on_detect_pose(double t, Pose pose);
+
+private slots:
+    void loop();
+    void start_slot();
+    void stop_slot();
 
 };
 #endif // HEADPOSEDETECTOR_H

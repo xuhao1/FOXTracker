@@ -9,10 +9,24 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setWindowTitle("FlightAgentX");
 
     hd.start();
     this->start_camera_preview();
+
+    connect(&hd, &HeadPoseDetector::on_detect_pose6d, this, &MainWindow::on_pose6d_data);
+    connect(&hd, &HeadPoseDetector::on_detect_pose6d, &data_sender, &PoseDataSender::on_pose6d_data);
+
+    ui->time_disp->setDigitCount(5);
+    ui->time_disp->setSmallDecimalPoint(false);
+    ui->x_disp->setDigitCount(4);
+    ui->y_disp->setDigitCount(4);
+    ui->z_disp->setDigitCount(4);
+    ui->yaw_disp->setDigitCount(3);
+    ui->pitch_disp->setDigitCount(3);
+    ui->roll_disp->setDigitCount(3);
 }
+
 
 MainWindow::~MainWindow()
 {
@@ -70,15 +84,30 @@ void MainWindow::DisplayImage() {
     ui->preview_camera->setPixmap(QPixmap::fromImage(imdisplay));//display the image in label that is created earlier
 }
 
+
+void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
+//    qDebug() << "Pose 6D!!!" << t;
+    ui->time_disp->display(t);
+    ui->x_disp->display(_pose.second.x() * 100);
+    ui->y_disp->display(_pose.second.y() * 100);
+    ui->z_disp->display(_pose.second.z() * 100);
+
+    ui->yaw_disp->display(_pose.first.x());
+    ui->pitch_disp->display(_pose.first.y());
+    ui->roll_disp->display(_pose.first.z());
+}
+
 void MainWindow::on_startButton_clicked()
 {
-    hd.start();
+    //emit(hd, )
+    emit hd.start();
+    //hd.start();
     this->start_camera_preview();
 }
 
 void MainWindow::on_endbutton_clicked()
 {
-    hd.stop();
+    emit hd.stop();
     this->stop_camera_preview();
 }
 

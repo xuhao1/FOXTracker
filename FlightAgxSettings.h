@@ -16,6 +16,10 @@ public:
     int camera_id = 0;
     bool enable_multithread_detect = true;
     int retrack_queue_size = 1;
+    double fps = 30;
+    bool send_posedata_udp = true;
+    int port = 4242;
+    std::string udp_host = "127.0.0.1";
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);

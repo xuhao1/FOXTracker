@@ -9,6 +9,10 @@ FlightAgxSettings * settings;
 
 int main(int argc, char *argv[])
 {
+
+    qRegisterMetaType<Pose>("Pose");
+    qRegisterMetaType<Pose6DoF>("Pose6DoF");
+
     qInfo() << "Here we are";
     settings = new FlightAgxSettings;
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
