@@ -45,7 +45,10 @@ void HeadPoseDetector::loop() {
     if( frame.empty() )
         return;
     double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+    TicToc tic;
     auto ret = detect_head_pose(frame);
+    if (frame_count % 10 == 0)
+        qDebug() << "detect_head_pose cost" << tic.toc();
     auto pose = ret.second;
     auto eul = R2ypr(pose.first);
 
@@ -172,7 +175,10 @@ void HeadPoseDetector::stop_slot() {
     is_running = false;
     detect_thread.join();
     main_loop_timer->stop();
-    //delete this->tracker;
+
+    //wait a frame
+    Sleep(30);
+    cap.release();
 }
 
 void HeadPoseDetector::reset() {

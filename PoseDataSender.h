@@ -1,14 +1,23 @@
 #ifndef POSEDATASENDER_H
 #define POSEDATASENDER_H
 #include "HeadPoseDetector.h"
+#include "freetrack/ftnoir_protocol_ft.h"
 
 class PoseDataSender: public QObject {
     QUdpSocket * udpsock = nullptr;
+    freetrack * ft = nullptr;
 
     void send_data_udp(double t, Pose6DoF pose);
 public:
     PoseDataSender() {
         udpsock = new QUdpSocket(nullptr);
+        ft = new freetrack;
+        bool success = ft->initialize();
+        if (!success) {
+            qDebug() << "Initialize failed";
+        } else {
+            qDebug() << "Initialize freetrack OK";
+        }
     }
 
 public slots:

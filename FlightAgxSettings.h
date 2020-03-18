@@ -4,6 +4,8 @@
 #include <Eigen/Eigen>
 #include <opencv2/core/eigen.hpp>
 #include <chrono>
+#include <QApplication>
+#include <QDebug>
 
 class FlightAgxSettings {
 public:
@@ -11,8 +13,6 @@ public:
     cv::Mat D;
     int detect_duration = 10;
     bool enable_preview = true;
-    std::string model;
-    std::string landmark_model;
     int camera_id = 0;
     bool enable_multithread_detect = true;
     int retrack_queue_size = 1;
@@ -20,8 +20,12 @@ public:
     bool send_posedata_udp = true;
     int port = 4242;
     std::string udp_host = "127.0.0.1";
-    std::string trackir_path = "";
-    std::string support_games_csv = "";
+
+    std::string trackir_path = "/assets/TrackIR.exe";
+    std::string support_games_csv = "/assets/facetracknoir supported games.csv";
+    std::string model = "/assets/model.txt";
+    std::string landmark_model = "/assets/shape_predictor_68_face_landmarks.dat";
+
     bool use_ft = true;
     bool use_npclient = true;
     FlightAgxSettings() {
@@ -35,8 +39,13 @@ public:
         D_eigen = D_eigen.transpose();
         cv::eigen2cv(D_eigen, D);
 
-        model = "C:\\Users\\plane\\Develop\\FlightAgentX\\assets\\model.txt";
-        landmark_model = "C:\\Users\\plane\\Develop\\FlightAgentX\\assets\\shape_predictor_68_face_landmarks.dat";
+        std::string app_path = QCoreApplication::applicationDirPath().toStdString();
+        trackir_path = app_path + trackir_path;
+        support_games_csv = app_path + support_games_csv;
+        model = app_path + model;
+        landmark_model = app_path + landmark_model;
+        qDebug() << "App run at" << app_path.c_str();
+
     }
 };
 

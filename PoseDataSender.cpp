@@ -4,6 +4,10 @@ void PoseDataSender::on_pose6d_data(double t, Pose6DoF pose) {
     if(settings->send_posedata_udp) {
         this->send_data_udp(t, pose);
     }
+
+    if(settings->use_ft || settings->use_npclient) {
+        ft->on_pose6d_data(t, pose);
+    }
 }
 
 

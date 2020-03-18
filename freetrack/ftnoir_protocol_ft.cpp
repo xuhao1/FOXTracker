@@ -25,12 +25,13 @@ freetrack::~freetrack()
 static_assert(sizeof(LONG) == sizeof(std::int32_t));
 static_assert(sizeof(LONG) == 4u);
 
-#define YAW 0
-#define PITCH 1
-#define ROLL 2
-#define TX 3
-#define TY 4
-#define TZ 5
+#define TX 0
+#define TY 1
+#define TZ 2
+#define YAW 3
+#define PITCH 4
+#define ROLL 5
+
 
 never_inline void store(float volatile& place, const float value)
 {

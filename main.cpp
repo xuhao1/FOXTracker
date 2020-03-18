@@ -13,10 +13,12 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Pose>("Pose");
     qRegisterMetaType<Pose6DoF>("Pose6DoF");
 
-    qInfo() << "Here we are";
-    settings = new FlightAgxSettings;
+    qInfo() << "Welcome! plilots";
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
+
+    settings = new FlightAgxSettings;
+
     MainWindow w;
     w.show();
     return a.exec();
