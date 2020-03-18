@@ -35,6 +35,7 @@ win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\source\opencv\openc
 
 SOURCES += \
     HeadPoseDetector.cpp \
+    KalmanFilter.cpp \
     PoseDataSender.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -46,6 +47,7 @@ SOURCES += \
 HEADERS += \
     FlightAgxSettings.h \
     HeadPoseDetector.h \
+    KalmanFilter.h \
     PoseDataSender.h \
     fagx_datatype.h \
     mainwindow.h \

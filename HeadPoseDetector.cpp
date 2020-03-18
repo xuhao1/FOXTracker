@@ -50,13 +50,20 @@ void HeadPoseDetector::loop() {
     if (frame_count % 10 == 0)
         qDebug() << "detect_head_pose cost" << tic.toc();
     auto pose = ret.second;
-    auto eul = R2ypr(pose.first);
-
 
     if (ret.first) {
-        this->on_detect_pose6d(t, make_pair(eul, pose.second));
-        this->on_detect_pose(t, pose);
+        pose = ekf.on_raw_pose_data(t, pose);
+    } else {
+        pose = ekf.predict(t);
     }
+
+    auto R = pose.first;
+    auto T = pose.second;
+    R = Rcam*R*Rface;
+    auto eul = R2ypr(R);
+
+    this->on_detect_pose6d(t, make_pair(eul, pose.second));
+    this->on_detect_pose(t, pose);
 
     if (settings->enable_preview) {
         frame.copyTo(preview_image);
@@ -309,9 +316,7 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, cv::Mat
     cv::Rodrigues(rvec, Rcv);
 
     cv::cv2eigen(tvec/1000.0, T);
-    T = T - Tinit;
     cv::cv2eigen(Rcv, R);
-    R = Rcam*R*Rface;
     return make_pair(success, make_pair(R, T));
 }
 

@@ -28,6 +28,14 @@ public:
 
     bool use_ft = true;
     bool use_npclient = true;
+    double cov_Q = 0.2;
+    double cov_T = 0.03;
+
+    double cov_V = 0.1;
+    double cov_W = 0.02;
+
+    double ekf_predict_dt = 0.01;
+
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);

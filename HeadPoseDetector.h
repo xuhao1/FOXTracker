@@ -16,6 +16,7 @@
 #include <mutex>
 #include <opencv2/tracking/tracker.hpp>
 #include <fagx_datatype.h>
+#include <KalmanFilter.h>
 
 extern std::mutex dlib_mtx;
 
@@ -64,6 +65,8 @@ class HeadPoseDetector: public QObject {
 
     FaceDetector * fd = nullptr;
     LandmarkDetector * lmd = nullptr;
+
+    ExtendKalmanFilter12DOF ekf;
     bool is_running = false;
     cv::VideoCapture cap;
 
