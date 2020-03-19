@@ -5,7 +5,7 @@
 #include<QDebug>
 #include "FlightAgxSettings.h"
 
-FlightAgxSettings * settings;
+FlightAgxSettings * settings = nullptr;
 
 int main(int argc, char *argv[])
 {

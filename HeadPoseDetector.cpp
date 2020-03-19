@@ -1,5 +1,5 @@
 #include "HeadPoseDetector.h"
-#include<dlib/opencv.h>
+#include <dlib/opencv.h>
 #include <QDebug>
 #include <iostream>
 #include <windows.h>
@@ -7,28 +7,6 @@
 
 using namespace cv;
 using namespace std;
-static Eigen::Vector3d R2ypr(const Eigen::Matrix3d &R, int degress = true)
-{
-    Eigen::Vector3d n = R.col(0);
-    Eigen::Vector3d o = R.col(1);
-    Eigen::Vector3d a = R.col(2);
-
-    Eigen::Vector3d ypr(3);
-    double y = atan2(n(1), n(0));
-    double p = atan2(-n(2), n(0) * cos(y) + n(1) * sin(y));
-    double r = atan2(a(0) * sin(y) - a(1) * cos(y), -o(0) * sin(y) + o(1) * cos(y));
-    ypr(0) = y;
-    ypr(1) = p;
-    ypr(2) = r;
-
-    if (degress) {
-        return ypr / M_PI * 180.0;
-    } else {
-        return ypr;
-    }
-
-}
-
 
 void HeadPoseTrackDetectWorker::run() {
     is_running = true;
@@ -37,6 +15,7 @@ void HeadPoseTrackDetectWorker::run() {
 
 void HeadPoseTrackDetectWorker::stop() {
     is_running = false;
+
 }
 
 void HeadPoseDetector::loop() {
@@ -52,18 +31,23 @@ void HeadPoseDetector::loop() {
     auto pose = ret.second;
 
     if (ret.first) {
+        TicToc tic;
         pose = ekf.on_raw_pose_data(t, pose);
-    } else {
-        pose = ekf.predict(t);
+//        qDebug() << "EKF Update cost" << tic.toc();
     }
+
+    t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+    TicToc tic_ekf;
+    pose = ekf.predict(t);
+//    qDebug() << "EKF predict cost" << tic_ekf.toc();
 
     auto R = pose.first;
     auto T = pose.second;
     R = Rcam*R*Rface;
-    auto eul = R2ypr(R);
+    T = Rcam*T;
 
-    this->on_detect_pose6d(t, make_pair(eul, pose.second));
-    this->on_detect_pose(t, pose);
+    //This pose is in world frame
+    this->on_detect_pose(t, make_pair(R, T));
 
     if (settings->enable_preview) {
         frame.copyTo(preview_image);
@@ -178,14 +162,16 @@ void HeadPoseDetector::run_thread() {
 }
 
 void HeadPoseDetector::stop_slot() {
-    qDebug() << "Stoooop...";
-    is_running = false;
-    detect_thread.join();
-    main_loop_timer->stop();
-
-    //wait a frame
-    Sleep(30);
-    cap.release();
+    if (is_running) {
+        qDebug() << "Stoooop...";
+        is_running = false;
+        detect_thread.join();
+        main_loop_timer->stop();
+        ekf.reset();
+        //wait a frame
+        Sleep(30);
+        cap.release();
+    }
 }
 
 void HeadPoseDetector::reset() {

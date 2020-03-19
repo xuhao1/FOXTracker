@@ -34,7 +34,7 @@ public:
     double cov_V = 0.1;
     double cov_W = 0.02;
 
-    double ekf_predict_dt = 0.01;
+    double ekf_predict_dt = 0.001;
 
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;

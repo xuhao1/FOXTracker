@@ -165,7 +165,6 @@ signals:
     void start();
     void stop();
 
-    void on_detect_pose6d(double t, Pose6DoF pose);
     void on_detect_pose(double t, Pose pose);
 
 private slots:

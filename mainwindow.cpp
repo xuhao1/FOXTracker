@@ -3,6 +3,8 @@
 #include <FlightAgxSettings.h>
 #include <QAction>
 #include <QMenu>
+#include "ekfconfig.h"
+#include "agentxconfig.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,12 +13,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->setWindowTitle("FlightAgentX");
 
-    hd.start();
-    this->start_camera_preview();
+    this->on_startButton_clicked();
 
-    connect(&hd, &HeadPoseDetector::on_detect_pose6d, this, &MainWindow::on_pose6d_data);
-    connect(&hd, &HeadPoseDetector::on_detect_pose6d, &data_sender, &PoseDataSender::on_pose6d_data);
-
+    connect(&remapper, &PoseRemapper::send_mapped_posedata, this, &MainWindow::on_pose6d_data);
+    connect(&remapper, &PoseRemapper::send_mapped_posedata, &data_sender, &PoseDataSender::on_pose6d_data);
+    connect(&hd, &HeadPoseDetector::on_detect_pose, &remapper, &PoseRemapper::on_pose_data);
     ui->time_disp->setDigitCount(5);
     ui->time_disp->setSmallDecimalPoint(false);
     ui->x_disp->setDigitCount(4);
@@ -99,16 +100,21 @@ void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
 
 void MainWindow::on_startButton_clicked()
 {
-    //emit(hd, )
-    emit hd.start();
-    //hd.start();
-    this->start_camera_preview();
+    if (!is_running) {
+        emit hd.start();
+        this->remapper.reset_center();
+        this->start_camera_preview();
+    }
+    is_running = true;
 }
 
 void MainWindow::on_endbutton_clicked()
 {
-    emit hd.stop();
-    this->stop_camera_preview();
+    if(is_running) {
+        emit hd.stop();
+        this->stop_camera_preview();
+    }
+    is_running = false;
 }
 
 void MainWindow::start_camera_preview() {
@@ -139,4 +145,13 @@ void MainWindow::on_gamemode_clicked()
     this->stop_camera_preview();
     create_tray_icon();
     QTimer::singleShot(10, this, SLOT(hide()));
+}
+
+void MainWindow::on_config_button_clicked()
+{
+    if(config_menu == nullptr) {
+        config_menu = new AgentXConfig;
+    }
+
+    config_menu->show();
 }

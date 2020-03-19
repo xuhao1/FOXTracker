@@ -30,6 +30,12 @@ class ExtendKalmanFilter12DOF {
     double t0 = 0;
     double t_state = 0;
 public:
+
+    void reset() {
+        initialized = false;
+        P.setZero();
+        X.setZero();
+    }
     ExtendKalmanFilter12DOF():
         q(X.data()),
         T(X.data()+4),
@@ -39,14 +45,7 @@ public:
         this->update_cov();
     }
 
-    void update_cov() {
-        R.setOnes();
-        R = 0.001 * R;
-        R.block<4, 4>(0, 0) = Eigen::Matrix4d::Ones() * settings->cov_Q;
-        R.block<3, 3>(4, 4) = Eigen::Matrix3d::Ones() * settings->cov_T;
-
-
-    }
+    void update_cov();
 
     Pose get_realtime_pose() {
         return std::make_pair(q.toRotationMatrix(), T);

@@ -53,6 +53,10 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
 }
 
 Pose ExtendKalmanFilter12DOF::predict(double t) {
+    Q.setZero();
+    Q.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * settings->cov_W;//Q for angular velocity
+    Q.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_V;//Q for angular velocity
+
     for (double t1 = this->t_state; t1 < t; t1 += settings->ekf_predict_dt) {
         double dt = settings->ekf_predict_dt;
         if (t - t1 < dt) {
@@ -66,12 +70,9 @@ Pose ExtendKalmanFilter12DOF::predict(double t) {
 }
 
 void ExtendKalmanFilter12DOF::predict_by_dt(double dt){
-    Q.setZero();
-    Q.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * settings->cov_W*dt;//Q for angular velocity
-    Q.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_V*dt;//Q for angular velocity
     auto F = Fmat(dt);
     X = f(dt);
-    P = F*P*F.transpose() + Q;
+    P = F*P*F.transpose() + Q*dt;
     q.normalize();
 
 //    std::cout << "Predict" << dt <<"s X is [" << X.transpose() << "]^T, P is" << P << std::endl;
@@ -120,4 +121,14 @@ Eigen::Matrix<double, 13, 13> ExtendKalmanFilter12DOF::Fmat(double dt) {
     F.block<6, 6>(7, 7) = Matrix<double, 6, 6>::Identity();
 
     return F;
+}
+
+
+
+void ExtendKalmanFilter12DOF::update_cov() {
+//   R.setOnes();
+//   R = 0.001 * R;
+   R.setZero();
+   R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * settings->cov_Q;
+   R.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_T;
 }

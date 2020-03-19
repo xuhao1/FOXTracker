@@ -6,6 +6,9 @@
 #include <QTimer>
 #include <QSystemTrayIcon>
 #include <PoseDataSender.h>
+#include "agentxconfig.h"
+#include "poseremapper.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -16,6 +19,8 @@ class MainWindow : public QMainWindow
 
     HeadPoseDetector hd;
     PoseDataSender data_sender;
+    PoseRemapper remapper;
+    bool is_running = false;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -36,6 +41,8 @@ private slots:
 
     void on_pose6d_data(double t, Pose6DoF _pose);
 
+    void on_config_button_clicked();
+
 private:
     QTimer* Timer;
     bool camera_preview_enabled = false;
@@ -44,5 +51,7 @@ private:
     Ui::MainWindow *ui;
     void create_tray_icon();
     QSystemTrayIcon * m_tray_icon = nullptr;
+
+    AgentXConfig * config_menu = nullptr;
 };
 #endif // MAINWINDOW_H

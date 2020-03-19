@@ -335,6 +335,24 @@ color: #2e5669;</string>
      <string>Z</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="config_button">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>420</y>
+      <width>191</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+background-color: rgb(46, 86, 105);
+color: rgb(240, 241, 250);</string>
+    </property>
+    <property name="text">
+     <string>Config</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

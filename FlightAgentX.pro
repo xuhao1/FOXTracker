@@ -37,26 +37,34 @@ SOURCES += \
     HeadPoseDetector.cpp \
     KalmanFilter.cpp \
     PoseDataSender.cpp \
+    agentxconfig.cpp \
+    ekfconfig.cpp \
     main.cpp \
     mainwindow.cpp \
     freetrack/ftnoir_protocol_ft.cpp \
     freetrack/freetrackclient/freetrackclient.c \
     freetrack/shm.cpp \
-    freetrack/csv/csv.cpp
+    freetrack/csv/csv.cpp \
+    poseremapper.cpp
 
 HEADERS += \
     FlightAgxSettings.h \
     HeadPoseDetector.h \
     KalmanFilter.h \
     PoseDataSender.h \
+    agentxconfig.h \
+    ekfconfig.h \
     fagx_datatype.h \
     mainwindow.h \
     freetrack/ftnoir_protocol_ft.h \
     freetrack/freetrackclient/fttypes.h \
     freetrack/shm.h \
-    freetrack/csv/csv.h
+    freetrack/csv/csv.h \
+    poseremapper.h
 
 FORMS += \
+    agentxconfig.ui \
+    ekfconfig.ui \
     mainwindow.ui
 
 TRANSLATIONS += \
