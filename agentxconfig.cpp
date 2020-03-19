@@ -12,3 +12,7 @@ AgentXConfig::~AgentXConfig()
 {
     delete ui;
 }
+
+EKFConfig * AgentXConfig::ekf_config_menu() {
+    return  ui->ekfconfig;
+}

@@ -2,6 +2,7 @@
 #define AGENTXCONFIG_H
 
 #include <QDialog>
+#include <ekfconfig.h>
 
 namespace Ui {
 class AgentXConfig;
@@ -14,7 +15,7 @@ class AgentXConfig : public QDialog
 public:
     explicit AgentXConfig(QWidget *parent = nullptr);
     ~AgentXConfig();
-
+    EKFConfig * ekf_config_menu();
 private:
     Ui::AgentXConfig *ui;
 };

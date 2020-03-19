@@ -14,10 +14,18 @@ MainWindow::MainWindow(QWidget *parent)
     this->setWindowTitle("FlightAgentX");
 
     this->on_startButton_clicked();
+    config_menu = new AgentXConfig;
 
     connect(&remapper, &PoseRemapper::send_mapped_posedata, this, &MainWindow::on_pose6d_data);
     connect(&remapper, &PoseRemapper::send_mapped_posedata, &data_sender, &PoseDataSender::on_pose6d_data);
-    connect(&hd, &HeadPoseDetector::on_detect_pose, &remapper, &PoseRemapper::on_pose_data);
+    connect(&hd, &HeadPoseDetector::on_detect_pose, &remapper, &PoseRemapper::on_pose_data, Qt::QueuedConnection);
+    connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
+            &EKFConfig::on_detect_pose6d, Qt::QueuedConnection);
+    connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, config_menu->ekf_config_menu(),
+            &EKFConfig::on_detect_pose6d_raw, Qt::QueuedConnection);
+    connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
+            &EKFConfig::on_detect_twist, Qt::QueuedConnection);
+
     ui->time_disp->setDigitCount(5);
     ui->time_disp->setSmallDecimalPoint(false);
     ui->x_disp->setDigitCount(4);
@@ -149,9 +157,5 @@ void MainWindow::on_gamemode_clicked()
 
 void MainWindow::on_config_button_clicked()
 {
-    if(config_menu == nullptr) {
-        config_menu = new AgentXConfig;
-    }
-
     config_menu->show();
 }

@@ -2,6 +2,13 @@
 #define EKFCONFIG_H
 
 #include <QWidget>
+#include <Eigen/Eigen>
+#include <fagx_datatype.h>
+#include <QSplineSeries>
+#include <QtCharts/QChartView>
+#include <QtCharts/QValueAxis>
+
+QT_CHARTS_USE_NAMESPACE
 
 namespace Ui {
 class EKFConfig;
@@ -23,6 +30,18 @@ class EKFConfig : public QWidget
     double vcov_min = 0.001;
     double vcov_max = 2.0;
 
+    QtCharts::QSplineSeries * angle_splines[3] = {0};
+    QtCharts::QSplineSeries * T_splines[3] = {0};
+    QtCharts::QSplineSeries * angle_raw_splines[3] = {0};
+    QtCharts::QSplineSeries * w_splines[3] = {0};
+    QtCharts::QSplineSeries * v_splines[3] = {0};
+    double last_update_t = 0;
+
+    QChart *chart;
+    QValueAxis *axisX;
+
+    Eigen::Vector3d Tinit;
+    bool inited = false;
 public:
     explicit EKFConfig(QWidget *parent = nullptr);
     ~EKFConfig();
@@ -32,6 +51,11 @@ public:
     void setVNoise(double cov_V);
     void setWNoise(double cov_W);
 
+    void reset();
+public slots:
+    void on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v);
+    void on_detect_pose6d(double t, Pose6DoF pose);
+    void on_detect_pose6d_raw(double t, Pose6DoF pose);
 private slots:
     void on_qnoise_slider_valueChanged(int value);
 

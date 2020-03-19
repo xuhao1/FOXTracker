@@ -16,8 +16,8 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
         return pose;
     }
 
-    auto zq = Quaterniond(pose.first);
-    auto zT = pose.second;
+    Quaterniond zq(pose.first);
+    Eigen::Vector3d zT = pose.second;
     Vector7d Z;
     Z.block<4, 1>(0, 0) = zq.coeffs();
     Z.block<3, 1>(4, 0) = zT;
@@ -37,7 +37,10 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
     Eigen::Matrix<double, 7, 7> S = H*P*H.transpose() + R;
     auto K = P*H.transpose()*S.inverse();
 
+//    std::cout << "W before update" << w << std::endl;
     X = X + K*y;
+//    std::cout << "W After" << w << std::endl;
+
     P = (Eigen::Matrix<double, 13, 13>::Identity() - K * H )*P;
 
     //std::cout << "Pose Measurement Z[" << Z.transpose();
@@ -54,8 +57,11 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
 
 Pose ExtendKalmanFilter12DOF::predict(double t) {
     Q.setZero();
-    Q.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * settings->cov_W;//Q for angular velocity
-    Q.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_V;//Q for angular velocity
+    double dt = settings->ekf_predict_dt;
+    Q.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;//Q for angular velocity
+    Q.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 4)*0.25;//Q for angular velocity
+    R.block<3, 3>(7, 7) = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
+    R.block<3, 3>(10, 10) = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 2);
 
     for (double t1 = this->t_state; t1 < t; t1 += settings->ekf_predict_dt) {
         double dt = settings->ekf_predict_dt;
@@ -72,7 +78,7 @@ Pose ExtendKalmanFilter12DOF::predict(double t) {
 void ExtendKalmanFilter12DOF::predict_by_dt(double dt){
     auto F = Fmat(dt);
     X = f(dt);
-    P = F*P*F.transpose() + Q*dt;
+    P = F*P*F.transpose() + Q;
     q.normalize();
 
 //    std::cout << "Predict" << dt <<"s X is [" << X.transpose() << "]^T, P is" << P << std::endl;
@@ -131,4 +137,5 @@ void ExtendKalmanFilter12DOF::update_cov() {
    R.setZero();
    R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * settings->cov_Q;
    R.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_T;
+
 }

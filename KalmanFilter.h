@@ -47,8 +47,16 @@ public:
 
     void update_cov();
 
-    Pose get_realtime_pose() {
+    Pose get_realtime_pose() const {
         return std::make_pair(q.toRotationMatrix(), T);
+    }
+
+    Eigen::Vector3d get_angular_velocity() const {
+        return w;
+    }
+
+    Eigen::Vector3d get_linear_velocity() const {
+        return w;
     }
 
     Pose predict(double t);

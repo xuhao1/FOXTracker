@@ -28,18 +28,22 @@ void HeadPoseDetector::loop() {
     auto ret = detect_head_pose(frame);
     if (frame_count % 10 == 0)
         qDebug() << "detect_head_pose cost" << tic.toc();
-    auto pose = ret.second;
-
+    auto pose_raw = ret.second;
+    auto pose = pose_raw;
     if (ret.first) {
         TicToc tic;
-        pose = ekf.on_raw_pose_data(t, pose);
-//        qDebug() << "EKF Update cost" << tic.toc();
+        pose = ekf.on_raw_pose_data(t, pose_raw);
+
+        auto Rraw = pose_raw.first;
+        auto Traw = pose_raw.second;
+        Rraw = Rcam*Rraw*Rface;
+        Traw = Rcam*Traw;
+        this->on_detect_pose6d_raw(t, make_pair(R2ypr(Rraw), Traw));
     }
 
     t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
     TicToc tic_ekf;
     pose = ekf.predict(t);
-//    qDebug() << "EKF predict cost" << tic_ekf.toc();
 
     auto R = pose.first;
     auto T = pose.second;
@@ -48,6 +52,8 @@ void HeadPoseDetector::loop() {
 
     //This pose is in world frame
     this->on_detect_pose(t, make_pair(R, T));
+    this->on_detect_pose6d(t, make_pair(R2ypr(R), T));
+    this->on_detect_twist(t, Rcam*ekf.get_angular_velocity(), Rcam*ekf.get_linear_velocity());
 
     if (settings->enable_preview) {
         frame.copyTo(preview_image);

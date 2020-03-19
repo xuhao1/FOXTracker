@@ -31,11 +31,12 @@ public:
     double cov_Q = 0.2;
     double cov_T = 0.03;
 
-    double cov_V = 0.1;
-    double cov_W = 0.02;
+    double cov_V = 1.0;
+    double cov_W = 0.1;
 
     double ekf_predict_dt = 0.001;
 
+    Eigen::Matrix3d Rcam;
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);
@@ -54,33 +55,14 @@ public:
         landmark_model = app_path + landmark_model;
         qDebug() << "App run at" << app_path.c_str();
 
+        Rcam << 0, 0, -1,
+                -1, 0, 0,
+                 0, 1, 0;
     }
 };
 
 
-class TicToc
-{
-  public:
-    TicToc()
-    {
-        tic();
-    }
 
-    void tic()
-    {
-        start = std::chrono::system_clock::now();
-    }
-
-    double toc()
-    {
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end - start;
-        return elapsed_seconds.count() * 1000;
-    }
-
-  private:
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-};
 
 extern FlightAgxSettings * settings;
 #endif // FLIGHTAGXSETTINGS_H

@@ -12,8 +12,9 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<Pose>("Pose");
     qRegisterMetaType<Pose6DoF>("Pose6DoF");
+    qRegisterMetaType<Eigen::Vector3d>("Eigen::Vector3d");
 
-    qInfo() << "Welcome! plilots";
+    qInfo() << "Welcome! pliots";
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
 
