@@ -169,6 +169,7 @@ signals:
     void on_detect_pose6d(double t, Pose6DoF pose);
     void on_detect_pose6d_raw(double t, Pose6DoF pose);
     void on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v);
+    void on_detect_P(double t, Matrix13d P);
 
 private slots:
     void loop();

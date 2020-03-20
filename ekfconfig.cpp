@@ -44,6 +44,9 @@ EKFConfig::EKFConfig(QWidget *parent) :
     v_splines[0] = new QSplineSeries();
     v_splines[0]->setName("Vx");
 
+    Pt_splines[0] = new QSplineSeries();
+    Pt_splines[0]->setName("Pt");
+
     angle_splines[0] = new QSplineSeries();
     angle_splines[0]->setName("Yaw");
     angle_raw_splines[0] = new QSplineSeries();
@@ -69,6 +72,7 @@ EKFConfig::EKFConfig(QWidget *parent) :
 
     chart->addSeries(T_splines[0]);
     chart->addSeries(v_splines[0]);
+    chart->addSeries(Pt_splines[0]);
 
     chart->setTitle("Yaw");
     chart->createDefaultAxes();
@@ -104,6 +108,9 @@ void EKFConfig::on_detect_pose6d(double t, Pose6DoF pose) {
 
 }
 
+void EKFConfig::on_Pmat(double t, Matrix13d P) {
+    Pt_splines[0]->append(t, P(11, 11)*10000);
+}
 
 void EKFConfig::on_detect_pose6d_raw(double t, Pose6DoF pose) {
     auto eul = pose.first;

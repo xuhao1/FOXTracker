@@ -32,7 +32,8 @@ void HeadPoseDetector::loop() {
     auto pose = pose_raw;
     if (ret.first) {
         TicToc tic;
-        pose = ekf.on_raw_pose_data(t, pose_raw);
+//        if (frame_count % 100 == 1)
+            pose = ekf.on_raw_pose_data(t, pose_raw);
 
         auto Rraw = pose_raw.first;
         auto Traw = pose_raw.second;
@@ -44,6 +45,8 @@ void HeadPoseDetector::loop() {
     t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
     TicToc tic_ekf;
     pose = ekf.predict(t);
+
+    this->on_detect_P(t, ekf.getP());
 
     auto R = pose.first;
     auto T = pose.second;

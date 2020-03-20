@@ -59,6 +59,10 @@ public:
         return w;
     }
 
+    Matrix13d getP() const {
+        return P;
+    }
+
     Pose predict(double t);
     void predict_by_dt(double dt);
 

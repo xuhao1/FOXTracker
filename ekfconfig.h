@@ -32,6 +32,7 @@ class EKFConfig : public QWidget
 
     QtCharts::QSplineSeries * angle_splines[3] = {0};
     QtCharts::QSplineSeries * T_splines[3] = {0};
+    QtCharts::QSplineSeries * Pt_splines[3] = {0};
     QtCharts::QSplineSeries * angle_raw_splines[3] = {0};
     QtCharts::QSplineSeries * w_splines[3] = {0};
     QtCharts::QSplineSeries * v_splines[3] = {0};
@@ -56,6 +57,7 @@ public slots:
     void on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v);
     void on_detect_pose6d(double t, Pose6DoF pose);
     void on_detect_pose6d_raw(double t, Pose6DoF pose);
+    void on_Pmat(double t, Matrix13d P);
 private slots:
     void on_qnoise_slider_valueChanged(int value);
 

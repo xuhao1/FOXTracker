@@ -20,11 +20,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&remapper, &PoseRemapper::send_mapped_posedata, &data_sender, &PoseDataSender::on_pose6d_data);
     connect(&hd, &HeadPoseDetector::on_detect_pose, &remapper, &PoseRemapper::on_pose_data, Qt::QueuedConnection);
     connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
-            &EKFConfig::on_detect_pose6d, Qt::QueuedConnection);
+            &EKFConfig::on_detect_pose6d);
     connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, config_menu->ekf_config_menu(),
-            &EKFConfig::on_detect_pose6d_raw, Qt::QueuedConnection);
+            &EKFConfig::on_detect_pose6d_raw);
     connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
-            &EKFConfig::on_detect_twist, Qt::QueuedConnection);
+            &EKFConfig::on_detect_twist);
+    connect(&hd, &HeadPoseDetector::on_detect_P, config_menu->ekf_config_menu(),
+            &EKFConfig::on_Pmat);
 
     ui->time_disp->setDigitCount(5);
     ui->time_disp->setSmallDecimalPoint(false);

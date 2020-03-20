@@ -8,7 +8,7 @@ typedef std::pair<Eigen::Matrix3d, Eigen::Vector3d> Pose;
 //Yaw Pitch Roll X Y Z
 typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> Pose6DoF;
 typedef std::vector<cv::Point2f> CvPts;
-
+typedef Eigen::Matrix<double, 13, 13> Matrix13d;
 
 static Eigen::Vector3d R2ypr(const Eigen::Matrix3d &R, int degress = true)
 {
