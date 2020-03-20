@@ -34,6 +34,7 @@ class EKFConfig : public QWidget
     QtCharts::QSplineSeries * T_splines[3] = {0};
     QtCharts::QSplineSeries * Pt_splines[3] = {0};
     QtCharts::QSplineSeries * angle_raw_splines[3] = {0};
+    QtCharts::QSplineSeries * Traw_splines[3] = {0};
     QtCharts::QSplineSeries * w_splines[3] = {0};
     QtCharts::QSplineSeries * v_splines[3] = {0};
     double last_update_t = 0;
@@ -66,6 +67,18 @@ private slots:
     void on_wnoise_slider_valueChanged(int value);
 
     void on_vnoise_slider_valueChanged(int value);
+
+    void on_YawCheckBox_stateChanged(int arg1);
+
+    void on_PitchCheckBox_stateChanged(int arg1);
+
+    void on_RollCheckBox_stateChanged(int arg1);
+
+    void on_XCheckBox_stateChanged(int arg1);
+
+    void on_YCheckBox_stateChanged(int arg1);
+
+    void on_ZCheckBox_stateChanged(int arg1);
 
 private:
     Ui::EKFConfig *ui;

@@ -38,9 +38,25 @@ EKFConfig::EKFConfig(QWidget *parent) :
     chart->addAxis(axisX, Qt::AlignBottom);
 
 
-
     T_splines[0] = new QSplineSeries();
     T_splines[0]->setName("X");
+
+    T_splines[1] = new QSplineSeries();
+    T_splines[1]->setName("Y");
+
+    T_splines[2] = new QSplineSeries();
+    T_splines[2]->setName("Z");
+
+
+    Traw_splines[0] = new QSplineSeries();
+    Traw_splines[0]->setName("Xraw");
+
+    Traw_splines[1] = new QSplineSeries();
+    Traw_splines[1]->setName("Yraw");
+
+    Traw_splines[2] = new QSplineSeries();
+    Traw_splines[2]->setName("Zraw");
+
 
     v_splines[0] = new QSplineSeries();
     v_splines[0]->setName("Vx");
@@ -69,54 +85,66 @@ EKFConfig::EKFConfig(QWidget *parent) :
     w_splines[1] = new QSplineSeries();
     w_splines[1]->setName("PitchRate");
 
-    /*
+    angle_splines[2] = new QSplineSeries();
+    angle_splines[2]->setName("Roll");
+    angle_raw_splines[2] = new QSplineSeries();
+    angle_raw_splines[2]->setName("RollRaw");
+    w_splines[2] = new QSplineSeries();
+    w_splines[2]->setName("RollRate");
+
     chart->addSeries(angle_splines[0]);
     chart->addSeries(w_splines[0]);
-    chart->addSeries(angle_raw_splines[0]);*/
-    /*
-    chart->addSeries(angle_splines[1]);
-    chart->addSeries(w_splines[1]);
-    chart->addSeries(angle_raw_splines[1]);*/
+    chart->addSeries(angle_raw_splines[0]);
 
-    chart->addSeries(T_splines[0]);
-    chart->addSeries(v_splines[0]);
-    chart->addSeries(v_splines[1]);
-    chart->addSeries(v_splines[2]);
-
-    chart->addSeries(Pt_splines[0]);
-
-    chart->setTitle("Yaw");
+    chart->setTitle("DataView");
     chart->createDefaultAxes();
     chart->axes(Qt::Vertical).first()->setRange(-30, 30);
     chart->axes(Qt::Horizontal).first()->setRange(0, 30);
     chart->legend()->setAlignment(Qt::AlignBottom);
     chart->setAnimationOptions(QChart::AllAnimations);
     this->ui->chart->setChart(chart);
+
+    ui->YawCheckBox->setCheckState(Qt::Checked);
+
 }
 
 void EKFConfig::on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v) {
-    v = settings->Rcam.transpose()*v;
-    w_splines[0]->append(t, w.z()*180/3.1415);
-    v_splines[0]->append(t, v.x()*100);
-    v_splines[1]->append(t, v.y()*100);
-    v_splines[2]->append(t, v.z()*100);
+    if (this->isVisible()) {
+        v = settings->Rcam.transpose()*v;
+        w = settings->Rcam.transpose()*w;
+        w_splines[0]->append(t, w.z()*180/3.1415);
+        w_splines[0]->append(t, w.y()*180/3.1415);
+        w_splines[0]->append(t, w.x()*180/3.1415);
+
+        v_splines[0]->append(t, v.x()*100);
+        v_splines[1]->append(t, v.y()*100);
+        v_splines[2]->append(t, v.z()*100);
+    }
 }
 
 void EKFConfig::on_detect_pose6d(double t, Pose6DoF pose) {
-    if (!inited) {
-        Tinit = pose.second;
-        inited = true;
-    }
-    auto T = settings->Rcam.transpose()*(pose.second - Tinit);
-    auto eul = pose.first;
-    double yaw = eul.x();
-    angle_splines[0]->append(t, yaw);
-    T_splines[0]->append(t, T.x()*100);
-    angle_splines[1]->append(t, eul.y());
-    //T_splines[1]->append(t, pose.second.y()*100);
-    if (t > 30 && t - last_update_t > 10) {
-        chart->axes(Qt::Horizontal).first()->setRange(t - 20, t + 10);
-        last_update_t = t;
+    if (this->isVisible()) {
+        if (!inited) {
+            Tinit = pose.second;
+            inited = true;
+        }
+        auto T = settings->Rcam.transpose()*(pose.second - Tinit);
+        auto eul = pose.first;
+        double yaw = eul.x();
+
+        angle_splines[0]->append(t, yaw);
+        angle_splines[1]->append(t, eul.y());
+        angle_splines[2]->append(t, eul.z());
+
+        T_splines[0]->append(t, T.x()*100);
+        T_splines[1]->append(t, T.y()*100);
+        T_splines[2]->append(t, T.z()*100);
+
+        //T_splines[1]->append(t, pose.second.y()*100);
+        if (t > 30 && t - last_update_t > 10) {
+            chart->axes(Qt::Horizontal).first()->setRange(t - 20, t + 10);
+            last_update_t = t;
+        }
     }
 
 }
@@ -126,9 +154,24 @@ void EKFConfig::on_Pmat(double t, Matrix13d P) {
 }
 
 void EKFConfig::on_detect_pose6d_raw(double t, Pose6DoF pose) {
-    auto eul = pose.first;
-    double yaw = eul.x();
-    angle_raw_splines[0]->append(t, yaw);
+    if (this->isVisible()) {
+        if (!inited) {
+            Tinit = pose.second;
+            inited = true;
+        }
+        auto T = settings->Rcam.transpose()*(pose.second - Tinit);
+        auto eul = pose.first;
+        double yaw = eul.x();
+
+        angle_raw_splines[0]->append(t, yaw);
+        angle_raw_splines[1]->append(t, eul.y());
+        angle_raw_splines[2]->append(t, eul.z());
+
+        Traw_splines[0]->append(t, T.x()*100);
+        Traw_splines[1]->append(t, T.y()*100);
+        Traw_splines[2]->append(t, T.z()*100);
+    }
+
 }
 void EKFConfig::setQNoise(double cov_q) {
     qDebug() << "Set Q Noise" << cov_q;
@@ -185,4 +228,83 @@ void EKFConfig::on_vnoise_slider_valueChanged(int value)
 
 void EKFConfig::reset() {
 
+}
+
+void EKFConfig::on_YawCheckBox_stateChanged(int arg1)
+{
+    if(arg1) {
+        chart->addSeries(angle_splines[0]);
+        chart->addSeries(w_splines[0]);
+        chart->addSeries(angle_raw_splines[0]);
+    } else {
+        chart->removeSeries(angle_splines[0]);
+        chart->removeSeries(w_splines[0]);
+        chart->removeSeries(angle_raw_splines[0]);
+    }
+}
+
+void EKFConfig::on_PitchCheckBox_stateChanged(int arg1)
+{
+    if(arg1) {
+        chart->addSeries(angle_splines[1]);
+        chart->addSeries(w_splines[1]);
+        chart->addSeries(angle_raw_splines[1]);
+    } else {
+        chart->removeSeries(angle_splines[1]);
+        chart->removeSeries(w_splines[1]);
+        chart->removeSeries(angle_raw_splines[1]);
+    }
+}
+
+void EKFConfig::on_RollCheckBox_stateChanged(int arg1)
+{
+    if(arg1) {
+        chart->addSeries(angle_splines[2]);
+        chart->addSeries(w_splines[2]);
+        chart->addSeries(angle_raw_splines[2]);
+    } else {
+        chart->removeSeries(angle_splines[2]);
+        chart->removeSeries(w_splines[2]);
+        chart->removeSeries(angle_raw_splines[2]);
+    }
+}
+
+void EKFConfig::on_XCheckBox_stateChanged(int arg1)
+{
+    std::cout << "XCheckbox" << arg1 << std::endl;
+    if(arg1) {
+        chart->addSeries(T_splines[0]);
+        chart->addSeries(Traw_splines[0]);
+        chart->addSeries(v_splines[0]);
+    } else {
+        chart->removeSeries(T_splines[0]);
+        chart->removeSeries(Traw_splines[0]);
+        chart->removeSeries(v_splines[0]);
+    }
+}
+
+void EKFConfig::on_YCheckBox_stateChanged(int arg1)
+{
+    if(arg1) {
+        chart->addSeries(T_splines[1]);
+        chart->addSeries(Traw_splines[1]);
+        chart->addSeries(v_splines[1]);
+    } else {
+        chart->removeSeries(T_splines[1]);
+        chart->removeSeries(Traw_splines[1]);
+        chart->removeSeries(v_splines[1]);
+    }
+}
+
+void EKFConfig::on_ZCheckBox_stateChanged(int arg1)
+{
+    if(arg1) {
+        chart->addSeries(T_splines[2]);
+        chart->addSeries(Traw_splines[2]);
+        chart->addSeries(v_splines[2]);
+    } else {
+        chart->removeSeries(T_splines[2]);
+        chart->removeSeries(Traw_splines[2]);
+        chart->removeSeries(v_splines[2]);
+    }
 }
