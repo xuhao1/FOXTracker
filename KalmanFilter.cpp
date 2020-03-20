@@ -5,7 +5,7 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
         T = pose.second;
         w = Eigen::Vector3d::Zero();
         v = Eigen::Vector3d::Zero();
-        P = Eigen::Matrix<double, 13, 13>::Identity()*100;
+        P = Eigen::Matrix<double, 13, 13>::Identity();
 
         t0 = t;
         initialized = true;
@@ -140,7 +140,7 @@ void ExtendKalmanFilter12DOF::update_cov() {
 
    Q.setZero();
    double dt = settings->ekf_predict_dt;
-//   double dt = 1.0;
+//   double dt = 0.1;
 
    Matrix4d covQ = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;
    Matrix3d covW = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
