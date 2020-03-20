@@ -32,29 +32,23 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
 
     //Bug happen on auto on eigen
     Vector7d y = Z - h0();
-//    std::cout << "y[" << y.transpose() <<  "]^T\n H\n" <<  H << std::endl;
-    std::cout << "y[" << y.transpose() <<  "]^T" << std::endl;
+    //std::cout << "y[" << y.transpose() <<  "]^T" << std::endl;
     Eigen::Matrix<double, 7, 7> S = H*P*H.transpose() + R;
     auto K = P*H.transpose()*S.inverse();
-    std::cout << "T0" << T.transpose() << "V0" << v.transpose() << std::endl;
+
+    //std::cout << "T0" << T.transpose() << "\nV0" << v.transpose() << std::endl;
 
     X = X + K*y;
 
-    std::cout << "KY" << (K*y).transpose() << std::endl;
-    std::cout << "T1" << T.transpose() << "V1" << v.transpose() << std::endl;
-    std::cout << "y_after" << (Z - h0()).transpose() << std::endl;
-
-//    std::cout << "W After" << w << std::endl;
+    //std::cout << "y_after" << (Z - h0()).transpose() << std::endl;
 
     P = (Eigen::Matrix<double, 13, 13>::Identity() - K * H )*P;
 
     //std::cout << "Pose Measurement Z[" << Z.transpose();
-    //std::cout << "ZT" << Z.block<3, 1>(4, 0).transpose() << std::endl;
 
     //std::cout << "Residual y[" << y.transpose() << "]^T" << std::endl;
     //    std::cout << "S\n" << S << std::endl;
     //    std::cout << "K\n" << K << std::endl;
-    //    std::cout << "P\n" << P << std::endl;
     //std::cout << "X[" << X.transpose() << "]^T" << std::endl;
     //std::cout << "V[" << v.transpose() << "]^T" << std::endl;
     return get_realtime_pose();
@@ -62,8 +56,6 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
 
 Pose ExtendKalmanFilter12DOF::predict(double t) {
 
-//    std::cout << "Need to predict" << t - this->t_state << std::endl;
-//    std::cout << "Initial T" << T.transpose() << "V" << v.transpose()  << std::endl;
     for (double t1 = this->t_state; t1 < t; t1 += settings->ekf_predict_dt) {
         double dt = settings->ekf_predict_dt;
         if (t - t1 < dt) {
@@ -72,7 +64,6 @@ Pose ExtendKalmanFilter12DOF::predict(double t) {
         this->predict_by_dt(dt);
     }
     this->t_state = t;
-//    std::cout <<   "Final T" << T.transpose() << "V" << v.transpose()  << std::endl;
 
     return get_realtime_pose();
 }
@@ -121,11 +112,11 @@ Eigen::Matrix<double, 13, 13> ExtendKalmanFilter12DOF::Fmat(double dt) {
     Eigen::Matrix<double, 13, 13> F;
     F.setZero();
     F.block<4, 4>(0, 0) = Matrix4d::Identity() + 0.5*Dwq_by_q(w, q)*dt;
-    F.block<4, 3>(7, 0) = 0.5*dt*Dwq_by_w(w, q);
+    F.block<4, 3>(0, 7) = 0.5*dt*Dwq_by_w(w, q);
     F.block<3, 3>(4, 4) = Matrix3d::Identity();
-    F.block<3, 3>(3, 10) = Matrix3d::Identity() * dt;
+    F.block<3, 3>(4, 10) = Matrix3d::Identity() * dt;
     F.block<6, 6>(7, 7) = Matrix<double, 6, 6>::Identity();
-
+    //    std::cout << "F\n" << F << std::endl;
     return F;
 }
 
@@ -140,7 +131,6 @@ void ExtendKalmanFilter12DOF::update_cov() {
 
    Q.setZero();
    double dt = settings->ekf_predict_dt;
-//   double dt = 0.1;
 
    Matrix4d covQ = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;
    Matrix3d covW = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
@@ -162,4 +152,10 @@ void ExtendKalmanFilter12DOF::update_cov() {
    Q.block<3, 3>(10, 4) = covTV;
    Q.block<3, 3>(4, 10) = covTV;
 
+   //   std::cout << "Q\n" << Q << std::endl;
 }
+
+Eigen::Matrix<double, 7, 13> ExtendKalmanFilter12DOF::H0mat() {
+    return Eigen::Matrix<double, 7, 13>::Identity();
+}
+

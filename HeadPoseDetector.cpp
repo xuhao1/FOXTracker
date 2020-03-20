@@ -32,13 +32,12 @@ void HeadPoseDetector::loop() {
     auto pose = pose_raw;
     if (ret.first) {
         TicToc tic;
-//        if (frame_count % 100 == 1)
-        auto Traw = pose.second;
+        auto Traw = pose_raw.second;
         auto Rraw = pose_raw.first;
 
-        pose = ekf.on_raw_pose_data(t, make_pair(Eigen::Matrix3d::Identity(),
-                                                 Eigen::Vector3d(Traw.x(), 0, 0)));
-
+    //        pose = ekf.on_raw_pose_data(t, make_pair(Eigen::Matrix3d::Identity(),
+    //                                                 Eigen::Vector3d(Traw.x(), Traw.y(), Traw.z())));
+        pose = ekf.on_raw_pose_data(t, pose_raw);
         Rraw = Rcam*Rraw*Rface;
         Traw = Rcam*Traw;
         this->on_detect_pose6d_raw(t, make_pair(R2ypr(Rraw), Traw));

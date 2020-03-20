@@ -56,7 +56,7 @@ public:
     }
 
     Eigen::Vector3d get_linear_velocity() const {
-        return w;
+        return v;
     }
 
     Matrix13d getP() const {
@@ -75,9 +75,7 @@ public:
 
     Vector13d f(double dt);
 
-    Eigen::Matrix<double, 7, 13> H0mat() {
-        return Eigen::Matrix<double, 7, 13>::Identity();
-    }
+    Eigen::Matrix<double, 7, 13> H0mat();
 
     Eigen::Matrix<double, 13, 13> Fmat(double dt);
 

@@ -41,8 +41,16 @@ EKFConfig::EKFConfig(QWidget *parent) :
 
     T_splines[0] = new QSplineSeries();
     T_splines[0]->setName("X");
+
     v_splines[0] = new QSplineSeries();
     v_splines[0]->setName("Vx");
+
+    v_splines[1] = new QSplineSeries();
+    v_splines[1]->setName("Vy");
+
+    v_splines[2] = new QSplineSeries();
+    v_splines[2]->setName("Vz");
+
 
     Pt_splines[0] = new QSplineSeries();
     Pt_splines[0]->setName("Pt");
@@ -72,6 +80,9 @@ EKFConfig::EKFConfig(QWidget *parent) :
 
     chart->addSeries(T_splines[0]);
     chart->addSeries(v_splines[0]);
+    chart->addSeries(v_splines[1]);
+    chart->addSeries(v_splines[2]);
+
     chart->addSeries(Pt_splines[0]);
 
     chart->setTitle("Yaw");
@@ -87,6 +98,8 @@ void EKFConfig::on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v) 
     v = settings->Rcam.transpose()*v;
     w_splines[0]->append(t, w.z()*180/3.1415);
     v_splines[0]->append(t, v.x()*100);
+    v_splines[1]->append(t, v.y()*100);
+    v_splines[2]->append(t, v.z()*100);
 }
 
 void EKFConfig::on_detect_pose6d(double t, Pose6DoF pose) {
