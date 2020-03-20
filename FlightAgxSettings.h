@@ -28,8 +28,8 @@ public:
 
     bool use_ft = true;
     bool use_npclient = true;
-    double cov_Q = 0.02;
-    double cov_T = 0.02;
+    double cov_Q = 0.006;
+    double cov_T = 0.01;
 
     double cov_V = 10.0;
     double cov_W = 2.0;

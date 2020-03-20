@@ -35,8 +35,6 @@ void HeadPoseDetector::loop() {
         auto Traw = pose_raw.second;
         auto Rraw = pose_raw.first;
 
-    //        pose = ekf.on_raw_pose_data(t, make_pair(Eigen::Matrix3d::Identity(),
-    //                                                 Eigen::Vector3d(Traw.x(), Traw.y(), Traw.z())));
         pose = ekf.on_raw_pose_data(t, pose_raw);
         Rraw = Rcam*Rraw*Rface;
         Traw = Rcam*Traw;
@@ -46,7 +44,6 @@ void HeadPoseDetector::loop() {
     t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
     TicToc tic_ekf;
     pose = ekf.predict(t);
-    pose = ekf.get_realtime_pose();
     this->on_detect_P(t, ekf.getP());
 
     auto R = pose.first;
