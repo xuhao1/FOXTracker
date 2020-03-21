@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>657</width>
+    <width>736</width>
     <height>486</height>
    </rect>
   </property>
@@ -173,109 +173,52 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>150</y>
+     <y>110</y>
      <width>621</width>
-     <height>331</height>
+     <height>371</height>
     </rect>
    </property>
   </widget>
-  <widget class="QCheckBox" name="YawCheckBox">
+  <widget class="QComboBox" name="comboBox">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>550</x>
      <y>120</y>
-     <width>73</width>
-     <height>18</height>
+     <width>72</width>
+     <height>22</height>
     </rect>
    </property>
-   <property name="text">
-    <string>Yaw</string>
-   </property>
+   <item>
+    <property name="text">
+     <string>Yaw</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Pitch</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Roll</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>X</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Y</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Z</string>
+    </property>
+   </item>
   </widget>
-  <widget class="QCheckBox" name="PitchCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>120</y>
-     <width>73</width>
-     <height>18</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Pitch</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="RollCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>120</y>
-     <width>73</width>
-     <height>18</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Roll</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="XCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>250</x>
-     <y>120</y>
-     <width>73</width>
-     <height>18</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>X</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="YCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>310</x>
-     <y>120</y>
-     <width>73</width>
-     <height>18</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Y</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="ZCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>120</y>
-     <width>73</width>
-     <height>18</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Z</string>
-   </property>
-  </widget>
-  <zorder>YCheckBox</zorder>
-  <zorder>label</zorder>
-  <zorder>label_2</zorder>
-  <zorder>label_4</zorder>
-  <zorder>label_3</zorder>
-  <zorder>QNoise</zorder>
-  <zorder>wnoise_slider</zorder>
-  <zorder>WNoise</zorder>
-  <zorder>VNoise</zorder>
-  <zorder>qnoise_slider</zorder>
-  <zorder>TNoise</zorder>
-  <zorder>tnoise_slider</zorder>
-  <zorder>vnoise_slider</zorder>
-  <zorder>chart</zorder>
-  <zorder>YawCheckBox</zorder>
-  <zorder>PitchCheckBox</zorder>
-  <zorder>RollCheckBox</zorder>
-  <zorder>XCheckBox</zorder>
-  <zorder>ZCheckBox</zorder>
  </widget>
  <customwidgets>
   <customwidget>

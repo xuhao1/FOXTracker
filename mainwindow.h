@@ -8,6 +8,8 @@
 #include <PoseDataSender.h>
 #include "agentxconfig.h"
 #include "poseremapper.h"
+#include <QShortcut>
+#include "uglobalhotkeys.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -43,6 +45,10 @@ private slots:
 
     void on_config_button_clicked();
 
+    void on_center_keyboard_event();
+
+    void handle_global_hotkeys(unsigned int _id);
+
 private:
     QTimer* Timer;
     bool camera_preview_enabled = false;
@@ -53,5 +59,8 @@ private:
     QSystemTrayIcon * m_tray_icon = nullptr;
 
     AgentXConfig * config_menu = nullptr;
+
+    QShortcut * m_globalShortcut;
+    UGlobalHotkeys *hotkeyManager;
 };
 #endif // MAINWINDOW_H

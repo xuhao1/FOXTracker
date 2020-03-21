@@ -18,9 +18,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&remapper, &PoseRemapper::send_mapped_posedata, this, &MainWindow::on_pose6d_data);
     connect(&remapper, &PoseRemapper::send_mapped_posedata, &data_sender, &PoseDataSender::on_pose6d_data);
+
     connect(&hd, &HeadPoseDetector::on_detect_pose, &remapper, &PoseRemapper::on_pose_data, Qt::QueuedConnection);
+
     connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
             &EKFConfig::on_detect_pose6d);
+
     connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, config_menu->ekf_config_menu(),
             &EKFConfig::on_detect_pose6d_raw);
     connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
@@ -36,6 +39,22 @@ MainWindow::MainWindow(QWidget *parent)
     ui->yaw_disp->setDigitCount(3);
     ui->pitch_disp->setDigitCount(3);
     ui->roll_disp->setDigitCount(3);
+
+    hotkeyManager = new UGlobalHotkeys();
+    hotkeyManager->registerHotkey("ctrl+c", 1);
+    hotkeyManager->registerHotkey("ctrl+t", 2);
+
+    connect(hotkeyManager, &UGlobalHotkeys::activated, this, &MainWindow::handle_global_hotkeys);
+
+}
+
+void MainWindow::handle_global_hotkeys(unsigned int _id) {
+    if (_id == 1) {
+        this->on_center_keyboard_event();
+    }
+    if (_id == 2) {
+        this->setWindowFlags(Qt::WindowStaysOnTopHint);
+    }
 }
 
 
@@ -131,7 +150,7 @@ void MainWindow::start_camera_preview() {
     Timer = new QTimer(this);
     settings->enable_preview = true;
     connect(Timer, SIGNAL(timeout()), this, SLOT(DisplayImage()));
-    Timer->start(30);
+    Timer->start(100);
     camera_preview_enabled = true;
 }
 
@@ -160,4 +179,11 @@ void MainWindow::on_gamemode_clicked()
 void MainWindow::on_config_button_clicked()
 {
     config_menu->show();
+}
+
+
+
+void MainWindow::on_center_keyboard_event() {
+    qDebug() << "Ask recenter";
+    remapper.reset_center();
 }

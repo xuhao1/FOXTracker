@@ -15,6 +15,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 INCLUDEPATH += C:\Users\plane\source\opencv\opencv-build-86\install\include
 INCLUDEPATH += C:\Users\plane\source\eigen-3.3.7
 INCLUDEPATH += C:\Users\plane\source\dlib\
+INCLUDEPATH += C:\Users\plane\Develop\UGlobalHotkey
+
 
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
@@ -31,6 +33,9 @@ win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\source\opencv\ope
 
 win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\source\opencv\opencv-build-86\install\x86\vc15\lib \
     -lopencv_core420d -lopencv_highgui420d -lopencv_tracking420d -lopencv_video420d -lopencv_imgproc420d -lopencv_videoio420d -lopencv_calib3d420d
+
+win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\Develop\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release\release\ -lUGlobalHotkey
+win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\Develop\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Debug\debug\ -lUGlobalHotkey
 
 
 SOURCES += \

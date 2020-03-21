@@ -26,8 +26,8 @@ public:
     std::string model = "/assets/model.txt";
     std::string landmark_model = "/assets/shape_predictor_68_face_landmarks.dat";
 
-    bool use_ft = true;
-    bool use_npclient = true;
+    bool use_ft = false;
+    bool use_npclient = false;
     double cov_Q = 0.006;
     double cov_T = 0.01;
 
@@ -35,6 +35,12 @@ public:
     double cov_W = 2.0;
 
     double ekf_predict_dt = 0.01;
+
+    bool use_ekf = true;
+
+    double disp_duration = 30;
+
+    int disp_max_series_size = 1000;
 
     Eigen::Matrix3d Rcam;
     FlightAgxSettings() {

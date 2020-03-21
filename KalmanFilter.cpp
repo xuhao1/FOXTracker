@@ -11,7 +11,7 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
         initialized = true;
 
         std::cout << "Initialized X[" << X.transpose() << "]^T" << std::endl;
-        std::cout << "Initialized P" << P.transpose() << std::endl;
+        //std::cout << "Initialized P" << P.transpose() << std::endl;
         std::cout << "Initialized Q[" << q.coeffs().transpose() << "]T[" << T.transpose() << "]^T" << std::endl;
         return pose;
     }
