@@ -111,26 +111,22 @@ void HeadPoseDetector::run_detect_thread() {
 
            //qDebug() << "Track " << frames.size() << "frames";
            TicToc tic_retrack;
-//           for (auto & frame : frames) {
-//                bool success = tracker->update(frame, roi);
-//                if (!success) {
-//                    success_track = false;
-//                    break;
-//                }
-//           }
-
-           if (frames.size() > 0) {
-               success_track = tracker->update(frames.back(), roi);
+           for (auto & frame : frames) {
+                bool success = tracker->update(frame, roi);
+                if (!success) {
+                    success_track = false;
+                    break;
+                }
            }
-
+           int frame_size = frames.size();
            frames.clear();
            if(!success_track) {
-//               qDebug() << "Tracker failed in detect thread";
+//               qDebug() << "Tracker failed in detect thread queue size" << frame_size;
                frame_pending_detect = false;
                detect_mtx.unlock();
                continue;
            } else {
-               qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms";
+//               qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms  queue size" << frame_size;
            }
 
 
@@ -405,8 +401,8 @@ cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d predict_roi) {
                 det.top() = det.top() + roi.y;
                 det.bottom() = det.bottom() + roi.y;
             }
-            cv::imshow("ROI to detect", frame(roi));
-            cv::waitKey(10);
+//            cv::imshow("ROI to detect", frame(roi));
+//            cv::waitKey(10);
         }
         dlib_mtx.unlock();
 

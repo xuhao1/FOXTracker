@@ -15,7 +15,7 @@ public:
     bool enable_preview = true;
     int camera_id = 0;
     bool enable_multithread_detect = true;
-    int retrack_queue_size = 1;
+    int retrack_queue_size = 10;
     double fps = 30;
     bool send_posedata_udp = true;
     int port = 4242;
