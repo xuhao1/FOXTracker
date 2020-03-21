@@ -353,6 +353,24 @@ color: rgb(240, 241, 250);</string>
      <string>Config</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pause">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>320</y>
+      <width>191</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(49, 143, 197);
+font: 28pt &quot;Source Code Pro&quot;;
+color: rgb(240, 241, 250);</string>
+    </property>
+    <property name="text">
+     <string>PAUSE</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

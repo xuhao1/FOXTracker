@@ -49,6 +49,8 @@ private slots:
 
     void handle_global_hotkeys(unsigned int _id);
 
+    void on_pause_clicked();
+
 private:
     QTimer* Timer;
     bool camera_preview_enabled = false;

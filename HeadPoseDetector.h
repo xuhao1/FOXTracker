@@ -30,7 +30,7 @@ public:
 
     }
 
-    virtual cv::Rect2d detect(cv::Mat frame, cv::Rect2d last_roi);
+    virtual cv::Rect2d detect(cv::Mat frame, cv::Rect2d predict_roi);
 };
 
 class LandmarkDetector {
@@ -76,6 +76,7 @@ class HeadPoseDetector: public QObject {
 
     bool frame_pending_detect = false;
     cv::Mat frame_need_to_detect;
+    cv::Rect2d roi_need_to_detect;
 
     std::thread detect_thread;
 
@@ -101,6 +102,10 @@ class HeadPoseDetector: public QObject {
     cv::Ptr<cv::Tracker> tracker;
 
     cv::Mat preview_image;
+
+    cv::Mat last_clean_frame;
+
+    CvPts last_landmark_pts;
 
     double t0;
 public:
@@ -177,4 +182,6 @@ private slots:
     void stop_slot();
 
 };
+
+void reduceVector(std::vector<cv::Point2f> &v, std::vector<uchar> status);
 #endif // HEADPOSEDETECTOR_H
