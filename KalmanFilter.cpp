@@ -159,3 +159,8 @@ Eigen::Matrix<double, 7, 13> ExtendKalmanFilter12DOF::H0mat() {
     return Eigen::Matrix<double, 7, 13>::Identity();
 }
 
+
+
+void ExtendKalmanFilter12DOF::update_by_feature_pts(double t, std::pair<CvPts, CvPts> pts, std::vector<cv::Point3f> pts3d) {
+
+}

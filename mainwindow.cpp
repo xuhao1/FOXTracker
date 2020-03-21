@@ -150,7 +150,7 @@ void MainWindow::start_camera_preview() {
     Timer = new QTimer(this);
     settings->enable_preview = true;
     connect(Timer, SIGNAL(timeout()), this, SLOT(DisplayImage()));
-    Timer->start(100);
+    Timer->start(30);
     camera_preview_enabled = true;
 }
 

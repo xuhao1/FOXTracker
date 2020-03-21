@@ -18,8 +18,6 @@
 #include <fagx_datatype.h>
 #include <KalmanFilter.h>
 
-extern std::mutex dlib_mtx;
-
 class FaceDetector {
     dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
 public:
@@ -104,10 +102,13 @@ class HeadPoseDetector: public QObject {
     cv::Mat preview_image;
 
     cv::Mat last_clean_frame;
+    std::vector<int> last_ids;
 
     CvPts last_landmark_pts;
 
     double t0;
+    double dt = 0.03;
+    double last_t = 0;
 public:
 
 
@@ -154,7 +155,7 @@ public:
         mainThread.start();
     }
 
-    std::pair<bool, Pose> detect_head_pose(cv::Mat & frame);
+    std::pair<bool, Pose> detect_head_pose(cv::Mat & frame, double t, double dt);
 
     void run_thread();
 
@@ -184,4 +185,5 @@ private slots:
 };
 
 void reduceVector(std::vector<cv::Point2f> &v, std::vector<uchar> status);
+void reduceVector(std::vector<int> &v, std::vector<uchar> status);
 #endif // HEADPOSEDETECTOR_H

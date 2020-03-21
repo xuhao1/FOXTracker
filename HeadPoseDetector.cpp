@@ -24,8 +24,9 @@ void HeadPoseDetector::loop() {
     if( frame.empty() )
         return;
     double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+    dt = t - last_t;
     TicToc tic;
-    auto ret = detect_head_pose(frame);
+    auto ret = detect_head_pose(frame, t, dt);
     if (frame_count % 10 == 0)
         qDebug() << "detect_head_pose cost" << tic.toc();
     auto pose_raw = ret.second;
@@ -66,6 +67,8 @@ void HeadPoseDetector::loop() {
     if (settings->enable_preview) {
         frame.copyTo(preview_image);
     }
+
+    last_t = t;
 }
 
 
@@ -192,7 +195,45 @@ void HeadPoseDetector::reset() {
     start();
 }
 
-std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
+std::pair<CvPts, CvPts> calc_optical_flow(cv::Mat & prev_img, cv::Mat & cur_img, CvPts & prev_pts, CvPts predict_pts, std::vector<int> & ids, double dt = 0.03 ){
+    vector<uchar> status;
+    vector<float> err;
+    TermCriteria criteria = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, 0.01);
+    CvPts cur_pts = predict_pts;
+    CvPts pts_velocity;
+    calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, Size(10,10), 2, criteria, cv::OPTFLOW_USE_INITIAL_FLOW);
+
+    reduceVector(prev_pts, status);
+    reduceVector(cur_pts, status);
+    reduceVector(ids, status);
+
+    vector<uchar> reverse_status;
+    vector<cv::Point2f> reverse_pts = prev_pts;
+    cv::calcOpticalFlowPyrLK(cur_img, prev_img, cur_pts, reverse_pts, reverse_status, err, cv::Size(10, 10), 2, criteria, cv::OPTFLOW_USE_INITIAL_FLOW);
+    for(size_t i = 0; i < reverse_status.size(); i++)
+    {
+       if(reverse_status[i] && cv::norm(prev_pts[i] - reverse_pts[i]) <= 0.5)
+       {
+           reverse_status[i] = 1;
+       }
+       else {
+           reverse_status[i] = 0;
+       }
+    }
+
+    reduceVector(prev_pts, reverse_status);
+    reduceVector(cur_pts, reverse_status);
+    reduceVector(ids, reverse_status);
+
+    for (int i = 0; i < prev_pts.size(); i ++) {
+        auto pt_vel = cur_pts[i] - prev_pts[i];
+        pts_velocity.push_back(pt_vel/dt);
+    }
+
+    return make_pair(cur_pts, pts_velocity);
+}
+
+std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
     TicToc tic;
     Eigen::Matrix3d R;
     Eigen::Vector3d T;
@@ -277,19 +318,20 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
 
     if (last_landmark_pts.size() > 0) {
         // calculate optical flow
-        vector<uchar> status;
-        vector<float> err;
-        TermCriteria criteria = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 10, 0.03);
-        CvPts tracked_pts;
-        calcOpticalFlowPyrLK(last_clean_frame, frame_clean, last_landmark_pts, tracked_pts, status, err, Size(15,15), 2, criteria);
-
-        reduceVector(last_landmark_pts, status);
-        reduceVector(tracked_pts, status);
-
-        for (int i = 0; i < tracked_pts.size(); i++) {
-            cv::arrowedLine(frame, last_landmark_pts[i], tracked_pts[i], cv::Scalar(0, 0, 255), 1, 8, 0, 0.2);
+        TicToc tic;
+        auto ret = calc_optical_flow(last_clean_frame, frame_clean, last_landmark_pts, landmarks, last_ids, dt);
+        auto tracked_pts = ret.first;
+        auto pts_velocity = ret.second;
+        std::vector<cv::Point3f> pts3d;
+        for (auto _id : last_ids) {
+            pts3d.push_back(model_points_68[_id]);
         }
-//        last_landmark_pts = tracked_pts;
+        ekf.update_by_feature_pts(t, ret, pts3d);
+        if (settings->enable_preview) {
+            for (int i = 0; i < tracked_pts.size(); i++) {
+                cv::arrowedLine(frame, last_landmark_pts[i], tracked_pts[i], cv::Scalar(0, 0, 255), 1, 8, 0, 0.2);
+            }
+        }
     }
 
     if (ret.first) {
@@ -309,6 +351,11 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
         last_landmark_pts = landmarks;
 
         last_clean_frame = frame_clean;
+
+        for (int i = 0; i < 68; i++) {
+            last_ids.push_back(i);
+        }
+
         return make_pair(true, make_pair(R, T));
     }
     return make_pair(false, make_pair(R, T));
@@ -347,7 +394,6 @@ inline cv::Rect2d rect2roi(dlib::rectangle ret) {
     return cv::Rect2d(ret.left(), ret.top(), ret.right() - ret.left(), ret.bottom() - ret.top());
 }
 
-std::mutex dlib_mtx;
 
 cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame) {
     int ex_x = predict_roi.width / 3;
@@ -378,12 +424,7 @@ cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame) {
 
 cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d predict_roi) {
     try {
-        if (!dlib_mtx.try_lock()) {
-            return cv::Rect2d(0, 0, 0, 0);
-        } else {
-        }
         if (frame.cols == 0) {
-            dlib_mtx.unlock();
             return cv::Rect2d(0, 0, 0, 0);
         }
         std::vector<dlib::rectangle> dets;
@@ -404,7 +445,6 @@ cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d predict_roi) {
 //            cv::imshow("ROI to detect", frame(roi));
 //            cv::waitKey(10);
         }
-        dlib_mtx.unlock();
 
         if (dets.size() > 0) {
             auto det = dets[0];
@@ -428,7 +468,6 @@ cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d predict_roi) {
 
         return cv::Rect2d(0, 0, 0, 0);
     } catch (...) {
-        dlib_mtx.unlock();
         qDebug() << "Catch dlib detect failed...";
         return cv::Rect2d(0, 0, 0, 0);
     }
@@ -437,6 +476,16 @@ cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d predict_roi) {
 
 
 void reduceVector(vector<cv::Point2f> &v, vector<uchar> status)
+{
+    int j = 0;
+    for (int i = 0; i < int(v.size()); i++)
+        if (status[i])
+            v[j++] = v[i];
+    v.resize(j);
+}
+
+
+void reduceVector(vector<int> &v, vector<uchar> status)
 {
     int j = 0;
     for (int i = 0; i < int(v.size()); i++)

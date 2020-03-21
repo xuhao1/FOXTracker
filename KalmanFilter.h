@@ -79,6 +79,7 @@ public:
 
     Eigen::Matrix<double, 13, 13> Fmat(double dt);
 
+    void update_by_feature_pts(double t, std::pair<CvPts, CvPts> pts, std::vector<cv::Point3f> pts3d);
 };
 
 #endif // KALMANFILTER_H
