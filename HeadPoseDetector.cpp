@@ -327,6 +327,7 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         // calculate optical flow
         TicToc tic;
         auto ret = calc_optical_flow(last_clean_frame, frame_clean, last_landmark_pts, landmarks, last_ids, dt);
+        qDebug() << "Flow cost" << tic.toc();
         auto tracked_pts = ret.first;
         auto pts_velocity = ret.second;
         std::vector<cv::Point3f> pts3d;
