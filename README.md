@@ -32,6 +32,12 @@ Video can be found on https://www.bilibili.com/video/BV1rE411c7Wx/
 ## LICENSE
 MIT. For commerical use, you must let me know.
 
+## Third-party Libraries
+[OpenCV](https://opencv.org/)
+
+[dlib](http://dlib.net/)
+
+[UGlobalHotkey](https://github.com/falceeffect/UGlobalHotkey)
 
 
 ## 介绍
@@ -63,6 +69,14 @@ MIT. For commerical use, you must let me know.
 2. 加入更好的pointtracker前端
 3. 加入曲线编辑功能
 4. 把IMU融合到脸瞄中
+
+
+## 第三方库
+[OpenCV](https://opencv.org/)
+
+[dlib](http://dlib.net/)
+
+[UGlobalHotkey](https://github.com/falceeffect/UGlobalHotkey)
 
 ## 协议
 
