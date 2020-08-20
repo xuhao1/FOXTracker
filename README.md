@@ -39,6 +39,10 @@ MIT. For commerical use, you must let me know.
 
 [UGlobalHotkey](https://github.com/falceeffect/UGlobalHotkey)
 
+[yaml-cpp](https://github.com/jbeder/yaml-cpp)
+
+[Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
+
 
 ## 介绍
 这是一个基于面部识别的头瞄，用于模拟类游戏。和TrackIR或者[opentrack](https://github.com/opentrack/opentrack)（如国内流行的pointtracker）功能类似，但是只需要摄像头。
@@ -77,6 +81,10 @@ MIT. For commerical use, you must let me know.
 [dlib](http://dlib.net/)
 
 [UGlobalHotkey](https://github.com/falceeffect/UGlobalHotkey)
+
+[yaml-cpp](https://github.com/jbeder/yaml-cpp)
+
+[Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 
 ## 协议
 
