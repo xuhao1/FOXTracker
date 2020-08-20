@@ -9,8 +9,8 @@ This program supports control games directly or use opentrack as backend. For no
 
 Just turn your opentrack input to UDP and open this program. Everything works fine.
 
-![c1](./docs/opentrack_config.PNG)
-![c2](./docs/opentrack_config2.PNG)
+![c1](./docs/opentracker_config.PNG)
+![c2](./docs/opentracker_config2.PNG)
 
 Or using dcs.ini inside release folder.
 
@@ -34,8 +34,10 @@ MIT. For commerical use, you must let me know.
 你可以使用本程序直接控制游戏，或者使用opentrack作为后端。考虑到目前曲线功能还没有开发完成，使用opentrack作为后端是一个好主意。
 
 把你的opentrack的input设置为UDP，然后一切都会工作的很美丽。
-![c1](./docs/opentrack_config.PNG)
-![c2](./docs/opentrack_config2.PNG)
+![c1](./docs/opentracker_config.PNG)
+![c2](./docs/opentracker_config2.PNG)
+
+或者使用release中附带的 dcs.ini文件。
 
 ## 未来一年内的开发计划
 加强脸瞄的稳定性
