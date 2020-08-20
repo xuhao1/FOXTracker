@@ -5,7 +5,7 @@ retrack_queue_size: 10
 fps: 30
 send_posedata_udp: true
 port: 4242
-udp_host: "192.168.1.29"
+udp_host: "127.0.0.1"
 
 use_ft: false
 use_npclient: false
