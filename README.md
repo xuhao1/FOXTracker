@@ -30,7 +30,7 @@ Video can be found on https://www.bilibili.com/video/BV1rE411c7Wx/
 4. Will fuse IMU with face tracker.
 
 ## LICENSE
-MIT. For commerical use, you must let me know.
+MIT.
 
 ## Third-party Libraries
 [OpenCV](https://opencv.org/)
@@ -88,4 +88,4 @@ MIT. For commerical use, you must let me know.
 
 ## 协议
 
-MIT协议。但是想商用得先告知作者，否则是侵权行为。
+MIT
