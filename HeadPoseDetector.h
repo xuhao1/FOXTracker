@@ -18,8 +18,6 @@
 #include <fagx_datatype.h>
 #include <KalmanFilter.h>
 
-extern std::mutex dlib_mtx;
-
 class FaceDetector {
     dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
 public:
@@ -30,7 +28,7 @@ public:
 
     }
 
-    virtual cv::Rect2d detect(cv::Mat frame, cv::Rect2d last_roi);
+    virtual cv::Rect2d detect(cv::Mat frame, cv::Rect2d predict_roi);
 };
 
 class LandmarkDetector {
@@ -76,6 +74,7 @@ class HeadPoseDetector: public QObject {
 
     bool frame_pending_detect = false;
     cv::Mat frame_need_to_detect;
+    cv::Rect2d roi_need_to_detect;
 
     std::thread detect_thread;
 
@@ -102,7 +101,14 @@ class HeadPoseDetector: public QObject {
 
     cv::Mat preview_image;
 
+    cv::Mat last_clean_frame;
+    std::vector<int> last_ids;
+
+    CvPts last_landmark_pts;
+
     double t0;
+    double dt = 0.03;
+    double last_t = 0;
 public:
 
 
@@ -149,7 +155,7 @@ public:
         mainThread.start();
     }
 
-    std::pair<bool, Pose> detect_head_pose(cv::Mat & frame);
+    std::pair<bool, Pose> detect_head_pose(cv::Mat & frame, double t, double dt);
 
     void run_thread();
 
@@ -177,4 +183,7 @@ private slots:
     void stop_slot();
 
 };
+
+void reduceVector(std::vector<cv::Point2f> &v, std::vector<uchar> status);
+void reduceVector(std::vector<int> &v, std::vector<uchar> status);
 #endif // HEADPOSEDETECTOR_H

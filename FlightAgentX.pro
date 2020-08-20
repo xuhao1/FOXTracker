@@ -12,11 +12,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-INCLUDEPATH += C:\Users\plane\source\opencv\opencv-build-86\install\include
+INCLUDEPATH += C:\Users\plane\source\opencv-4.4.0\build\install\include
 INCLUDEPATH += C:\Users\plane\source\eigen-3.3.7
 INCLUDEPATH += C:\Users\plane\source\dlib\
 INCLUDEPATH += C:\Users\plane\Develop\UGlobalHotkey
-
+INCLUDEPATH += "C:\Program Files (x86)\YAML_CPP\include"
 
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
@@ -28,14 +28,18 @@ win32:CONFIG(release, debug|release): LIBS += C:\Users\plane\source\dlib\build\d
 #win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\source\opencv\opencv-build-86\install\x86\vc15\lib \
 #    -lopencv_core420 -lopencv_highgui420 -lopencv_tracking420 -lopencv_video420 -lopencv_imgproc420
 
-win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\source\opencv\opencv-build-86\install\x86\vc15\lib \
-    -lopencv_core420 -lopencv_highgui420 -lopencv_tracking420 -lopencv_video420 -lopencv_imgproc420 -lopencv_videoio420 -lopencv_calib3d420
+win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\source\opencv-4.4.0\build\install\x86\vc15\lib \
+    -lopencv_core440 -lopencv_highgui440 -lopencv_tracking440 -lopencv_video440 -lopencv_imgproc440 -lopencv_videoio440 -lopencv_calib3d440
 
-win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\source\opencv\opencv-build-86\install\x86\vc15\lib \
-    -lopencv_core420d -lopencv_highgui420d -lopencv_tracking420d -lopencv_video420d -lopencv_imgproc420d -lopencv_videoio420d -lopencv_calib3d420d
+win32:CONFIG(debug, debug|release): LIBS += -C:\Users\plane\source\opencv-4.4.0\build\install\x86\vc15\lib \
+    -lopencv_core440d -lopencv_highgui440d -lopencv_tracking440d -lopencv_video440d -lopencv_imgproc440d -lopencv_videoio440d -lopencv_calib3d440d
 
-win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\Develop\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release\release\ -lUGlobalHotkey
-win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\Develop\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Debug\debug\ -lUGlobalHotkey
+win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\Develop\FlightAgentX\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release\release\ -lUGlobalHotkey
+win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\Develop\FlightAgentX\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release\debug\ -lUGlobalHotkey
+
+
+win32:CONFIG(release, debug|release): LIBS += -L"C:\\Program Files (x86)\\YAML_CPP\\lib" -lyaml-cpp
+win32:CONFIG(debug, debug|release): LIBS += -L"C:\\Program Files (x86)\\YAML_CPP\\lib" -lyaml-cppd
 
 
 SOURCES += \

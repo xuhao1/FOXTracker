@@ -71,3 +71,5 @@ Thumbs.db
 *.dll
 *.exe
 
+build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release/
+Release/assets/

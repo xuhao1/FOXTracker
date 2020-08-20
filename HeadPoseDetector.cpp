@@ -24,8 +24,9 @@ void HeadPoseDetector::loop() {
     if( frame.empty() )
         return;
     double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+    dt = t - last_t;
     TicToc tic;
-    auto ret = detect_head_pose(frame);
+    auto ret = detect_head_pose(frame, t, dt);
     if (frame_count % 10 == 0)
         qDebug() << "detect_head_pose cost" << tic.toc();
     auto pose_raw = ret.second;
@@ -66,6 +67,8 @@ void HeadPoseDetector::loop() {
     if (settings->enable_preview) {
         frame.copyTo(preview_image);
     }
+
+    last_t = t;
 }
 
 
@@ -89,8 +92,9 @@ void HeadPoseDetector::run_detect_thread() {
            detect_frame_mtx.lock();
            cv::Mat _frame = frame_need_to_detect.clone();
            detect_frame_mtx.unlock();
-           cv::Rect2d roi = fd->detect(_frame, last_roi);
-           //qDebug() << "Detect cost" << tic.toc() << "ms";
+//           cv::Rect2d roi = fd->detect(_frame, last_roi);
+           cv::Rect2d roi = fd->detect(_frame, roi_need_to_detect);
+           qDebug() << "Frontal face detector cost" << tic.toc() << "ms";
            //Track to now image
 
            if (roi.width < 1 && roi.height < 1) {
@@ -110,26 +114,22 @@ void HeadPoseDetector::run_detect_thread() {
 
            //qDebug() << "Track " << frames.size() << "frames";
            TicToc tic_retrack;
-//           for (auto & frame : frames) {
-//                bool success = tracker->update(frame, roi);
-//                if (!success) {
-//                    success_track = false;
-//                    break;
-//                }
-//           }
-
-           if (frames.size() > 0) {
-               success_track = tracker->update(frames.back(), roi);
+           for (auto & frame : frames) {
+                bool success = tracker->update(frame, roi);
+                if (!success) {
+                    success_track = false;
+                    break;
+                }
            }
-
+           int frame_size = frames.size();
            frames.clear();
            if(!success_track) {
-//               qDebug() << "Tracker failed in detect thread";
+//               qDebug() << "Tracker failed in detect thread queue size" << frame_size;
                frame_pending_detect = false;
                detect_mtx.unlock();
                continue;
            } else {
-//               qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms";
+//               qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms  queue size" << frame_size;
            }
 
 
@@ -178,6 +178,7 @@ void HeadPoseDetector::run_thread() {
 void HeadPoseDetector::stop_slot() {
     if (is_running) {
         qDebug() << "Stoooop...";
+        last_landmark_pts.clear();
         is_running = false;
         detect_thread.join();
         main_loop_timer->stop();
@@ -194,13 +195,58 @@ void HeadPoseDetector::reset() {
     start();
 }
 
-std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
+std::pair<CvPts, CvPts> calc_optical_flow(cv::Mat & prev_img, cv::Mat & cur_img, CvPts & prev_pts, CvPts predict_pts, std::vector<int> & ids, double dt = 0.03 ){
+    vector<uchar> status;
+    vector<float> err;
+    TermCriteria criteria = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, 0.01);
+    CvPts cur_pts = predict_pts;
+    CvPts pts_velocity;
+
+    if (prev_pts.size() == predict_pts.size()) {
+        calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, Size(10,10), 2, criteria, cv::OPTFLOW_USE_INITIAL_FLOW);
+    } else {
+        calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, Size(10,10), 2, criteria);
+
+    }
+
+    reduceVector(prev_pts, status);
+    reduceVector(cur_pts, status);
+    reduceVector(ids, status);
+
+    vector<uchar> reverse_status;
+    vector<cv::Point2f> reverse_pts = prev_pts;
+    cv::calcOpticalFlowPyrLK(cur_img, prev_img, cur_pts, reverse_pts, reverse_status, err, cv::Size(10, 10), 2, criteria, cv::OPTFLOW_USE_INITIAL_FLOW);
+    for(size_t i = 0; i < reverse_status.size(); i++)
+    {
+       if(reverse_status[i] && cv::norm(prev_pts[i] - reverse_pts[i]) <= 0.5)
+       {
+           reverse_status[i] = 1;
+       }
+       else {
+           reverse_status[i] = 0;
+       }
+    }
+
+    reduceVector(prev_pts, reverse_status);
+    reduceVector(cur_pts, reverse_status);
+    reduceVector(ids, reverse_status);
+
+    for (int i = 0; i < prev_pts.size(); i ++) {
+        auto pt_vel = cur_pts[i] - prev_pts[i];
+        pts_velocity.push_back(pt_vel/dt);
+    }
+
+    return make_pair(cur_pts, pts_velocity);
+}
+
+std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
     TicToc tic;
     Eigen::Matrix3d R;
     Eigen::Vector3d T;
 
     cv::Rect2d roi;
     frame_count ++;
+    auto frame_clean = frame.clone();
     if (first_solve_pose) {
         roi = fd->detect(frame, last_roi);
         if (roi.width > 1.0 && roi.height > 1.0) {
@@ -217,6 +263,7 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
                 frame_pending_detect = true;
                 detect_frame_mtx.lock();
                 frame.copyTo(frame_need_to_detect);
+                roi_need_to_detect = last_roi;
                 detect_frame_mtx.unlock();
 
                 new_add_pending_detect = true;
@@ -241,7 +288,7 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
         if (!success && !frame_pending_detect) {
             qDebug() << "Will detect in main thread";
             TicToc tic;
-            roi = fd->detect(frame, last_roi);
+            roi = fd->detect(frame, cv::Rect2d());
             qDebug()<< "Tracker failed; Turn to detection" << tic.toc() << "ms";
 
             if (roi.width > 1.0 && roi.height > 1.0) {
@@ -256,6 +303,9 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
         if (success) {
             last_roi = roi;
             detect_mtx.unlock();
+            if (new_add_pending_detect) {
+                roi_need_to_detect  = roi;
+            }
         } else {
             //std::cout << "Will unlock" << std::endl;
             detect_mtx.unlock();
@@ -270,7 +320,47 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
 
     TicToc tic1;
     CvPts landmarks = lmd->detect(frame, roi);
+
+    double distance_sum = 0;
+        
+    if (last_landmark_pts.size() > 0) {
+        // calculate optical flow
+        TicToc tic;
+        auto ret = calc_optical_flow(last_clean_frame, frame_clean, last_landmark_pts, landmarks, last_ids, dt);
+        qDebug() << "Flow cost" << tic.toc();
+        auto tracked_pts = ret.first;
+        auto pts_velocity = ret.second;
+        std::vector<cv::Point3f> pts3d;
+        for (auto _id : last_ids) {
+            pts3d.push_back(model_points_68[_id]);
+        }
+
+        ekf.update_by_feature_pts(t, ret, pts3d);
+
+        if (settings->enable_preview) {
+            for (int i = 0; i < tracked_pts.size(); i++) {
+                cv::arrowedLine(frame, last_landmark_pts[i], tracked_pts[i], cv::Scalar(255, 0, 0), 1, 8, 0, 0.2);
+                cv::circle(frame, tracked_pts[i], 1, cv::Scalar(0, 0, 0), -1);
+            }
+        }
+        /*
+        for (int i = 0; i < last_ids.size(); i++) {
+            int _id = last_ids[i];
+            double dis = cv::norm(tracked_pts[i] - landmarks[_id]);
+            if (settings->enable_preview) {
+                if (dis < 3.0) {
+                    cv::arrowedLine(frame, landmarks[_id], tracked_pts[i], cv::Scalar(0, 255, 255), 1, 8, 0, 0.2);
+                } else {
+                    cv::arrowedLine(frame, landmarks[_id], tracked_pts[i], cv::Scalar(0, 0, 255), 1, 8, 0, 0.2);
+                }
+            }
+            distance_sum += dis;
+        }*/
+    }
+
+
     auto ret = this->solve_face_pose(landmarks, frame);
+
 
     if (ret.first) {
         auto pose = ret.second;
@@ -285,6 +375,14 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame) {
                 cv::circle(frame, pt, 1, cv::Scalar(0, 255, 0), -1);
             }
         }
+
+        last_clean_frame = frame_clean;
+        last_landmark_pts = landmarks;
+        last_ids.clear();
+        for (int i = 0; i < 68; i++) {
+            last_ids.push_back(i);
+        }
+
 
         return make_pair(true, make_pair(R, T));
     }
@@ -324,30 +422,66 @@ inline cv::Rect2d rect2roi(dlib::rectangle ret) {
     return cv::Rect2d(ret.left(), ret.top(), ret.right() - ret.left(), ret.bottom() - ret.top());
 }
 
-std::mutex dlib_mtx;
 
-cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d last_roi) {
+cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame) {
+    int ex_x = predict_roi.width / 3;
+    int ex_y = predict_roi.height / 3;
+
+    int x = predict_roi.x - ex_x;
+    int y = predict_roi.y - ex_y;
+
+    if (x < 0) {
+        x = 0;
+    }
+    if(y < 0) {
+        y = 0;
+    }
+
+    int w = predict_roi.width + ex_x*2;
+    int h = predict_roi.height + ex_y*2;
+    if(x + w > _frame.cols) {
+        w = _frame.cols - x - 1;
+    }
+
+    if(y + h > _frame.rows) {
+        h = _frame.rows - y - 1;
+    }
+
+    return cv::Rect(x, y, w, h);
+}
+
+cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d predict_roi) {
     try {
-        if (!dlib_mtx.try_lock()) {
-            return cv::Rect2d(0, 0, 0, 0);
-        } else {
-        }
         if (frame.cols == 0) {
-            dlib_mtx.unlock();
             return cv::Rect2d(0, 0, 0, 0);
         }
-        dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
-        std::vector<dlib::rectangle> dets = detector(dlib_img);
-        dlib_mtx.unlock();
+        std::vector<dlib::rectangle> dets;
+        if(predict_roi.area() < 1) {
+            //No previous Boundingbox
+            dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
+            dets = detector(dlib_img);
+        } else {
+            auto roi = crop_roi(predict_roi, frame);
+            dlib::cv_image<dlib::rgb_pixel> dlib_img(frame(roi));
+            dets = detector(dlib_img);
+            for (auto & det: dets) {
+                det.left() = det.left() + roi.x;
+                det.right() = det.right() + roi.x;
+                det.top() = det.top() + roi.y;
+                det.bottom() = det.bottom() + roi.y;
+            }
+//            cv::imshow("ROI to detect", frame(roi));
+//            cv::waitKey(10);
+        }
 
         if (dets.size() > 0) {
             auto det = dets[0];
-            double overlap = (rect2roi(det) & last_roi).area();
+            double overlap = (rect2roi(det) & predict_roi).area();
             double aera = (det.right()-det.left())*(det.bottom()-det.top());
 
             for (auto _box : dets) {
                 double _aera = (_box.right()-_box.left())*(_box.bottom()-_box.top());
-                double _overlap = (rect2roi(_box) & last_roi).area();
+                double _overlap = (rect2roi(_box) & predict_roi).area();
 //                qDebug() << "Overlap" << _overlap;
                 if (_aera > aera && (_overlap > overlap || overlap <= 0)) {
                     det = _box;
@@ -362,9 +496,28 @@ cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d last_roi) {
 
         return cv::Rect2d(0, 0, 0, 0);
     } catch (...) {
-        dlib_mtx.unlock();
         qDebug() << "Catch dlib detect failed...";
         return cv::Rect2d(0, 0, 0, 0);
     }
 
+}
+
+
+void reduceVector(vector<cv::Point2f> &v, vector<uchar> status)
+{
+    int j = 0;
+    for (int i = 0; i < int(v.size()); i++)
+        if (status[i])
+            v[j++] = v[i];
+    v.resize(j);
+}
+
+
+void reduceVector(vector<int> &v, vector<uchar> status)
+{
+    int j = 0;
+    for (int i = 0; i < int(v.size()); i++)
+        if (status[i])
+            v[j++] = v[i];
+    v.resize(j);
 }

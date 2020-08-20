@@ -41,8 +41,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->roll_disp->setDigitCount(3);
 
     hotkeyManager = new UGlobalHotkeys();
-    hotkeyManager->registerHotkey("ctrl+c", 1);
-    hotkeyManager->registerHotkey("ctrl+t", 2);
+    hotkeyManager->registerHotkey("alt+c", 1);
+    hotkeyManager->registerHotkey("alt+t", 2);
 
     connect(hotkeyManager, &UGlobalHotkeys::activated, this, &MainWindow::handle_global_hotkeys);
 
@@ -150,7 +150,7 @@ void MainWindow::start_camera_preview() {
     Timer = new QTimer(this);
     settings->enable_preview = true;
     connect(Timer, SIGNAL(timeout()), this, SLOT(DisplayImage()));
-    Timer->start(100);
+    Timer->start(30);
     camera_preview_enabled = true;
 }
 
@@ -186,4 +186,14 @@ void MainWindow::on_config_button_clicked()
 void MainWindow::on_center_keyboard_event() {
     qDebug() << "Ask recenter";
     remapper.reset_center();
+}
+
+
+void MainWindow::on_pause_clicked()
+{
+    if(Timer->isActive()) {
+        Timer->stop();
+    } else {
+        Timer->start();
+    }
 }

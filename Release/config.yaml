@@ -1,0 +1,20 @@
+detect_duration: 3
+camera_id: 0
+enable_multithread_detect: true
+retrack_queue_size: 10
+fps: 30
+send_posedata_udp: true
+port: 4242
+udp_host: "192.168.1.29"
+
+use_ft: false
+use_npclient: false
+cov_Q: 0.001
+cov_T: 0.01
+cov_V: 10.0
+cov_W: 2.0
+ekf_predict_dt: 0.01
+use_ekf: true
+disp_duration: 30
+disp_max_series_size: 1000
+method: 1
