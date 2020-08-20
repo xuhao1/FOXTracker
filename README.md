@@ -15,7 +15,7 @@ Download FlightAgentX at [Release](https://github.com/xuhao1/FlightAgentX/releas
 
 This program supports control games directly or use opentrack as backend. For now the spline functions is in develop, so use opentrack is a good idea. If you are using this program individually, please modify the config.yaml.
 
-Just turn your opentrack input to UDP and open this program. Everything works fine.
+Just turn your opentrack input to UDP and open FlightAgentX.exe. Everything works fine.
 
 ![c1](./docs/opentracker_config.PNG)
 ![c2](./docs/opentracker_config2.PNG)
@@ -59,7 +59,7 @@ MIT. For commerical use, you must let me know.
 
 你可以使用本程序直接控制游戏，或者使用opentrack作为后端。考虑到目前曲线功能还没有开发完成，使用opentrack作为后端是一个好主意。如果你想独立使用本程序，请修改config.yaml。
 
-把你的opentrack的input设置为UDP，然后一切都会工作的很美丽。
+把你的opentrack的input设置为UDP，打开FlightAgentX.exe，然后一切都会工作的很美丽。
 ![c1](./docs/opentracker_config.PNG)
 ![c2](./docs/opentracker_config2.PNG)
 
