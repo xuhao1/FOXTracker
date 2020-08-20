@@ -2,6 +2,9 @@
 ![screenshot](./docs/screenshot.png)
 This is a faical head tracker for gaming usage. Perform as TrackIR or [opentrack](https://github.com/opentrack/opentrack) (pointtracker) as track camera control.
 
+Download at [Release](https://github.com/xuhao1/FlightAgentX/releases)
+
+opentrack is recommend to install now.
 ## Usage
 
 This program is still under develop, not stable yet!
@@ -29,6 +32,8 @@ MIT. For commerical use, you must let me know.
 
 ## 介绍
 这是一个基于面部识别的头瞄，用于模拟类游戏。和TrackIR或者[opentrack](https://github.com/opentrack/opentrack)（如国内流行的pointtracker）功能类似，但是只需要摄像头。
+在 [Release](https://github.com/xuhao1/FlightAgentX/releases) 下载
+请事先安装opentrack
 
 ## 使用
 首先这玩意还没有成熟，问题很多。体验党慎用。
