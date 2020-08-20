@@ -8,6 +8,7 @@
 using namespace cv;
 using namespace std;
 
+
 void HeadPoseTrackDetectWorker::run() {
     is_running = true;
 //    hd->run_detect_thrad();
@@ -323,40 +324,40 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
 
     double distance_sum = 0;
         
-    if (last_landmark_pts.size() > 0) {
-        // calculate optical flow
-        TicToc tic;
-        auto ret = calc_optical_flow(last_clean_frame, frame_clean, last_landmark_pts, landmarks, last_ids, dt);
-        qDebug() << "Flow cost" << tic.toc();
-        auto tracked_pts = ret.first;
-        auto pts_velocity = ret.second;
-        std::vector<cv::Point3f> pts3d;
-        for (auto _id : last_ids) {
-            pts3d.push_back(model_points_68[_id]);
-        }
+//    if (last_landmark_pts.size() > 0) {
+//        // calculate optical flow
+//        TicToc tic;
+//        auto ret = calc_optical_flow(last_clean_frame, frame_clean, last_landmark_pts, landmarks, last_ids, dt);
+//        qDebug() << "Flow cost" << tic.toc();
+//        auto tracked_pts = ret.first;
+//        auto pts_velocity = ret.second;
+//        std::vector<cv::Point3f> pts3d;
+//        for (auto _id : last_ids) {
+//            pts3d.push_back(model_points_68[_id]);
+//        }
 
-        ekf.update_by_feature_pts(t, ret, pts3d);
+//        ekf.update_by_feature_pts(t, ret, pts3d);
 
-        if (settings->enable_preview) {
-            for (int i = 0; i < tracked_pts.size(); i++) {
-                cv::arrowedLine(frame, last_landmark_pts[i], tracked_pts[i], cv::Scalar(255, 0, 0), 1, 8, 0, 0.2);
-                cv::circle(frame, tracked_pts[i], 1, cv::Scalar(0, 0, 0), -1);
-            }
-        }
-        /*
-        for (int i = 0; i < last_ids.size(); i++) {
-            int _id = last_ids[i];
-            double dis = cv::norm(tracked_pts[i] - landmarks[_id]);
-            if (settings->enable_preview) {
-                if (dis < 3.0) {
-                    cv::arrowedLine(frame, landmarks[_id], tracked_pts[i], cv::Scalar(0, 255, 255), 1, 8, 0, 0.2);
-                } else {
-                    cv::arrowedLine(frame, landmarks[_id], tracked_pts[i], cv::Scalar(0, 0, 255), 1, 8, 0, 0.2);
-                }
-            }
-            distance_sum += dis;
-        }*/
-    }
+//        if (settings->enable_preview) {
+//            for (int i = 0; i < tracked_pts.size(); i++) {
+//                cv::arrowedLine(frame, last_landmark_pts[i], tracked_pts[i], cv::Scalar(255, 0, 0), 1, 8, 0, 0.2);
+//                cv::circle(frame, tracked_pts[i], 1, cv::Scalar(0, 0, 0), -1);
+//            }
+//        }
+//        /*
+//        for (int i = 0; i < last_ids.size(); i++) {
+//            int _id = last_ids[i];
+//            double dis = cv::norm(tracked_pts[i] - landmarks[_id]);
+//            if (settings->enable_preview) {
+//                if (dis < 3.0) {
+//                    cv::arrowedLine(frame, landmarks[_id], tracked_pts[i], cv::Scalar(0, 255, 255), 1, 8, 0, 0.2);
+//                } else {
+//                    cv::arrowedLine(frame, landmarks[_id], tracked_pts[i], cv::Scalar(0, 0, 255), 1, 8, 0, 0.2);
+//                }
+//            }
+//            distance_sum += dis;
+//        }*/
+//    }
 
 
     auto ret = this->solve_face_pose(landmarks, frame);

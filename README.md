@@ -1,4 +1,5 @@
 # Introduction
+![screenshot](./docs/screenshot.png)
 This is a faical head tracker for gaming usage. Perform as TrackIR or [opentrack](https://github.com/opentrack/opentrack) (pointtracker) as track camera control.
 
 ## Usage

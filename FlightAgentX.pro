@@ -17,6 +17,7 @@ INCLUDEPATH += C:\Users\plane\source\eigen-3.3.7
 INCLUDEPATH += C:\Users\plane\source\dlib\
 INCLUDEPATH += C:\Users\plane\Develop\UGlobalHotkey
 INCLUDEPATH += "C:\Program Files (x86)\YAML_CPP\include"
+INCLUDEPATH += ./inc/
 
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
@@ -43,33 +44,33 @@ win32:CONFIG(debug, debug|release): LIBS += -L"C:\\Program Files (x86)\\YAML_CPP
 
 
 SOURCES += \
-    HeadPoseDetector.cpp \
-    KalmanFilter.cpp \
-    PoseDataSender.cpp \
-    agentxconfig.cpp \
-    ekfconfig.cpp \
-    main.cpp \
-    mainwindow.cpp \
+    src/HeadPoseDetector.cpp \
+    src/KalmanFilter.cpp \
+    src/PoseDataSender.cpp \
+    src/agentxconfig.cpp \
+    src/ekfconfig.cpp \
+    src/main.cpp \
+    src/mainwindow.cpp \
     freetrack/ftnoir_protocol_ft.cpp \
     freetrack/freetrackclient/freetrackclient.c \
     freetrack/shm.cpp \
     freetrack/csv/csv.cpp \
-    poseremapper.cpp
+    src/poseremapper.cpp
 
 HEADERS += \
-    FlightAgxSettings.h \
-    HeadPoseDetector.h \
-    KalmanFilter.h \
-    PoseDataSender.h \
-    agentxconfig.h \
-    ekfconfig.h \
-    fagx_datatype.h \
-    mainwindow.h \
+    inc/FlightAgxSettings.h \
+    inc/HeadPoseDetector.h \
+    inc/KalmanFilter.h \
+    inc/PoseDataSender.h \
+    inc/agentxconfig.h \
+    inc/ekfconfig.h \
+    inc/fagx_datatype.h \
+    inc/mainwindow.h \
     freetrack/ftnoir_protocol_ft.h \
     freetrack/freetrackclient/fttypes.h \
     freetrack/shm.h \
     freetrack/csv/csv.h \
-    poseremapper.h
+    inc/poseremapper.h
 
 FORMS += \
     agentxconfig.ui \

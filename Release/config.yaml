@@ -12,7 +12,7 @@ use_npclient: false
 cov_Q: 0.001
 cov_T: 0.01
 cov_V: 10.0
-cov_W: 2.0
+cov_W: 1.0
 ekf_predict_dt: 0.01
 use_ekf: true
 disp_duration: 30
