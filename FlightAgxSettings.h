@@ -6,6 +6,7 @@
 #include <chrono>
 #include <QApplication>
 #include <QDebug>
+#include <yaml-cpp/yaml.h>
 
 class FlightAgxSettings {
 public:
@@ -21,11 +22,12 @@ public:
     int port = 4242;
     std::string udp_host = "127.0.0.1";
 
+    std::string cfg_name = "/config.yaml";
     std::string trackir_path = "/assets/TrackIR.exe";
     std::string support_games_csv = "/assets/facetracknoir supported games.csv";
     std::string model = "/assets/model.txt";
     std::string landmark_model = "/assets/shape_predictor_68_face_landmarks.dat";
-
+    std::string app_path;
     bool use_ft = false;
     bool use_npclient = false;
     double cov_Q = 0.006;
@@ -36,7 +38,7 @@ public:
 
     double ekf_predict_dt = 0.01;
 
-    bool use_ekf = true;
+    bool use_ekf = false;
 
     double disp_duration = 30;
 
@@ -54,17 +56,22 @@ public:
         D_eigen = D_eigen.transpose();
         cv::eigen2cv(D_eigen, D);
 
-        std::string app_path = QCoreApplication::applicationDirPath().toStdString();
+        app_path = QCoreApplication::applicationDirPath().toStdString();
         trackir_path = app_path + trackir_path;
         support_games_csv = app_path + support_games_csv;
         model = app_path + model;
         landmark_model = app_path + landmark_model;
+        cfg_name = app_path + "/config.yaml";
         qDebug() << "App run at" << app_path.c_str();
 
         Rcam << 0, 0, -1,
                 -1, 0, 0,
                  0, 1, 0;
+
+        load_from_config_yaml();
     }
+
+    void load_from_config_yaml();
 };
 
 
