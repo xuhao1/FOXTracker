@@ -5,6 +5,7 @@ This is a faical head tracker for gaming usage. Perform as TrackIR or [opentrack
 
 ## Prerequst
 A normal web camera.
+
 [opentrack](https://github.com/opentrack/opentrack) is recommend to install now.
 ## Usage
 This program is still under develop, not stable yet. **I will never collect any user data from your camera.**
@@ -37,7 +38,8 @@ MIT. For commerical use, you must let me know.
 这是一个基于面部识别的头瞄，用于模拟类游戏。和TrackIR或者[opentrack](https://github.com/opentrack/opentrack)（如国内流行的pointtracker）功能类似，但是只需要摄像头。
 
 ## 预先要求
-一个正常的web摄像头
+一个正常的web摄像头。
+
 请事先安装[opentrack](https://github.com/opentrack/opentrack)
 
 ## 使用
