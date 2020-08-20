@@ -14,6 +14,7 @@ Just turn your opentrack input to UDP and open this program. Everything works fi
 
 Or using dcs.ini inside release folder.
 
+Video can be found on https://www.bilibili.com/video/BV1rE411c7Wx/
 ## Future Plan (Maybe in a year)
 Try to reinforce the robust of the tracker.
 Will add a better pointtracker frontend.
@@ -38,6 +39,8 @@ MIT. For commerical use, you must let me know.
 ![c2](./docs/opentracker_config2.PNG)
 
 或者使用release中附带的 dcs.ini文件。
+
+视频见b站 https://www.bilibili.com/video/BV1rE411c7Wx/
 
 ## 未来一年内的开发计划
 加强脸瞄的稳定性
