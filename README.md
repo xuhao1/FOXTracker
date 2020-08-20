@@ -4,15 +4,15 @@ This is a faical head tracker for gaming usage. Perform as TrackIR or [opentrack
 
 
 ## Prerequst
-A normal web camera
-
+A normal web camera.
+[opentrack](https://github.com/opentrack/opentrack) is recommend to install now.
 ## Usage
 This program is still under develop, not stable yet. **I will never collect any user data from your camera.**
 
-Download at [Release](https://github.com/xuhao1/FlightAgentX/releases)
-opentrack is recommend to install now.
+Download FlightAgentX at [Release](https://github.com/xuhao1/FlightAgentX/releases)
 
-This program supports control games directly or use opentrack as backend. For now the spline functions is in develop, so use opentrack is a good idea.
+
+This program supports control games directly or use opentrack as backend. For now the spline functions is in develop, so use opentrack is a good idea. If you are using this program individually, please modify the config.yaml.
 
 Just turn your opentrack input to UDP and open this program. Everything works fine.
 
@@ -38,14 +38,14 @@ MIT. For commerical use, you must let me know.
 
 ## 预先要求
 一个正常的web摄像头
+请事先安装[opentrack](https://github.com/opentrack/opentrack)
 
 ## 使用
 首先这玩意还没有成熟，问题很多。体验党慎用。**作者永远不会从你的摄像头里收集任何用户数据。**
 
-在 [Release](https://github.com/xuhao1/FlightAgentX/releases) 下载
-请事先安装opentrack
+在 [Release](https://github.com/xuhao1/FlightAgentX/releases) 下载FlightAgentX
 
-你可以使用本程序直接控制游戏，或者使用opentrack作为后端。考虑到目前曲线功能还没有开发完成，使用opentrack作为后端是一个好主意。
+你可以使用本程序直接控制游戏，或者使用opentrack作为后端。考虑到目前曲线功能还没有开发完成，使用opentrack作为后端是一个好主意。如果你想独立使用本程序，请修改config.yaml。
 
 把你的opentrack的input设置为UDP，然后一切都会工作的很美丽。
 ![c1](./docs/opentracker_config.PNG)
