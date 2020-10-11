@@ -1,19 +1,18 @@
 # Introduction
 ![screenshot](./docs/screenshot.png)
-This is a faical head tracker for gaming usage. Perform as TrackIR or [opentrack](https://github.com/opentrack/opentrack) (pointtracker) as track camera control.
-
+FlightAgentX is a facial head tracker for gaming usage. Perform as TrackIR or [Opentrack](https://github.com/opentrack/opentrack) (pointtracker) as track camera controller for Flight Simulation Games like DCS.
 
 ## Prerequst
 A normal web camera.
 
 [opentrack](https://github.com/opentrack/opentrack) is recommend to install now.
 ## Usage
-This program is still under develop, not stable yet. **I will never collect any user data from your camera.**
+This program is still under development, not stable yet. **I will never collect any user data from your camera.**
 
 Download FlightAgentX at [Release](https://github.com/xuhao1/FlightAgentX/releases)
 
 
-This program supports control games directly or use opentrack as backend. For now the spline functions is in develop, so use opentrack is a good idea. If you are using this program individually, please modify the config.yaml.
+This program supports control games directly or uses Opentrack as backend. For now, the spline function is in development, so use Opentrack is a good idea. If you are using this program individually, please modify the config.yaml.
 
 Just turn your opentrack input to UDP and open FlightAgentX.exe. Everything works fine.
 
