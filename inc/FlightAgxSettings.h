@@ -28,6 +28,9 @@ public:
     std::string model = "/assets/model.txt";
     std::string landmark_model = "/assets/shape_predictor_68_face_landmarks.dat";
     std::string fsanet_model = "/assets/fsanet_capsule.onnx";
+    std::string protoPath ="/assets/face_detector/deploy.prototxt";
+    std::string modelPath = "/assets/face_detector/res10_300x300_ssd_iter_140000.caffemodel";
+
     std::string app_path;
     bool use_ft = false;
     bool use_npclient = false;
@@ -46,6 +49,8 @@ public:
     double disp_duration = 30;
 
     int disp_max_series_size = 1000;
+
+    double SSDThreshold = 0.5;
 
     //0 Use Head
     //1 Use Aruco
@@ -71,6 +76,9 @@ public:
         landmark_model = app_path + landmark_model;
         fsanet_model = app_path + fsanet_model;
         cfg_name = app_path + "/config.yaml";
+        protoPath = app_path + protoPath;
+        modelPath = app_path + modelPath;
+
         qDebug() << "App run at" << app_path.c_str();
 
         Rcam << 0, 0, -1,

@@ -1,13 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>icon.png</file>
-        <file>assets/freetrackclient.dll</file>
-        <file>assets/freetrackclient64.dll</file>
-        <file>assets/NPClient.dll</file>
-        <file>assets/NPClient64.dll</file>
-        <file>assets/TrackIR.exe</file>
-        <file>assets/facetracknoir supported games.csv</file>
-        <file>assets/fsanet_capsule.onnx</file>
     </qresource>
     <qresource prefix="/freetrack"/>
 </RCC>

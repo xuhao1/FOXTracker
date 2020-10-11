@@ -22,15 +22,18 @@
 
 class FaceDetector {
     dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
+    cv::dnn::Net head_detector;
 public:
     FaceDetector() {
-
+        printf("Path %s", settings->protoPath.c_str());
+        head_detector = cv::dnn::readNetFromCaffe(settings->protoPath, settings->modelPath);
     }
     virtual ~FaceDetector() {
 
     }
 
-    virtual cv::Rect2d detect(cv::Mat frame, cv::Rect2d predict_roi);
+    virtual cv::Rect2d detect(const cv::Mat & frame, cv::Rect2d predict_roi);
+    virtual std::vector<cv::Rect2d> detect_objs(const cv::Mat & frame);
 };
 
 
@@ -119,6 +122,8 @@ class HeadPoseDetector: public QObject {
 
     cv::Ptr<cv::aruco::Dictionary> dictionary;
 
+    std::vector<cv::Point3f> landmarks3D_ARMarker;
+
 
     FSANet fsanet;
 
@@ -170,6 +175,12 @@ public:
         if (settings->detect_method == 1) {
             dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
         }
+
+        auto size = settings->size;
+        landmarks3D_ARMarker.push_back(cv::Point3f(size/2, size/2, 0));
+        landmarks3D_ARMarker.push_back(cv::Point3f(-size/2, size/2, 0));
+        landmarks3D_ARMarker.push_back(cv::Point3f(-size/2, -size/2, 0));
+        landmarks3D_ARMarker.push_back(cv::Point3f(size/2, -size/2, 0));
     }
 
     std::pair<bool, Pose> detect_head_pose(cv::Mat & frame, double t, double dt);

@@ -8,7 +8,8 @@
 
 using namespace cv;
 using namespace std;
-cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame);
+cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame, double rate = 0.6);
+Eigen::Vector3d eul_by_crop(double x, double y);
 
 void HeadPoseTrackDetectWorker::run() {
     is_running = true;
@@ -48,7 +49,6 @@ void HeadPoseDetector::loop() {
 
         Traw = Rcam*Traw;
         auto ypr = R2ypr(Rraw);
-        qDebug() << "Yaw" << ypr.x() << "Pitch"<< ypr.y() << "Roll" << ypr.z();
         this->on_detect_pose6d_raw(t, make_pair(R2ypr(Rraw), Traw));
 
         inited = true;
@@ -104,7 +104,6 @@ void HeadPoseDetector::run_detect_thread() {
            detect_frame_mtx.lock();
            cv::Mat _frame = frame_need_to_detect.clone();
            detect_frame_mtx.unlock();
-//           cv::Rect2d roi = fd->detect(_frame, last_roi);
            cv::Rect2d roi = fd->detect(_frame, roi_need_to_detect);
            qDebug() << "Frontal face detector cost" << tic.toc() << "ms";
            //Track to now image
@@ -118,14 +117,16 @@ void HeadPoseDetector::run_detect_thread() {
            }
 
 
+//           cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            detect_mtx.lock();
 
            tracker->init(_frame, roi);
            bool success_track = true;
 
-           //qDebug() << "Track " << frames.size() << "frames";
+           qDebug() << "Track " << frames.size() << "frames";
            TicToc tic_retrack;
+
            for (auto & frame : frames) {
                 bool success = tracker->update(frame, roi);
                 if (!success) {
@@ -207,49 +208,6 @@ void HeadPoseDetector::reset() {
     start();
 }
 
-std::pair<CvPts, CvPts> calc_optical_flow(cv::Mat & prev_img, cv::Mat & cur_img, CvPts & prev_pts, CvPts predict_pts, std::vector<int> & ids, double dt = 0.03 ){
-    vector<uchar> status;
-    vector<float> err;
-    TermCriteria criteria = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, 0.01);
-    CvPts cur_pts = predict_pts;
-    CvPts pts_velocity;
-
-    if (prev_pts.size() == predict_pts.size()) {
-        calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, Size(10,10), 2, criteria, cv::OPTFLOW_USE_INITIAL_FLOW);
-    } else {
-        calcOpticalFlowPyrLK(prev_img, cur_img, prev_pts, cur_pts, status, err, Size(10,10), 2, criteria);
-
-    }
-
-    reduceVector(prev_pts, status);
-    reduceVector(cur_pts, status);
-    reduceVector(ids, status);
-
-    vector<uchar> reverse_status;
-    vector<cv::Point2f> reverse_pts = prev_pts;
-    cv::calcOpticalFlowPyrLK(cur_img, prev_img, cur_pts, reverse_pts, reverse_status, err, cv::Size(10, 10), 2, criteria, cv::OPTFLOW_USE_INITIAL_FLOW);
-    for(size_t i = 0; i < reverse_status.size(); i++)
-    {
-       if(reverse_status[i] && cv::norm(prev_pts[i] - reverse_pts[i]) <= 0.5)
-       {
-           reverse_status[i] = 1;
-       }
-       else {
-           reverse_status[i] = 0;
-       }
-    }
-
-    reduceVector(prev_pts, reverse_status);
-    reduceVector(cur_pts, reverse_status);
-    reduceVector(ids, reverse_status);
-
-    for (int i = 0; i < prev_pts.size(); i ++) {
-        auto pt_vel = cur_pts[i] - prev_pts[i];
-        pts_velocity.push_back(pt_vel/dt);
-    }
-
-    return make_pair(cur_pts, pts_velocity);
-}
 
 std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
     TicToc tic;
@@ -259,6 +217,7 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
     std::vector<cv::Point3f> landmarks_3d;
     cv::Mat frame_clean;
     cv::Rect2d roi;
+    cv::Rect2d fsa_roi;
 
     Eigen::Vector3d fsa_ypr;
 
@@ -274,15 +233,9 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         //Use id zero only now
         if (corners.size() > 0 ) {
             landmarks = corners[0];
-
             cv::aruco::drawDetectedMarkers(frame, corners, ids);
-
             double size = 90;
-
-            landmarks_3d.push_back(cv::Point3f(size/2, size/2, 0));
-            landmarks_3d.push_back(cv::Point3f(-size/2, size/2, 0));
-            landmarks_3d.push_back(cv::Point3f(-size/2, -size/2, 0));
-            landmarks_3d.push_back(cv::Point3f(size/2, -size/2, 0));
+            landmarks_3d = landmarks3D_ARMarker;
         }
 
     } else {
@@ -324,8 +277,6 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
             TicToc tic;
 
             bool success = tracker->update(frame, roi);
-            //qDebug()<< "Using tracker" << tic.toc() << "ms status" << success;
-
             if (!success && !frame_pending_detect) {
                 qDebug() << "Will detect in main thread";
                 TicToc tic;
@@ -360,14 +311,16 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         }
 
         //Use FSA To Detect Rotation
-        auto detroi = crop_roi(roi, frame);
-        if (detroi.area() > 10*10) {
-            fsa_ypr = fsanet.inference(frame(detroi));
+        fsa_roi = crop_roi(roi, frame);
+        TicToc fsa;
+        if (fsa_roi.area() > 10*10) {
+            fsa_ypr = fsanet.inference(frame(fsa_roi))
+                    - eul_by_crop(fsa_roi.x + fsa_roi.width/2, fsa_roi.y + fsa_roi.height/2);
         }
+        double dt_fsa = fsa.toc();
         TicToc tic1;
         landmarks = lmd->detect(frame, roi);
-        qDebug() << "Landmark detector cost " << tic1.toc();
-        double distance_sum = 0;
+        qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
         landmarks_3d = model_points_68;
     }
 
@@ -379,7 +332,6 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
 
     if (ret.first) {
         auto pose = ret.second;
-        char rot[100] = {0};
         T = pose.second;
         R = pose.first;
 
@@ -393,6 +345,8 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         if (settings->enable_preview) {
             cv::rectangle(frame, cv::Point2d(roi.x, roi.y),
                 cv::Point2d(roi.x + roi.width, roi.y + roi.height), cv::Scalar(255, 0, 0), 2);
+            cv::rectangle(frame, cv::Point2d(fsa_roi.x, fsa_roi.y),
+                cv::Point2d(fsa_roi.x + fsa_roi.width, fsa_roi.y + fsa_roi.height), cv::Scalar(255, 255, 255), 2);
             for (auto pt: landmarks) {
                 cv::circle(frame, pt, 1, cv::Scalar(0, 255, 0), -1);
             }
@@ -462,10 +416,20 @@ inline cv::Rect2d rect2roi(dlib::rectangle ret) {
     return cv::Rect2d(ret.left(), ret.top(), ret.right() - ret.left(), ret.bottom() - ret.top());
 }
 
+Eigen::Vector3d eul_by_crop(double x, double y) {
+    std::vector<cv::Point2f> pts{cv::Point2f(x, y)};
+    std::vector<cv::Point2f> unpts;
+    cv::undistortPoints(pts, unpts, settings->K, settings->D);
+//    qDebug() << "UNPTS [" <<  unpts[0].x << "," << unpts[0].y;
 
-cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame) {
-    int ex_x = predict_roi.width*0.6;
-    int ex_y = predict_roi.height*0.6;
+    double yaw = atan2(unpts[0].x, 1);
+    double pitch = atan2(unpts[0].y, 1 / cos(yaw));
+    return -Eigen::Vector3d(yaw, pitch, 0);
+}
+
+cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame, double rate) {
+    int ex_x = predict_roi.width*rate;
+    int ex_y = predict_roi.height*rate;
 
     int x = predict_roi.x - ex_x;
     int y = predict_roi.y - ex_y;
@@ -490,53 +454,91 @@ cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame) {
     return cv::Rect(x, y, w, h);
 }
 
-cv::Rect2d FaceDetector::detect(cv::Mat frame, cv::Rect2d predict_roi) {
-    try {
+std::vector<cv::Rect2d> FaceDetector::detect_objs(const cv::Mat & frame) {
+    std::vector<cv::Rect2d> ret;
+    if (settings->use_fsa) {
+        cv::Mat _img;
+        cv::resize(frame, _img, cv::Size(300, 300));
+        auto blob = cv::dnn::blobFromImage(_img, 1.0, cv::Size(300, 300), cv::Scalar(104.0, 177.0, 123.0));
+        head_detector.setInput(blob);
+        auto detection = head_detector.forward();
+
+        Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
+
+        for (int i = 0; i < detectionMat.rows; i++)
+        {
+            float confidence = detectionMat.at<float>(i, 2);
+            if (confidence > settings->SSDThreshold) {
+                   int idx = static_cast<int>(detectionMat.at<float>(i, 1));
+                   int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frame.cols);
+                   int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frame.rows);
+                   int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
+                   int yRightTop = static_cast<int>(detectionMat.at<float>(i, 6) * frame.rows);
+
+                   Rect object((int)xLeftBottom, (int)yLeftBottom,
+                               (int)(xRightTop - xLeftBottom),
+                               (int)(yRightTop - yLeftBottom));
+                   ret.push_back(object);
+            }
+        }
+    } else {
+
+        dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
+        std::vector<dlib::rectangle> dets = detector(dlib_img);
+        for (auto _det : dets) {
+            ret.push_back(rect2roi(_det));
+        }
+    }
+
+    return ret;
+}
+
+cv::Rect2d FaceDetector::detect(const cv::Mat & frame, cv::Rect2d predict_roi) {
+    try
+    {
         if (frame.cols == 0) {
             return cv::Rect2d(0, 0, 0, 0);
         }
-        std::vector<dlib::rectangle> dets;
+
+        std::vector<cv::Rect2d> dets;
         if(predict_roi.area() < 1) {
             //No previous Boundingbox
-            dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
-            dets = detector(dlib_img);
+            dets = detect_objs(frame);
         } else {
-            auto roi = crop_roi(predict_roi, frame);
-            dlib::cv_image<dlib::rgb_pixel> dlib_img(frame(roi));
-            dets = detector(dlib_img);
-            for (auto & det: dets) {
-                det.left() = det.left() + roi.x;
-                det.right() = det.right() + roi.x;
-                det.top() = det.top() + roi.y;
-                det.bottom() = det.bottom() + roi.y;
+            auto roi = crop_roi(predict_roi, frame, 0.6);
+            if (settings->use_fsa) {
+                roi = cv::Rect2d(0, 0, 640, 480);
             }
-//            cv::imshow("ROI to detect", frame(roi));
-//            cv::waitKey(10);
+
+            dets = detect_objs(frame(roi));
+            for (auto & det: dets) {
+                det.x = det.x + roi.x;
+                det.y = det.y + roi.y;
+            }
         }
 
         if (dets.size() > 0) {
             auto det = dets[0];
-            double overlap = (rect2roi(det) & predict_roi).area();
-            double aera = (det.right()-det.left())*(det.bottom()-det.top());
+            double overlap = (det & predict_roi).area();
+            double area = det.area();
 
             for (auto _box : dets) {
-                double _aera = (_box.right()-_box.left())*(_box.bottom()-_box.top());
-                double _overlap = (rect2roi(_box) & predict_roi).area();
+                double _aera = _box.area();
+                double _overlap = (_box & predict_roi).area();
 //                qDebug() << "Overlap" << _overlap;
-                if (_aera > aera && (_overlap > overlap || overlap <= 0)) {
+                if (_aera > area && (_overlap > overlap || overlap <= 0)) {
                     det = _box;
                     overlap = _overlap;
                 }
             }
-            //qDebug() << "Finish Detecting face...";
 
-            return rect2roi(det);
+            return det;
         }
-        //qDebug() << "Failed detecting face...";
 
         return cv::Rect2d(0, 0, 0, 0);
-    } catch (...) {
-        qDebug() << "Catch dlib detect failed...";
+    }
+    catch (...) {
+        qDebug() << "Face Detection failed...";
         return cv::Rect2d(0, 0, 0, 0);
     }
 

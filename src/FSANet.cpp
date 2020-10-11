@@ -43,11 +43,7 @@ Eigen::Vector3d FSANet::inference(const cv::Mat &image) {
     auto output_tensors = session->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
     float* floatarr = output_tensors.front().GetTensorMutableData<float>();
     //Yaw Pitch Roll
-//    printf("FSA T %fms YPR %f %f %f\n", t.toc(), -floatarr[0], floatarr[1], floatarr[2]);
-    qDebug() << "FSA T" << t.toc() << "Y " << -floatarr[0] << "P" << floatarr[1] << "R" << floatarr[2];
-
-    cv::imshow("FSA Image", image);
-    cv::waitKey(10);
+    //qDebug() << "FSA T" << t.toc() << "Y " << -floatarr[0] << "P" << floatarr[1] << "R" << floatarr[2];
 
     return Eigen::Vector3d(floatarr[0], floatarr[1], floatarr[2])*3.1415926/180;
 }
