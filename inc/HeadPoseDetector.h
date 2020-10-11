@@ -18,6 +18,7 @@
 #include <fagx_datatype.h>
 #include <KalmanFilter.h>
 #include <opencv2/aruco.hpp>
+#include <inc/FSANet.h>
 
 class FaceDetector {
     dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
@@ -31,6 +32,9 @@ public:
 
     virtual cv::Rect2d detect(cv::Mat frame, cv::Rect2d predict_roi);
 };
+
+
+
 
 class LandmarkDetector {
     dlib::shape_predictor predictor;
@@ -114,6 +118,10 @@ class HeadPoseDetector: public QObject {
     bool inited = false;
 
     cv::Ptr<cv::aruco::Dictionary> dictionary;
+
+
+    FSANet fsanet;
+
 public:
 
 

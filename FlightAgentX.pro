@@ -18,7 +18,7 @@ INCLUDEPATH += C:\Users\plane\source\dlib\
 INCLUDEPATH += C:\Users\plane\Develop\UGlobalHotkey
 INCLUDEPATH += "C:\Program Files (x86)\YAML_CPP\include"
 INCLUDEPATH += ./inc/
-
+INCLUDEPATH += C:\Users\plane\source\onnxruntime-win-x86-1.5.1\include
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
 
@@ -42,8 +42,10 @@ win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\Develop\FlightAge
 win32:CONFIG(release, debug|release): LIBS += -L"C:\\Program Files (x86)\\YAML_CPP\\lib" -lyaml-cpp
 win32:CONFIG(debug, debug|release): LIBS += -L"C:\\Program Files (x86)\\YAML_CPP\\lib" -lyaml-cppd
 
+win32:CONFIG(release, debug|release): LIBS += -L"C:\\Users\\plane\\source\\onnxruntime-win-x86-1.5.1\\lib" -lonnxruntime
 
 SOURCES += \
+    src/FSANet.cpp \
     src/HeadPoseDetector.cpp \
     src/KalmanFilter.cpp \
     src/PoseDataSender.cpp \
@@ -58,6 +60,7 @@ SOURCES += \
     src/poseremapper.cpp
 
 HEADERS += \
+    inc/FSANet.h \
     inc/FlightAgxSettings.h \
     inc/HeadPoseDetector.h \
     inc/KalmanFilter.h \

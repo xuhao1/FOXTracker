@@ -27,6 +27,7 @@ public:
     std::string support_games_csv = "/assets/facetracknoir supported games.csv";
     std::string model = "/assets/model.txt";
     std::string landmark_model = "/assets/shape_predictor_68_face_landmarks.dat";
+    std::string fsanet_model = "/assets/fsanet_capsule.onnx";
     std::string app_path;
     bool use_ft = false;
     bool use_npclient = false;
@@ -39,6 +40,8 @@ public:
     double ekf_predict_dt = 0.01;
 
     bool use_ekf = false;
+
+    bool use_fsa = true;
 
     double disp_duration = 30;
 
@@ -66,6 +69,7 @@ public:
         support_games_csv = app_path + support_games_csv;
         model = app_path + model;
         landmark_model = app_path + landmark_model;
+        fsanet_model = app_path + fsanet_model;
         cfg_name = app_path + "/config.yaml";
         qDebug() << "App run at" << app_path.c_str();
 

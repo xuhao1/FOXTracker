@@ -8,7 +8,7 @@
 
 using namespace cv;
 using namespace std;
-
+cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame);
 
 void HeadPoseTrackDetectWorker::run() {
     is_running = true;
@@ -41,10 +41,14 @@ void HeadPoseDetector::loop() {
             pose = pose_raw;
         }
 
-        Rraw = Rcam*Rraw*Rface;
+        //Use FSA Rotation
+        if (!settings->use_fsa) {
+            Rraw = Rcam*Rraw*Rface;
+        }
+
         Traw = Rcam*Traw;
         auto ypr = R2ypr(Rraw);
-//        qDebug() << "Yaw" << ypr.x()*57.3 << rpy.y
+        qDebug() << "Yaw" << ypr.x() << "Pitch"<< ypr.y() << "Roll" << ypr.z();
         this->on_detect_pose6d_raw(t, make_pair(R2ypr(Rraw), Traw));
 
         inited = true;
@@ -60,7 +64,9 @@ void HeadPoseDetector::loop() {
 
     auto R = pose.first;
     auto T = pose.second;
-    R = Rcam*R*Rface;
+    if (!settings->use_fsa) {
+        R = Rcam*R*Rface;
+    }
     T = Rcam*T;
 
     //This pose is in world frame
@@ -253,7 +259,9 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
     std::vector<cv::Point3f> landmarks_3d;
     cv::Mat frame_clean;
     cv::Rect2d roi;
-//    qDebug() << "Detect Method" << settings->detect_method;
+
+    Eigen::Vector3d fsa_ypr;
+
     if (settings->detect_method == 1) {
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f> > corners;
@@ -351,6 +359,11 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
             return make_pair(false, make_pair(R, T));
         }
 
+        //Use FSA To Detect Rotation
+        auto detroi = crop_roi(roi, frame);
+        if (detroi.area() > 10*10) {
+            fsa_ypr = fsanet.inference(frame(detroi));
+        }
         TicToc tic1;
         landmarks = lmd->detect(frame, roi);
         qDebug() << "Landmark detector cost " << tic1.toc();
@@ -369,6 +382,13 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         char rot[100] = {0};
         T = pose.second;
         R = pose.first;
+
+        //Use FSA YPR Here
+        if (settings->use_fsa) {
+            R = Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
+                * Eigen::AngleAxisd(fsa_ypr(1), Eigen::Vector3d::UnitY())
+                * Eigen::AngleAxisd(fsa_ypr(2), Eigen::Vector3d::UnitX());
+        }
 
         if (settings->enable_preview) {
             cv::rectangle(frame, cv::Point2d(roi.x, roi.y),
@@ -444,8 +464,8 @@ inline cv::Rect2d rect2roi(dlib::rectangle ret) {
 
 
 cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame) {
-    int ex_x = predict_roi.width / 3;
-    int ex_y = predict_roi.height / 3;
+    int ex_x = predict_roi.width*0.6;
+    int ex_y = predict_roi.height*0.6;
 
     int x = predict_roi.x - ex_x;
     int y = predict_roi.y - ex_y;
