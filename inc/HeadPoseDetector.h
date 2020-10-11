@@ -17,6 +17,7 @@
 #include <opencv2/tracking/tracker.hpp>
 #include <fagx_datatype.h>
 #include <KalmanFilter.h>
+#include <opencv2/aruco.hpp>
 
 class FaceDetector {
     dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
@@ -82,7 +83,7 @@ class HeadPoseDetector: public QObject {
     QTimer * main_loop_timer;
     QThread detectThread;
 
-    std::pair<bool, Pose> solve_face_pose(CvPts landmarks, cv::Mat & frame);
+    std::pair<bool, Pose> solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame);
 
     cv::Mat rvec_init, tvec_init;
     std::vector<cv::Point3f> model_points_68;
@@ -109,6 +110,10 @@ class HeadPoseDetector: public QObject {
     double t0;
     double dt = 0.03;
     double last_t = 0;
+
+    bool inited = false;
+
+    cv::Ptr<cv::aruco::Dictionary> dictionary;
 public:
 
 
@@ -153,6 +158,10 @@ public:
                 this, SLOT(stop_slot()));
         this->moveToThread(&mainThread);
         mainThread.start();
+
+        if (settings->detect_method == 1) {
+            dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
+        }
     }
 
     std::pair<bool, Pose> detect_head_pose(cv::Mat & frame, double t, double dt);

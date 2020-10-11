@@ -16,7 +16,7 @@ void PoseRemapper::on_pose_data(double t, Pose pose) {
     }
 
     auto R = initial_pose.first.transpose() * pose.first;
-    Eigen::Vector3d T = initial_pose.first.transpose()*(pose.second - initial_pose.second);
+    Eigen::Vector3d T = pose.second - initial_pose.second;
 
 //    auto R = pose.first;
     T = Rcam.transpose() * T;

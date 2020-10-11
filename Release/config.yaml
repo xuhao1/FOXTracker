@@ -17,4 +17,4 @@ ekf_predict_dt: 0.01
 use_ekf: true
 disp_duration: 30
 disp_max_series_size: 1000
-method: 1
+detect_method: 1

@@ -30,13 +30,13 @@ win32:CONFIG(release, debug|release): LIBS += C:\Users\plane\source\dlib\build\d
 #    -lopencv_core420 -lopencv_highgui420 -lopencv_tracking420 -lopencv_video420 -lopencv_imgproc420
 
 win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\source\opencv-4.4.0\build\install\x86\vc15\lib \
-    -lopencv_core440 -lopencv_highgui440 -lopencv_tracking440 -lopencv_video440 -lopencv_imgproc440 -lopencv_videoio440 -lopencv_calib3d440
+    -lopencv_core440 -lopencv_highgui440 -lopencv_tracking440 -lopencv_video440 -lopencv_imgproc440 -lopencv_videoio440 -lopencv_calib3d440 -lopencv_aruco440
 
-win32:CONFIG(debug, debug|release): LIBS += -C:\Users\plane\source\opencv-4.4.0\build\install\x86\vc15\lib \
-    -lopencv_core440d -lopencv_highgui440d -lopencv_tracking440d -lopencv_video440d -lopencv_imgproc440d -lopencv_videoio440d -lopencv_calib3d440d
+win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\source\opencv-4.4.0\build\install\x86\vc15\lib \
+    -lopencv_core440d -lopencv_highgui440d -lopencv_tracking440d -lopencv_video440d -lopencv_imgproc440d -lopencv_videoio440d -lopencv_calib3d440d -lopencv_aruco440d
 
 win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\Develop\FlightAgentX\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release\release\ -lUGlobalHotkey
-win32:CONFIG(debug, debug|release): LIBS += -LC:\Users\plane\Develop\FlightAgentX\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release\debug\ -lUGlobalHotkey
+win32:CONFIG(release, debug|release): LIBS += -LC:\Users\plane\Develop\FlightAgentX\build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Debug\debug\ -lUGlobalHotkey
 
 
 win32:CONFIG(release, debug|release): LIBS += -L"C:\\Program Files (x86)\\YAML_CPP\\lib" -lyaml-cpp

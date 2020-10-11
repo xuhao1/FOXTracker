@@ -44,6 +44,11 @@ public:
 
     int disp_max_series_size = 1000;
 
+    //0 Use Head
+    //1 Use Aruco
+    int detect_method = 1;
+    double size = 0.09;
+
     Eigen::Matrix3d Rcam;
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;

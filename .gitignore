@@ -73,3 +73,8 @@ Thumbs.db
 
 build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Release/
 Release/assets/
+build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Debug/debug/moc_predefs.h
+Release/
+Release.7z
+build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Debug/
+
