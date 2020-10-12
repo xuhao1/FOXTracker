@@ -2,7 +2,7 @@
 #define POSEDATASENDER_H
 #include "HeadPoseDetector.h"
 #include "freetrack/ftnoir_protocol_ft.h"
-
+#include <QtNetwork>
 class PoseDataSender: public QObject {
     QUdpSocket * udpsock = nullptr;
     freetrack * ft = nullptr;

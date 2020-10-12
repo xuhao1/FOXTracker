@@ -46,6 +46,7 @@ win32:CONFIG(release, debug|release): LIBS += -L"C:\\Users\\plane\\source\\onnxr
 
 SOURCES += \
     src/FSANet.cpp \
+    src/FaceDetectors.cpp \
     src/HeadPoseDetector.cpp \
     src/KalmanFilter.cpp \
     src/PoseDataSender.cpp \
@@ -61,6 +62,7 @@ SOURCES += \
 
 HEADERS += \
     inc/FSANet.h \
+    inc/FaceDetectors.h \
     inc/FlightAgxSettings.h \
     inc/HeadPoseDetector.h \
     inc/KalmanFilter.h \
