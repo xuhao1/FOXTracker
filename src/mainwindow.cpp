@@ -40,12 +40,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pitch_disp->setDigitCount(3);
     ui->roll_disp->setDigitCount(3);
 
+    ui->fps_disp->setDigitCount(3);
+
     hotkeyManager = new UGlobalHotkeys();
     hotkeyManager->registerHotkey("alt+c", 1);
     hotkeyManager->registerHotkey("alt+t", 2);
 
     connect(hotkeyManager, &UGlobalHotkeys::activated, this, &MainWindow::handle_global_hotkeys);
 
+    //this->setWindowFlags(Qt::WindowStaysOnTopHint);
 }
 
 void MainWindow::handle_global_hotkeys(unsigned int _id) {
@@ -117,6 +120,12 @@ void MainWindow::DisplayImage() {
 
 void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
 //    qDebug() << "Pose 6D!!!" << t;
+    static double t_last = 0;
+    static double fps = 0;
+    if (t_last != 0) {
+        fps = 1/(t - t_last)*0.1 + fps*0.9;
+    }
+    t_last = t;
     ui->time_disp->display(t);
     ui->x_disp->display(_pose.second.x() * 100);
     ui->y_disp->display(_pose.second.y() * 100);
@@ -125,6 +134,8 @@ void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
     ui->yaw_disp->display(_pose.first.x());
     ui->pitch_disp->display(_pose.first.y());
     ui->roll_disp->display(_pose.first.z());
+
+    ui->fps_disp->display(fps);
 }
 
 void MainWindow::on_startButton_clicked()

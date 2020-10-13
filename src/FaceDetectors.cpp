@@ -23,10 +23,13 @@ CvPts LandmarkDetector::detect(cv::Mat frame, cv::Rect roi) {
 std::vector<cv::Rect2d> FaceDetector::detect_objs(const cv::Mat & frame) {
     std::vector<cv::Rect2d> ret;
     if (settings->use_fsa) {
-        qDebug() << "Using ssd detector";
         cv::Mat _img;
-        cv::resize(frame, _img, cv::Size(300, 300));
-        auto blob = cv::dnn::blobFromImage(_img, 1.0, cv::Size(300, 300), cv::Scalar(104.0, 177.0, 123.0));
+        int _size_dnn = frame.cols*0.5;
+
+//        qDebug() << "Size dnn" << _size_dnn;
+
+        cv::resize(frame, _img, cv::Size(_size_dnn, _size_dnn));
+        auto blob = cv::dnn::blobFromImage(_img, 1.0, cv::Size(_size_dnn, _size_dnn), cv::Scalar(104.0, 177.0, 123.0));
         head_detector.setInput(blob);
         auto detection = head_detector.forward();
 
@@ -72,10 +75,21 @@ cv::Rect2d FaceDetector::detect(const cv::Mat & frame, cv::Rect2d predict_roi) {
             //No previous Boundingbox
             dets = detect_objs(frame);
         } else {
-            auto roi = crop_roi(predict_roi, frame, 0.6);
+            auto roi = crop_roi(predict_roi, frame, 0.4);
             if (settings->use_fsa) {
-                roi = cv::Rect2d(0, 0, 640, 480);
+//                roi = cv::Rect2d(0, 0, 640, 480);
             }
+
+            if (last_roi.area() < 10) {
+                last_roi = roi;
+            }
+
+            double rate = 0.9;
+            roi.x = last_roi.x * rate +roi.x*(1-rate);
+            roi.y = last_roi.y * rate +roi.y*(1-rate);
+            roi.width = last_roi.width * rate + roi.width*(1-rate);
+            roi.height = last_roi.height * rate + roi.height*(1-rate);
+            last_roi = roi;
 
             dets = detect_objs(frame(roi));
             for (auto & det: dets) {

@@ -5,7 +5,7 @@
 #include <exception>
 #include <opencv2/aruco.hpp>
 #include <QTimer>
-
+#include <QMessageBox>
 using namespace cv;
 using namespace std;
 
@@ -22,12 +22,20 @@ void HeadPoseTrackDetectWorker::stop() {
 }
 
 void HeadPoseDetector::loop() {
+    TicToc tic_cap;
     Mat frame;
     cap >> frame;
-    if( frame.empty() )
+
+    qDebug() << "Capture takes" << tic_cap.toc();
+
+    if( frame.empty() ) {
+        qDebug() << "Empty frame"    ;
         return;
+    }
     double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
     dt = t - last_t;
+    qDebug() << "DT" << dt << "FPS" << 1/dt;
+    last_t = t;
     TicToc tic;
     auto ret = detect_head_pose(frame, t, dt);
     auto pose_raw = ret.second;
@@ -77,7 +85,8 @@ void HeadPoseDetector::loop() {
         frame.copyTo(preview_image);
     }
 
-    last_t = t;
+    qDebug() << "Loop takes" << tic_cap.toc();
+
 }
 
 
@@ -103,7 +112,6 @@ void HeadPoseDetector::run_detect_thread() {
            }
 
 
-//           cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            detect_mtx.lock();
 
@@ -163,20 +171,31 @@ void HeadPoseDetector::start_slot() {
 }
 
 void HeadPoseDetector::run_thread() {
-    if(!cap.open(settings->camera_id, cv::CAP_DSHOW))
+    if(!cap.open(settings->camera_id, cv::CAP_DSHOW)) {
+        qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
+
+        QMessageBox msgBox;
+        msgBox.moveToThread(&mainThread);
+        msgBox.setText("Camera not found!!!");
+        int ret = msgBox.exec();
+
         return;
+    }
     cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    cap.set(cv::CAP_PROP_FPS, settings->fps);
+
+    qDebug() << "Start Timer with fps of" << settings->fps << "Cap FPS"<< cap.get(cv::CAP_PROP_FPS);
     main_loop_timer = new QTimer;
     main_loop_timer->moveToThread(&mainThread);
     connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()), Qt::DirectConnection);
 
-    main_loop_timer->start(1/settings->fps);
+    main_loop_timer->start(1/settings->fps*1000);
 }
 
 void HeadPoseDetector::stop_slot() {
     if (is_running) {
-        qDebug() << "Stoooop...";
+        qDebug() << "Stop...";
         last_landmark_pts.clear();
         is_running = false;
         detect_thread.join();
@@ -314,7 +333,6 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         double dt_fsa = fsa.toc();
 
         TicToc tic1;
-//        face_roi = crop_roi(face_roi, frame, 0.1);
         landmarks = lmd->detect(frame, face_roi);
         qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
         landmarks_3d = model_points_68;
@@ -335,6 +353,12 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
             R = Rcam.inverse() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
                 * Eigen::AngleAxisd(fsa_ypr(1), Eigen::Vector3d::UnitY())
                 * Eigen::AngleAxisd(fsa_ypr(2), Eigen::Vector3d::UnitX());
+            Eigen::Quaterniond qR(R);
+            Eigen::Quaterniond qR_pnp(pose.first*Rface);
+            qR = qR.slerp(0.5, qR_pnp);
+//            qR = qR_pnp;
+
+            R = qR.toRotationMatrix();
         } else {
             R = pose.first*Rface;
         }
@@ -352,6 +376,14 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
             for (auto pt: landmarks) {
                 cv::circle(frame, pt, 1, cv::Scalar(0, 255, 0), -1);
             }
+
+            cv::Mat tvec, Rmat, rvec;
+            Eigen::Matrix3d _R = R*Rface.inverse();
+            cv::eigen2cv(T, tvec);
+            cv::eigen2cv(_R, Rmat);
+            cv::Rodrigues(Rmat, rvec);
+            cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.05, 3);
+
         }
 
         last_clean_frame = frame_clean;
@@ -400,11 +432,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     } else {
         qDebug() << "pnp Solve failed";
     }
-
-//    if (success && settings->enable_preview) {
-//        cv::drawFrameAxes(frame, settings->K, settings->D, rvec, tvec, 30);
-//    }
-
 
     cv::Mat Rcv;
     cv::Rodrigues(rvec, Rcv);

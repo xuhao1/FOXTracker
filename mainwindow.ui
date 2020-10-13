@@ -371,6 +371,38 @@ color: rgb(240, 241, 250);</string>
      <string>PAUSE</string>
     </property>
    </widget>
+   <widget class="QLCDNumber" name="fps_disp">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>580</y>
+      <width>64</width>
+      <height>23</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>550</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Adobe Pi Std</family>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #8fbed4;</string>
+    </property>
+    <property name="text">
+     <string>FPS</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

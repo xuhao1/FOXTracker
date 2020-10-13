@@ -9,6 +9,7 @@
 class FaceDetector {
     dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
     cv::dnn::Net head_detector;
+    cv::Rect2d last_roi;
 public:
     FaceDetector() {
         printf("Path %s", settings->protoPath.c_str());

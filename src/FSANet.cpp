@@ -5,7 +5,8 @@
 FSANet::FSANet():env(ORT_LOGGING_LEVEL_WARNING, "test") {
     Ort::SessionOptions session_options;
     session_options.SetIntraOpNumThreads(1);
-    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    session_options.SetInterOpNumThreads(1);
+    //session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     printf("Using Onnxruntime C++ API\n");
     std::wstring unicode(settings->fsanet_model.begin(), settings->fsanet_model.end());
