@@ -9,19 +9,21 @@ PoseRemapper::PoseRemapper(QObject *parent) : QObject(parent)
 }
 
 
-void PoseRemapper::on_pose_data(double t, Pose pose) {
+void PoseRemapper::on_pose_data(double t, Pose_ pose_) {
+    Pose pose(pose_.second, pose_.first);
     if(!is_inited) {
         initial_pose = pose;
         is_inited = true;
     }
 
-    auto R = initial_pose.first.transpose() * pose.first;
-    Eigen::Vector3d T = pose.second - initial_pose.second;
+    initial_pose.print();
 
-//    auto R = pose.first;
-    T = Rcam.transpose() * T;
+    pose.print();
 
-    auto eul = R2ypr(R);
+    auto Q = initial_pose.att() * pose.att();
+    Eigen::Vector3d T = pose.pos() - initial_pose.pos();
+
+    auto eul = quat2eulers(Q);
     this->send_mapped_posedata(t, std::make_pair(eul, T));
 }
 

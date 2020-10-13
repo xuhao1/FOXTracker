@@ -155,7 +155,8 @@ public:
         landmarks3D_ARMarker.push_back(cv::Point3f(size/2, -size/2, 0));
     }
 
-    std::pair<bool, Pose> detect_head_pose(cv::Mat & frame, double t, double dt);
+    //When using FSANet. First is PnP pose, next is FSANet pose
+    std::pair<bool, std::vector<Pose>> detect_head_pose(cv::Mat & frame, double t, double dt);
 
     void run_thread();
 
@@ -171,7 +172,7 @@ signals:
     void start();
     void stop();
 
-    void on_detect_pose(double t, Pose pose);
+    void on_detect_pose(double t, Pose_ pose);
     void on_detect_pose6d(double t, Pose6DoF pose);
     void on_detect_pose6d_raw(double t, Pose6DoF pose);
     void on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v);

@@ -1,8 +1,8 @@
 #include "KalmanFilter.h"
-Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
+Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose, int type) {
     if(!initialized) {
-        q = Quaterniond(pose.first);
-        T = pose.second;
+        q = pose.att();
+        T = pose.pos();
         w = Eigen::Vector3d::Zero();
         v = Eigen::Vector3d::Zero();
         P = Eigen::Matrix<double, 13, 13>::Identity();
@@ -16,8 +16,8 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose) {
         return pose;
     }
 
-    Quaterniond zq(pose.first);
-    Eigen::Vector3d zT = pose.second;
+    Quaterniond zq(pose.att());
+    Eigen::Vector3d zT = pose.pos();
     Vector7d Z;
     Z.block<4, 1>(0, 0) = zq.coeffs();
     Z.block<3, 1>(4, 0) = zT;

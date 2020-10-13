@@ -18,7 +18,7 @@ public:
 signals:
     void send_mapped_posedata(double t, Pose6DoF _pose);
 public slots:
-    void on_pose_data(double t, Pose pose);
+    void on_pose_data(double t, Pose_ pose);
     void reset_center();
 };
 

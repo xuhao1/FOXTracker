@@ -48,7 +48,7 @@ public:
     void update_cov();
 
     Pose get_realtime_pose() const {
-        return std::make_pair(q.toRotationMatrix(), T);
+        return Pose(T, q);
     }
 
     Eigen::Vector3d get_angular_velocity() const {
@@ -66,7 +66,7 @@ public:
     Pose predict(double t);
     void predict_by_dt(double dt);
 
-    Pose on_raw_pose_data(double t, Pose pose);
+    Pose on_raw_pose_data(double t, Pose pose, int type);
 
     Vector7d h0() {
         //h for pose measurement

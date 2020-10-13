@@ -26,7 +26,7 @@ void HeadPoseDetector::loop() {
     Mat frame;
     cap >> frame;
 
-    qDebug() << "Capture takes" << tic_cap.toc();
+//    qDebug() << "Capture takes" << tic_cap.toc();
 
     if( frame.empty() ) {
         qDebug() << "Empty frame"    ;
@@ -34,27 +34,31 @@ void HeadPoseDetector::loop() {
     }
     double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
     dt = t - last_t;
-    qDebug() << "DT" << dt << "FPS" << 1/dt;
     last_t = t;
     TicToc tic;
     auto ret = detect_head_pose(frame, t, dt);
-    auto pose_raw = ret.second;
-    auto pose = pose_raw;
+    auto poses_raw = ret.second;
+    Pose pose;
+    Pose pose_raw;
+
     if (ret.first) {
+        if (poses_raw.size() == 1) {
+            pose_raw = Rcam*poses_raw[0];
+        } else {
+            pose_raw = Rcam*(poses_raw[0].slerp(0.5, poses_raw[1]));
+            pose_raw.print();
+        }
+
         TicToc tic;
-        auto Traw = pose_raw.second;
-        auto Rraw = pose_raw.first;
         if(settings->use_ekf) {
-            pose = ekf.on_raw_pose_data(t, pose_raw);
+            pose = ekf.on_raw_pose_data(t, Rcam*poses_raw[0], 0);
+            if (poses_raw.size() > 1) {
+                pose = ekf.on_raw_pose_data(t, Rcam*poses_raw[1], 1);
+            }
         } else {
             pose = pose_raw;
         }
-
-        Rraw = Rcam*Rraw;
-
-        Traw = Rcam*Traw;
-        auto ypr = R2ypr(Rraw);
-        this->on_detect_pose6d_raw(t, make_pair(R2ypr(Rraw), Traw));
+        this->on_detect_pose6d_raw(t, make_pair(R2ypr(pose_raw.R()), pose_raw.pos()));
 
         inited = true;
     }
@@ -67,18 +71,19 @@ void HeadPoseDetector::loop() {
     }
     this->on_detect_P(t, ekf.getP());
 
-    auto R = pose.first;
-    auto T = pose.second;
-    if (!settings->use_fsa) {
-        R = Rcam*R*Rface;
-    }
-    T = Rcam*T;
+    auto R = pose.R();
+    auto T = pose.pos();
+
+    printf("PoseRAW");
+    pose_raw.print();
+    printf("Pose");
+    pose.print();
 
     //This pose is in world frame
     if (ret.first || (settings->use_ekf && inited)) {
-        this->on_detect_pose(t, make_pair(R, T));
+        this->on_detect_pose(t, make_pair(pose.R(), pose.pos()));
         this->on_detect_pose6d(t, make_pair(R2ypr(R), T));
-        this->on_detect_twist(t, Rcam*ekf.get_angular_velocity(), Rcam*ekf.get_linear_velocity());
+        this->on_detect_twist(t, ekf.get_angular_velocity(), ekf.get_linear_velocity());
     }
 
     if (settings->enable_preview) {
@@ -212,7 +217,7 @@ void HeadPoseDetector::reset() {
 }
 
 
-std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
+std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
     TicToc tic;
     Eigen::Matrix3d R;
     Eigen::Vector3d T;
@@ -224,6 +229,8 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
     cv::Rect2d face_roi;
 
     Eigen::Vector3d fsa_ypr;
+
+    std::vector<Pose> detected_poses;
 
     if (settings->detect_method == 1) {
         std::vector<int> ids;
@@ -251,7 +258,7 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
                 tracker = cv::TrackerMOSSE::create();
                 tracker->init(frame, roi);
             } else {
-                return make_pair(false, make_pair(R, T));
+                return make_pair(false, std::vector<Pose>());
             }
 
         } else {
@@ -305,13 +312,13 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
             } else {
                 //std::cout << "Will unlock" << std::endl;
                 detect_mtx.unlock();
-                return make_pair(false, make_pair(R, T));
+                return make_pair(false, std::vector<Pose>());
             }
 
         }
 
         if (roi.width < 1 || roi.height < 1) {
-            return make_pair(false, make_pair(R, T));
+            return make_pair(false, std::vector<Pose>());
         }
 
         face_roi = roi;
@@ -344,27 +351,17 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
 
     if (ret.first) {
         auto pose = ret.second;
-        T = pose.second;
+        T = pose.pos();
+        pose.att() = pose.att()*Rface;
 
+        detected_poses.push_back(pose);
         //Use FSA YPR Here
         if (settings->use_fsa) {
-            R = Rcam.inverse() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
+             R = Rcam.inverse() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
                 * Eigen::AngleAxisd(fsa_ypr(1), Eigen::Vector3d::UnitY())
                 * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX());
             Eigen::Quaterniond qR(R);
-            Eigen::Quaterniond qR_pnp(pose.first*Rface);
-
-            auto ypr = R2ypr(Rcam*qR.toRotationMatrix());
-//            qDebug() << "YPR FSANEt" << ypr(0) << "," << ypr(1) << "," << ypr(2);
-            ypr = R2ypr(Rcam* qR_pnp.toRotationMatrix());
-//            qDebug() << "YPR PnP" << ypr(0) << "," << ypr(1) << "," << ypr(2);
-            qR = qR.slerp(0.5, qR_pnp);
-            ypr = R2ypr(Rcam* qR.toRotationMatrix());
-
-//            qDebug() << "YPR" << ypr(0) << "," << ypr(1) << "," << ypr(2);
-            R = qR.toRotationMatrix();
-        } else {
-            R = pose.first*Rface;
+            detected_poses.push_back(Pose(T, qR));
         }
 
         if (settings->enable_preview) {
@@ -398,9 +395,9 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         }
 
 
-        return make_pair(true, make_pair(R, T));
+        return make_pair(true, detected_poses);
     }
-    return make_pair(false, make_pair(R, T));
+    return make_pair(false, detected_poses);
 }
 
 std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame) {
@@ -408,7 +405,7 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     Eigen::Matrix3d R;
 
     if (landmarks.size() == 0) {
-        return make_pair(false, make_pair(R, T));
+        return make_pair(false, Pose(T, R));
     }
     bool success = false;
     auto rvec = rvec_init.clone();
@@ -442,7 +439,7 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
     cv::cv2eigen(tvec/1000.0, T);
     cv::cv2eigen(Rcv, R);
-    return make_pair(success, make_pair(R, T));
+    return make_pair(success, Pose(T, R));
 }
 
 
