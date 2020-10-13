@@ -13,8 +13,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->setWindowTitle("FlightAgentX");
 
+    this->hd.main_window = this;
+
     this->on_startButton_clicked();
     config_menu = new AgentXConfig;
+
 
     connect(&remapper, &PoseRemapper::send_mapped_posedata, this, &MainWindow::on_pose6d_data);
     connect(&remapper, &PoseRemapper::send_mapped_posedata, &data_sender, &PoseDataSender::on_pose6d_data);
@@ -123,7 +126,7 @@ void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
     static double t_last = 0;
     static double fps = 0;
     if (t_last != 0) {
-        fps = 1/(t - t_last)*0.1 + fps*0.9;
+        fps = 1/(t - t_last)*0.05 + fps*0.95;
     }
     t_last = t;
     ui->time_disp->display(t);

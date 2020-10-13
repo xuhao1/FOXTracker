@@ -20,6 +20,9 @@
 #include <opencv2/aruco.hpp>
 #include <opencv2/tracking/tracker.hpp>
 
+
+class MainWindow;
+
 class HeadPoseDetector;
 
 class HeadPoseTrackDetectWorker: public QObject {
@@ -97,7 +100,7 @@ class HeadPoseDetector: public QObject {
     FSANet fsanet;
 
 public:
-
+    MainWindow * main_window;
 
     HeadPoseDetector() {
         is_running = false;

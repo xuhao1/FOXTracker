@@ -1,6 +1,6 @@
-#include "inc/FSANet.h"
-#include "inc/FlightAgxSettings.h"
-#include "inc/fagx_datatype.h"
+#include "FSANet.h"
+#include "FlightAgxSettings.h"
+#include "fagx_datatype.h"
 
 FSANet::FSANet():env(ORT_LOGGING_LEVEL_WARNING, "test") {
     Ort::SessionOptions session_options;

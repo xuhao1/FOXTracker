@@ -22,6 +22,25 @@ INCLUDEPATH += ../third_party/onnxruntime-win-x64-gpu-1.5.1/include
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
 
+contains(QT_ARCH, i386) {
+    win32:CONFIG(release, debug|release): LIBS += ../third_party/dlib/lib/dlib19.21.0_release_32bit_msvc1916.lib
+
+    win32:CONFIG(release, debug|release): LIBS += -L../third_party/opencv-4.4.0-build/x86/vc15/lib \
+        -lopencv_core440 -lopencv_highgui440 -lopencv_tracking440 -lopencv_video440 -lopencv_imgproc440 -lopencv_videoio440 -lopencv_calib3d440 -lopencv_aruco440 -lopencv_dnn440
+
+    win32:CONFIG(debug, debug|release): LIBS += -L../third_party/opencv-4.4.0-build/x86/vc15/lib \
+        -lopencv_core440d -lopencv_highgui440d -lopencv_tracking440d -lopencv_video440d -lopencv_imgproc440d -lopencv_videoio440d -lopencv_calib3d440d -lopencv_aruco440d
+
+    win32:CONFIG(release, debug|release): LIBS += -L../build-uglobalhotkey-Desktop_Qt_5_14_2_MSVC2017_32bit-Release/release/ -lUGlobalHotkey
+
+
+    win32:CONFIG(release, debug|release): LIBS += -L"../third_party/YAML_CPP_x86/lib" -lyaml-cpp
+    win32:CONFIG(debug, debug|release): LIBS += -L"../third_party/YAML_CPP_x86/lib" -lyaml-cppd
+
+    win32:CONFIG(release, debug|release): LIBS += -L../third_party/onnxruntime-win-x86-1.5.1/lib -lonnxruntime
+    win32:CONFIG(release, debug|release): LIBS += -L../third_party/OpenBLAS-0.3.10-x86/lib -llibopenblas
+} else {
+
 win32:CONFIG(debug, debug|release): LIBS += ../third_party/dlib/lib/dlib19.21.0_debug_64bit_msvc1916.lib
 win32:CONFIG(release, debug|release): LIBS += ../third_party/dlib/lib/dlib19.21.0_release_64bit_msvc1916.lib
 
@@ -38,8 +57,10 @@ win32:CONFIG(release, debug|release): LIBS += -L../build-uglobalhotkey-Desktop_Q
 win32:CONFIG(release, debug|release): LIBS += -L"../third_party/YAML_CPP/lib" -lyaml-cpp
 win32:CONFIG(debug, debug|release): LIBS += -L"../third_party/YAML_CPP/lib" -lyaml-cppd
 
-win32:CONFIG(release, debug|release): LIBS += -L../third_party/onnxruntime-win-x64-gpu-1.5.1/lib -lonnxruntime
+win32:CONFIG(release, debug|release): LIBS += -L../third_party/onnxruntime-win-x64-1.5.1/lib -lonnxruntime
 win32:CONFIG(release, debug|release): LIBS += -L../third_party/OpenBLAS-0.3.10-x64/lib -llibopenblas
+}
+
 SOURCES += \
     src/FSANet.cpp \
     src/FaceDetectors.cpp \
@@ -90,4 +111,5 @@ RESOURCES += \
     main.qrc
 
 DISTFILES += \
+    ../build-FlightAgentX-Desktop_Qt_5_14_2_MSVC2017_32bit-Release/release/config.yaml \
     ../build-FlightAgentX-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/release/config.yaml

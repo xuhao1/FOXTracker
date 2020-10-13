@@ -6,9 +6,9 @@
 #include <opencv2/aruco.hpp>
 #include <QTimer>
 #include <QMessageBox>
+#include <mainwindow.h>
 using namespace cv;
 using namespace std;
-
 
 
 void HeadPoseTrackDetectWorker::run() {
@@ -173,12 +173,10 @@ void HeadPoseDetector::start_slot() {
 void HeadPoseDetector::run_thread() {
     if(!cap.open(settings->camera_id, cv::CAP_DSHOW)) {
         qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
-
-        QMessageBox msgBox;
-        msgBox.moveToThread(&mainThread);
-        msgBox.setText("Camera not found!!!");
-        int ret = msgBox.exec();
-
+        preview_image = cv::Mat(640, 480, CV_8UC3, cv::Scalar(0, 0, 0));
+        char warn[100] = {0};
+        sprintf(warn, "Camera ID %d Error. Change in config.yaml!!!", settings->camera_id);
+        cv::putText(preview_image, warn, cv::Point2f(20, 240), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
         return;
     }
     cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
