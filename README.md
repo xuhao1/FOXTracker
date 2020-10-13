@@ -19,7 +19,7 @@ Just turn your opentrack input to UDP and open FlightAgentX.exe. Everything work
 ![c1](./docs/opentracker_config.PNG)
 ![c2](./docs/opentracker_config2.PNG)
 
-Or using dcs.ini inside release folder.
+Also, you may use [dcs.ini](./docs/dcs.ini) here.
 
 Video can be found on https://www.bilibili.com/video/BV1rE411c7Wx/
 ## Future Plan (Maybe in a year)
@@ -64,7 +64,7 @@ MIT.
 ![c1](./docs/opentracker_config.PNG)
 ![c2](./docs/opentracker_config2.PNG)
 
-或者使用release中附带的 dcs.ini文件。
+或者这里的[dcs.ini](./docs/dcs.ini)文件。
 
 视频见b站 https://www.bilibili.com/video/BV1rE411c7Wx/
 
