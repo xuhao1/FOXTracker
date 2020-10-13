@@ -23,7 +23,7 @@ void PoseDataSender::send_data_udp(double t, Pose6DoF pose) {
 
     data[3] = eul.x();
     data[4] = eul.y();
-    data[5] = eul.z();
+    data[5] = -eul.z();
 
     udpsock->writeDatagram((char*)data, sizeof(double)*6,
                            QHostAddress(settings->udp_host.c_str()), settings->port);

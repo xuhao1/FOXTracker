@@ -171,7 +171,7 @@ void HeadPoseDetector::start_slot() {
 }
 
 void HeadPoseDetector::run_thread() {
-    if(!cap.open(settings->camera_id, cv::CAP_DSHOW)) {
+    if(!cap.open(settings->camera_id)) {
         qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
         preview_image = cv::Mat(640, 480, CV_8UC3, cv::Scalar(0, 0, 0));
         char warn[100] = {0};
@@ -350,12 +350,18 @@ std::pair<bool, Pose> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double
         if (settings->use_fsa) {
             R = Rcam.inverse() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
                 * Eigen::AngleAxisd(fsa_ypr(1), Eigen::Vector3d::UnitY())
-                * Eigen::AngleAxisd(fsa_ypr(2), Eigen::Vector3d::UnitX());
+                * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX());
             Eigen::Quaterniond qR(R);
             Eigen::Quaterniond qR_pnp(pose.first*Rface);
-            qR = qR.slerp(0.5, qR_pnp);
-//            qR = qR_pnp;
 
+            auto ypr = R2ypr(Rcam*qR.toRotationMatrix());
+//            qDebug() << "YPR FSANEt" << ypr(0) << "," << ypr(1) << "," << ypr(2);
+            ypr = R2ypr(Rcam* qR_pnp.toRotationMatrix());
+//            qDebug() << "YPR PnP" << ypr(0) << "," << ypr(1) << "," << ypr(2);
+            qR = qR.slerp(0.5, qR_pnp);
+            ypr = R2ypr(Rcam* qR.toRotationMatrix());
+
+//            qDebug() << "YPR" << ypr(0) << "," << ypr(1) << "," << ypr(2);
             R = qR.toRotationMatrix();
         } else {
             R = pose.first*Rface;

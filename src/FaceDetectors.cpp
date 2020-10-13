@@ -114,6 +114,8 @@ cv::Rect2d FaceDetector::detect(const cv::Mat & frame, cv::Rect2d predict_roi) {
             }
 
             return det;
+        } else {
+            last_roi = cv::Rect2d(0, 0, frame.cols, frame.rows);
         }
 
         return cv::Rect2d(0, 0, 0, 0);
