@@ -81,3 +81,4 @@ build-uglobalhotkey-Desktop_Qt_5_14_1_MSVC2017_32bit-Debug/
 *.zip
 Release/opencv_videoio440.dll
 Release.bk
+Release.x86.bk/
