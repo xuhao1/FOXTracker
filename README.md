@@ -42,6 +42,9 @@ MIT.
 
 [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 
+[ONNX-Runtime](https://github.com/microsoft/onnxruntime)
+
+[FSA-Net](https://github.com/shamangary/FSA-Net) LICENSE: Apache 2.0 https://github.com/shamangary/FSA-Net/blob/master/LICENSE
 
 ## 介绍
 这是一个基于面部识别的头瞄，用于模拟类游戏。和TrackIR或者[opentrack](https://github.com/opentrack/opentrack)（如国内流行的pointtracker）功能类似，但是只需要摄像头。
