@@ -42,6 +42,8 @@ disp_duration: 30 #预览图像刷新的帧率
 disp_max_series_size: 1000 #ekf config界面显示的最多点数
 
 detect_method: 0 #进行头部跟踪的方法，0为默认的脸部识别，1位尚在开发中二维码。
+
+fsa_pnp_mixture_rate: 0.5 #用于调节非EKF模式下。FSA Net和Pnp姿态估计结果混合的比例。当设置为0完全使用FSANet，设置为1完全使用PnP。当预览画面中的特征点和面部贴合明显较差时，将这个值改小直到抖动减小为止。
 ```
 
 设置好config.yaml后，一般推荐结合opentrack使用（即关闭use_ft 和use_npclient）。

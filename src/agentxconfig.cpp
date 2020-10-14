@@ -6,7 +6,20 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AgentXConfig)
 {
+    //QJoysticks::getInstance()->setVirtualJoystickEnabled (false);
     ui->setupUi(this);
+    qDebug() << "Start AgentX Config page";
+    QStringList joystickNames = QJoysticks::getInstance()->deviceNames();
+    qDebug() << "Joysticks" << joystickNames;
+    QList<QJoystickDevice*> joysticks = QJoysticks::getInstance()->inputDevices();
+    qDebug() << "Joysicks" << joysticks.size();
+
+    connect(QJoysticks::getInstance(), &QJoysticks::buttonEvent, this, &AgentXConfig::buttonEvent);
+
+}
+
+void AgentXConfig::buttonEvent (const QJoystickButtonEvent& event) {
+    qDebug() << "Joystick" << event.joystick->name << " pressed " << event.button << " pressed" << event.pressed;
 }
 
 AgentXConfig::~AgentXConfig()
@@ -45,4 +58,6 @@ void FlightAgxSettings::load_from_config_yaml() {
     use_ekf = config["use_ekf"].as<bool>();
     disp_duration = config["disp_duration"].as<double>();
     disp_max_series_size = config["disp_max_series_size"].as<int>();
+
+    fsa_pnp_mixture_rate = config["fsa_pnp_mixture_rate"].as<double>();
 }

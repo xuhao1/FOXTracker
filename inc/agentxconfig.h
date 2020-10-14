@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <ekfconfig.h>
 //#include <
+#include <QJoysticks.h>
 
 namespace Ui {
 class AgentXConfig;
@@ -17,6 +18,9 @@ public:
     explicit AgentXConfig(QWidget *parent = nullptr);
     ~AgentXConfig();
     EKFConfig * ekf_config_menu();
+
+    void buttonEvent (const QJoystickButtonEvent& event);
+
 private:
     Ui::AgentXConfig *ui;
 };

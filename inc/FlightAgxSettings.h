@@ -18,6 +18,7 @@ public:
     bool enable_multithread_detect = true;
     int retrack_queue_size = 10;
     double fps = 30;
+    double fsa_pnp_mixture_rate = 0.5;
     bool send_posedata_udp = true;
     int port = 4242;
     std::string udp_host = "127.0.0.1";

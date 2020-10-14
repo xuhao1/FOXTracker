@@ -16,10 +16,6 @@ void PoseRemapper::on_pose_data(double t, Pose_ pose_) {
         is_inited = true;
     }
 
-    initial_pose.print();
-
-    pose.print();
-
     auto Q = initial_pose.att() * pose.att();
     Eigen::Vector3d T = pose.pos() - initial_pose.pos();
 

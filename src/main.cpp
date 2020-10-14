@@ -7,6 +7,12 @@
 
 FlightAgxSettings * settings = nullptr;
 
+#ifdef Q_OS_WIN
+#   ifdef main
+#      undef main
+#   endif
+#endif
+
 int main(int argc, char *argv[])
 {
 

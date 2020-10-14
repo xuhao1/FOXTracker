@@ -45,8 +45,7 @@ void HeadPoseDetector::loop() {
         if (poses_raw.size() == 1) {
             pose_raw = Rcam*poses_raw[0];
         } else {
-            pose_raw = Rcam*(poses_raw[0].slerp(0.5, poses_raw[1]));
-            pose_raw.print();
+            pose_raw = Rcam*(poses_raw[0].slerp(settings->fsa_pnp_mixture_rate, poses_raw[1]));
         }
 
         TicToc tic;
@@ -74,11 +73,6 @@ void HeadPoseDetector::loop() {
     auto R = pose.R();
     auto T = pose.pos();
 
-    printf("PoseRAW");
-    pose_raw.print();
-    printf("Pose");
-    pose.print();
-
     //This pose is in world frame
     if (ret.first || (settings->use_ekf && inited)) {
         this->on_detect_pose(t, make_pair(pose.R(), pose.pos()));
@@ -90,7 +84,7 @@ void HeadPoseDetector::loop() {
         frame.copyTo(preview_image);
     }
 
-    qDebug() << "Loop takes" << tic_cap.toc();
+//    qDebug() << "Loop takes" << tic_cap.toc();
 
 }
 
@@ -98,6 +92,8 @@ void HeadPoseDetector::loop() {
 
 
 void HeadPoseDetector::run_detect_thread() {
+    static int fc = 0;
+    fc++;
     while(is_running) {
         if (frame_pending_detect) {
            TicToc tic;
@@ -105,17 +101,16 @@ void HeadPoseDetector::run_detect_thread() {
            cv::Mat _frame = frame_need_to_detect.clone();
            detect_frame_mtx.unlock();
            cv::Rect2d roi = fd->detect(_frame, roi_need_to_detect);
-           qDebug() << "Frontal face detector cost" << tic.toc() << "ms";
+           if(fc % 10 == 0)
+               qDebug() << "Frontal face detector cost" << tic.toc() << "ms";
            //Track to now image
 
            if (roi.width < 1 && roi.height < 1) {
                frame_pending_detect = false;
                qDebug() << "Detect failed in thread";
+               Sleep(10);
                continue;
-           } else {
-               //qDebug() << "Detect OK in thread";
            }
-
 
            cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            detect_mtx.lock();
@@ -123,7 +118,7 @@ void HeadPoseDetector::run_detect_thread() {
            tracker->init(_frame, roi);
            bool success_track = true;
 
-           qDebug() << "Track " << frames.size() << "frames";
+//           qDebug() << "Track " << frames.size() << "frames";
            TicToc tic_retrack;
 
            for (auto & frame : frames) {
@@ -136,12 +131,10 @@ void HeadPoseDetector::run_detect_thread() {
            int frame_size = frames.size();
            frames.clear();
            if(!success_track) {
-//               qDebug() << "Tracker failed in detect thread queue size" << frame_size;
+               qDebug() << "Tracker failed in detect thread queue size" << frame_size;
                frame_pending_detect = false;
                detect_mtx.unlock();
                continue;
-           } else {
-//               qDebug() << "Tracker OK in detect thread" << tic_retrack.toc() << "ms  queue size" << frame_size;
            }
 
 
@@ -339,7 +332,8 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
 
         TicToc tic1;
         landmarks = lmd->detect(frame, face_roi);
-        qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
+        if (frame_count % ((int)settings->fps) == 0)
+            qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
         landmarks_3d = model_points_68;
     }
 
