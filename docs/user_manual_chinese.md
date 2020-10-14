@@ -56,4 +56,6 @@ detect_method: 0 #进行头部跟踪的方法，0为默认的脸部识别，1位
 
 视角回中FlightAgentX默认是左alc+c，但是该键位会被dcs屏蔽。请隐藏dcs页面后使用，opentrack还需要设置独立回中按键。请参阅Opentrack相关文档。
 
+注意对于站在雷霆等游戏，请先打开头瞄软件再打开游戏。
+
 视频见b站 https://www.bilibili.com/video/BV1ey4y1C7Za
