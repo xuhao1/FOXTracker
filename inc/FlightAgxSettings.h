@@ -58,6 +58,9 @@ public:
     int detect_method = 1;
     double size = 0.09;
 
+    std::string center_joystick_name = "";
+    int center_joystick_id = 0;
+
     Eigen::Matrix3d Rcam;
     FlightAgxSettings() {
         Eigen::Matrix3d K_eigen;
@@ -89,7 +92,17 @@ public:
         load_from_config_yaml();
     }
 
+    YAML::Node config;
     void load_from_config_yaml();
+    void write_to_file();
+
+    template<class T>
+    void set_value(std::string k, T v, bool is_write_to_file=false) {
+        config[k] = v;
+        if(is_write_to_file) {
+            write_to_file();
+        }
+    }
 };
 
 

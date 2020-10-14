@@ -120,7 +120,9 @@ public:
     friend Pose operator*(Eigen::Matrix3d R, Pose b) {
         Pose p;
         // p.position = a.attitude*(b.position+ a.position);
-        p.position = R * b.position;
+        //p.position = R * b.position;
+
+        p.position = b.position;
         p.attitude = R * b.attitude;
 
         return p;

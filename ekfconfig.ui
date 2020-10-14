@@ -13,12 +13,15 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">font: 10pt &quot;Source Code Pro&quot;;</string>
+  </property>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
      <x>40</x>
      <y>30</y>
-     <width>161</width>
+     <width>171</width>
      <height>16</height>
     </rect>
    </property>
@@ -31,7 +34,7 @@
     <rect>
      <x>40</x>
      <y>50</y>
-     <width>161</width>
+     <width>181</width>
      <height>16</height>
     </rect>
    </property>
@@ -44,7 +47,7 @@
     <rect>
      <x>40</x>
      <y>90</y>
-     <width>161</width>
+     <width>201</width>
      <height>16</height>
     </rect>
    </property>

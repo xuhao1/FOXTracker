@@ -1,6 +1,7 @@
 #include "agentxconfig.h"
 #include "ui_agentxconfig.h"
 #include "FlightAgxSettings.h"
+#include <string>
 
 AgentXConfig::AgentXConfig(QWidget *parent) :
     QDialog(parent),
@@ -16,6 +17,29 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
 
     connect(QJoysticks::getInstance(), &QJoysticks::buttonEvent, this, &AgentXConfig::buttonEvent);
 
+    if(settings->use_ekf) {
+        ui->EKF_Check->setCheckState(Qt::Checked);
+    } else {
+        ui->EKF_Check->setCheckState(Qt::Unchecked);
+    }
+
+    if(settings->use_ft || settings->use_npclient) {
+        ui->DCtrl_Check->setCheckState(Qt::Checked);
+    } else {
+        ui->DCtrl_Check->setCheckState(Qt::Unchecked);
+    }
+
+    if(settings->send_posedata_udp) {
+        ui->SendUDP_Check->setCheckState(Qt::Checked);
+    } else {
+        ui->SendUDP_Check->setCheckState(Qt::Unchecked);
+    }
+
+    ui->Port_Input->setValue(settings->port);
+    ui->FPS_Input->setValue(settings->fps);
+    ui->CameraID_Input->setValue(settings->camera_id);
+    ui->DetectDura_Input->setValue(settings->detect_duration);
+    ui->IP_Input->setText(settings->udp_host.c_str());
 }
 
 void AgentXConfig::buttonEvent (const QJoystickButtonEvent& event) {
@@ -32,32 +56,48 @@ EKFConfig * AgentXConfig::ekf_config_menu() {
 }
 
 
-void FlightAgxSettings::load_from_config_yaml() {
-    qDebug() << "Read config at " << cfg_name.c_str() << "\n";
-    YAML::Node config = YAML::LoadFile(cfg_name);
-    detect_duration = config["detect_duration"].as<double>();
-    camera_id = config["camera_id"].as<int>();
-    enable_multithread_detect = config["enable_multithread_detect"].as<bool>();
-    retrack_queue_size = config["retrack_queue_size"].as<int>();
-    fps = config["fps"].as<double>();
-    send_posedata_udp = config["send_posedata_udp"].as<bool>();
-    port = config["port"].as<int>();
-    udp_host = config["udp_host"].as<std::string>();
-    qDebug() << "Will send to" << udp_host.c_str();
-    use_ft = config["use_ft"].as<bool>();
-    use_npclient = config["use_npclient"].as<bool>();
-    cov_Q = config["cov_Q"].as<double>();
-    cov_T = config["cov_T"].as<double>();
+void AgentXConfig::on_EKF_Check_stateChanged(int arg1)
+{
+    settings->use_ekf = arg1;
+    settings->set_value<bool>("use_ekf", arg1);
+}
 
-    cov_V = config["cov_V"].as<double>();
-    cov_W = config["cov_W"].as<double>();
+void AgentXConfig::on_DCtrl_Check_stateChanged(int arg1)
+{
+    settings->use_ft = settings->use_npclient = arg1;
+    settings->set_value<bool>("use_ft", arg1);
+    settings->set_value<bool>("use_npclient", arg1);
+}
 
-    detect_method = config["detect_method"].as<int>();
+void AgentXConfig::on_SendUDP_Check_stateChanged(int arg1)
+{
+    settings->send_posedata_udp = arg1;
+    settings->set_value<bool>("send_posedata_udp", arg1);
+}
 
-    ekf_predict_dt = config["ekf_predict_dt"].as<double>();
-    use_ekf = config["use_ekf"].as<bool>();
-    disp_duration = config["disp_duration"].as<double>();
-    disp_max_series_size = config["disp_max_series_size"].as<int>();
+void AgentXConfig::on_buttonBox_accepted()
+{
 
-    fsa_pnp_mixture_rate = config["fsa_pnp_mixture_rate"].as<double>();
+    if(settings->udp_host != ui->IP_Input->text().toUtf8().constData() || settings->port!=ui->Port_Input->value()) {
+        settings->udp_host = ui->IP_Input->text().toUtf8().constData();
+        settings->set_value<std::string>("udp_host", settings->udp_host);
+        settings->port = ui->Port_Input->value();
+        settings->set_value<int>("port", settings->port);
+
+        //TODO:Reset IP here
+    }
+
+    if (ui->CameraID_Input->value() != settings->camera_id || settings->fps != ui->FPS_Input->value()) {
+        settings->camera_id = ui->CameraID_Input->value();
+        settings->set_value<int>("camera_id", settings->camera_id);
+
+        settings->fps = ui->FPS_Input->value();
+        settings->set_value<double>("fps", settings->fps);
+        reset_camera();
+    }
+
+    settings->detect_duration = ui->DetectDura_Input->value();
+    settings->set_value<int>("detect_duration", settings->detect_duration);
+
+    settings->write_to_file();
 }

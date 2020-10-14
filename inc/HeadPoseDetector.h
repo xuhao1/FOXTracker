@@ -161,7 +161,6 @@ public:
     void run_thread();
 
     void run_detect_thread();
-    void reset();
 
 public:
     cv::Mat & get_preview_image() {
@@ -182,6 +181,8 @@ private slots:
     void loop();
     void start_slot();
     void stop_slot();
+public slots:
+    void reset();
 
 };
 

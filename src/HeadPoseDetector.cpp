@@ -171,7 +171,7 @@ void HeadPoseDetector::start_slot() {
 void HeadPoseDetector::run_thread() {
     if(!cap.open(settings->camera_id)) {
         qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
-        preview_image = cv::Mat(640, 480, CV_8UC3, cv::Scalar(0, 0, 0));
+        preview_image = cv::Mat(480, 640, CV_8UC3, cv::Scalar(0, 0, 0));
         char warn[100] = {0};
         sprintf(warn, "Camera ID %d Error. Change in config.yaml!!!", settings->camera_id);
         cv::putText(preview_image, warn, cv::Point2f(20, 240), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
@@ -208,7 +208,6 @@ void HeadPoseDetector::reset() {
     stop();
     start();
 }
-
 
 std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
     TicToc tic;

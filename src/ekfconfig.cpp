@@ -20,20 +20,14 @@ EKFConfig::EKFConfig(QWidget *parent) :
     ui(new Ui::EKFConfig)
 {
     ui->setupUi(this);
-    setQNoise(settings->cov_Q);
-    setTNoise(settings->cov_T);
-    setVNoise(settings->cov_V);
-    setWNoise(settings->cov_W);
 
     ui->qnoise_slider->setSliderPosition(log_v_inv(settings->cov_Q, qcov_min, qcov_max)*100);
     ui->tnoise_slider->setSliderPosition(log_v_inv(settings->cov_T, tcov_min, tcov_max)*100);
     ui->vnoise_slider->setSliderPosition(log_v_inv(settings->cov_V, vcov_min, vcov_max)*100);
     ui->wnoise_slider->setSliderPosition(log_v_inv(settings->cov_W, wcov_min, wcov_max)*100);
 
-
     this->initalize_angle_charts();
     this->initalize_translation_charts();
-
 
     Timer = new QTimer(this);
     connect(Timer, SIGNAL(timeout()), this, SLOT(update_plot()));
@@ -226,21 +220,25 @@ void EKFConfig::on_detect_pose6d_raw(double t, Pose6DoF pose) {
 void EKFConfig::setQNoise(double cov_q) {
     qDebug() << "Set Q Noise" << cov_q;
     settings->cov_Q = cov_q;
+    settings->set_value<double>("cov_Q", cov_q);
     ui->QNoise->setText(QString::number(cov_q));
 }
 
 void EKFConfig::setTNoise(double cov_t) {
     settings->cov_T = cov_t;
+    settings->set_value<double>("cov_T", cov_t);
     ui->TNoise->setText(QString::number(cov_t));
 }
 
 void EKFConfig::setVNoise(double cov_V) {
     settings->cov_V = cov_V;
+    settings->set_value<double>("cov_V", cov_V);
     ui->VNoise->setText(QString::number(cov_V));
 }
 
 void EKFConfig::setWNoise(double cov_W){
     settings->cov_W = cov_W;
+    settings->set_value<double>("cov_W", cov_W);
     ui->WNoise->setText(QString::number(cov_W));
 }
 

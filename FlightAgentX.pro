@@ -15,7 +15,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 INCLUDEPATH += ../third_party/opencv-4.4.0-build/include
 INCLUDEPATH +=../third_party/eigen-3.3.7
 INCLUDEPATH += ../third_party/dlib/include
-INCLUDEPATH += ../UGlobalHotkey
 INCLUDEPATH += ../third_party/YAML_CPP/include
 INCLUDEPATH += ./inc/
 INCLUDEPATH += ../third_party/onnxruntime-win-x86-1.5.1/include
@@ -23,6 +22,7 @@ CONFIG += force_debug_info
 RC_ICONS = icon.ico
 
 include(../third_party/QJoysticks/QJoysticks.pri)
+include(../third_party/UGlobalHotkey/UGlobalHotkey.pri)
 
 contains(QT_ARCH, i386) {
     win32:CONFIG(release, debug|release): LIBS += ../third_party/dlib/lib/dlib19.21.0_release_32bit_msvc1916.lib
@@ -32,8 +32,6 @@ contains(QT_ARCH, i386) {
 
     win32:CONFIG(debug, debug|release): LIBS += -L../third_party/opencv-4.4.0-build/x86/vc15/lib \
         -lopencv_core440d -lopencv_highgui440d -lopencv_tracking440d -lopencv_video440d -lopencv_imgproc440d -lopencv_videoio440d -lopencv_calib3d440d -lopencv_aruco440d
-
-    win32:CONFIG(release, debug|release): LIBS += -L../third_party/libs/ -lUGlobalHotkey
 
     win32:CONFIG(release, debug|release): LIBS += -L"../third_party/YAML_CPP_x86/lib" -lyaml-cpp
     win32:CONFIG(debug, debug|release): LIBS += -L"../third_party/YAML_CPP_x86/lib" -lyaml-cppd
@@ -51,8 +49,6 @@ win32:CONFIG(release, debug|release): LIBS += -L../third_party/opencv-4.4.0-buil
 win32:CONFIG(debug, debug|release): LIBS += -L../third_party/opencv-4.4.0-build/x86/vc15/lib \
     -lopencv_core440d -lopencv_highgui440d -lopencv_tracking440d -lopencv_video440d -lopencv_imgproc440d -lopencv_videoio440d -lopencv_calib3d440d -lopencv_aruco440d
 
-win32:CONFIG(release, debug|release): LIBS += -L../third_party/libs/ -lUGlobalHotkey
-
 win32:CONFIG(release, debug|release): LIBS += -L"../third_party/YAML_CPP/lib" -lyaml-cpp
 win32:CONFIG(debug, debug|release): LIBS += -L"../third_party/YAML_CPP/lib" -lyaml-cppd
 
@@ -63,6 +59,7 @@ win32:CONFIG(release, debug|release): LIBS += -L../third_party/OpenBLAS-0.3.10-x
 SOURCES += \
     src/FSANet.cpp \
     src/FaceDetectors.cpp \
+    src/FlightAgxSettings.cpp \
     src/HeadPoseDetector.cpp \
     src/KalmanFilter.cpp \
     src/PoseDataSender.cpp \
@@ -109,6 +106,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     main.qrc
 
-DISTFILES += \
-    ../build-FlightAgentX-Desktop_Qt_5_14_2_MSVC2017_32bit-Release/release/config.yaml \
-    ../build-FlightAgentX-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/release/config.yaml
+DISTFILES +=
