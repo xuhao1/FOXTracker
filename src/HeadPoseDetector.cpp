@@ -10,6 +10,9 @@
 using namespace cv;
 using namespace std;
 
+cv::Ptr<cv::Tracker> create_tracker() {
+    return cv::TrackerMOSSE::create();
+}
 
 void HeadPoseTrackDetectWorker::run() {
     is_running = true;
@@ -101,19 +104,20 @@ void HeadPoseDetector::run_detect_thread() {
            cv::Mat _frame = frame_need_to_detect.clone();
            detect_frame_mtx.unlock();
            cv::Rect2d roi = fd->detect(_frame, roi_need_to_detect);
-           if(fc % 10 == 0)
-               qDebug() << "Frontal face detector cost" << tic.toc() << "ms";
+           qDebug() << "Frontal face detector cost" << tic.toc() << "ms";
            //Track to now image
 
-           if (roi.width < 1 && roi.height < 1) {
+           if (roi.area() < MIN_ROI_AREA) {
                frame_pending_detect = false;
+               roi_need_to_detect = cv::Rect2d(0, 0, _frame.cols, _frame.rows);
                qDebug() << "Detect failed in thread";
                Sleep(10);
                continue;
            }
 
-           cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            detect_mtx.lock();
+           tracker.release();
+           tracker = create_tracker();
            tracker->init(_frame, roi);
            bool success_track = true;
            TicToc tic_retrack;
@@ -132,11 +136,7 @@ void HeadPoseDetector::run_detect_thread() {
                detect_mtx.unlock();
                continue;
            }
-
-
            last_roi = roi;
-           this->tracker.release();
-           this->tracker = tracker;
            frame_pending_detect = false;
            detect_mtx.unlock();
 
@@ -207,6 +207,8 @@ void HeadPoseDetector::reset() {
     start();
 }
 
+
+
 std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
     TicToc tic;
     Eigen::Matrix3d R;
@@ -217,128 +219,121 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     cv::Rect2d roi;
     cv::Rect2d fsa_roi;
     cv::Rect2d face_roi;
+    cv::Point2f track_spd(0, 0);
 
     Eigen::Vector3d fsa_ypr;
 
     std::vector<Pose> detected_poses;
 
-    if (settings->detect_method == 1) {
-        std::vector<int> ids;
-        std::vector<std::vector<cv::Point2f> > corners;
-        TicToc tic;
-        cv::aruco::detectMarkers(frame, dictionary, corners, ids);
-        double dt = tic.toc();
-        if (dt > 20) {
-               qDebug() << "detectMarkers" << dt;
-        }
-        //Use id zero only now
-        if (corners.size() > 0 ) {
-            landmarks = corners[0];
-            cv::aruco::drawDetectedMarkers(frame, corners, ids);
-            landmarks_3d = landmarks3D_ARMarker;
-        }
-
-    } else {
-        frame_count ++;
-        frame_clean = frame.clone();
-        if (first_solve_pose) {
-            roi = fd->detect(frame, last_roi);
-            if (roi.area() > MIN_ROI_AREA) {
-                tracker = cv::TrackerMOSSE::create();
-                tracker->init(frame, roi);
-            } else {
-                return make_pair(false, std::vector<Pose>());
-            }
-
+    frame_count ++;
+    frame_clean = frame.clone();
+    if (first_solve_pose) {
+        roi = fd->detect(frame, last_roi);
+        if (roi.area() > MIN_ROI_AREA) {
+            tracker = create_tracker();
+            tracker->init(frame, roi);
         } else {
-            bool new_add_pending_detect = false;
-            if (frame_count % settings->detect_duration == 0) {
-                if (!frame_pending_detect) {
-                    frame_pending_detect = true;
-                    detect_frame_mtx.lock();
-                    frame.copyTo(frame_need_to_detect);
-                    roi_need_to_detect = last_roi;
-                    detect_frame_mtx.unlock();
-
-                    new_add_pending_detect = true;
-                }
-            }
-
-             detect_mtx.lock();
-            if (!new_add_pending_detect && frame_pending_detect) {
-                //We add frames to help tracker
-                frames.push_back(frame.clone());
-                while(frames.size() > settings->retrack_queue_size) {
-                       frames.erase(frames.begin());
-                }
-            }
-
-            roi = last_roi;
-            TicToc tic;
-
-            bool success = tracker->update(frame, roi);
-            if (!success && !frame_pending_detect) {
-                qDebug() << "Will detect in main thread";
-                TicToc tic;
-                roi = fd->detect(frame, cv::Rect2d());
-                qDebug()<< "Tracker failed; Turn to detection" << tic.toc() << "ms";
-
-                if (roi.width > 1.0 && roi.height > 1.0) {
-                    last_roi = roi;
-                    tracker.release();
-                    tracker = cv::TrackerMOSSE::create();
-                    tracker->init(frame, roi);
-                    success = true;
-                }
-            }
-
-            if (success) {
-                last_roi = roi;
-                detect_mtx.unlock();
-                if (new_add_pending_detect) {
-                    roi_need_to_detect  = roi;
-                }
-            } else {
-                //std::cout << "Will unlock" << std::endl;
-                detect_mtx.unlock();
-                return make_pair(false, std::vector<Pose>());
-            }
-
-        }
-
-        if (roi.width < 1 || roi.height < 1) {
             return make_pair(false, std::vector<Pose>());
         }
 
-        face_roi = roi;
-        //Use FSA To Detect Rotation
-        TicToc fsa;
-        if(settings->use_fsa) {
-            fsa_roi = crop_roi(roi, frame);
-            static Rect2d fsa_roi_last;
-            if (fsa_roi_last.area() < MIN_ROI_AREA) {
-                fsa_roi_last = fsa_roi;
-            } else {
-                fsa_roi = fsa_roi_last = mixture_roi(fsa_roi_last, fsa_roi, settings->roi_filter_rate);
-            }
+    } else {
+        bool new_add_pending_detect = false;
+        if (frame_count % settings->detect_duration == 0) {
+            if (!frame_pending_detect) {
+                frame_pending_detect = true;
+                detect_frame_mtx.lock();
+                frame.copyTo(frame_need_to_detect);
+                roi_need_to_detect = last_roi;
+                detect_frame_mtx.unlock();
 
-            if (fsa_roi.area() > MIN_ROI_AREA) {
-                auto fsa_ypr_raw = fsanet.inference(frame(fsa_roi));
-                if (fsa_ypr_raw(0) > 0) {
-                    face_roi.x = face_roi.x - fsa_ypr_raw(0)*face_roi.width*0.3;
-                }
-                face_roi.width = face_roi.width + fabs(fsa_ypr_raw(0))*face_roi.width*0.3;
-                fsa_ypr = fsa_ypr_raw - eul_by_crop(fsa_roi);
+                new_add_pending_detect = true;
             }
         }
-        double dt_fsa = fsa.toc();
 
-        TicToc tic1;
-        landmarks = lmd->detect(frame, face_roi);
-        if (frame_count % ((int)settings->fps) == 0)
-            qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
-        landmarks_3d = model_points_68;
+        detect_mtx.lock();
+        if (!new_add_pending_detect && frame_pending_detect) {
+            //We add frames to help tracker
+            frames.push_back(frame.clone());
+            while(frames.size() > settings->retrack_queue_size) {
+                    frames.erase(frames.begin());
+            }
+        }
+
+        roi = last_roi;
+        TicToc tic;
+
+        bool success = tracker->update(frame, roi);
+        if (success) {
+            track_spd.x = (roi.x + roi.width/2 - last_roi.x - last_roi.width/2)/dt;
+            track_spd.y = (roi.y + roi.height/2 - last_roi.y - last_roi.height/2)/dt;
+//            if (cv::norm(track_spd) > 10) {
+//               qDebug() << "Track SPD [" << track_spd.x << "," << track_spd.y << "]" << " ROI [" << roi.x
+//                        << "," << roi.y << "]" << " last ROI [" << last_roi.x << "," << last_roi.y <<"]"
+//                        << " dt " << dt;
+//            }
+        }
+
+        if (!success && !frame_pending_detect) {
+            qDebug() << "Will detect in main thread";
+            TicToc tic;
+            roi = fd->detect(frame, cv::Rect2d());
+            qDebug()<< "Tracker failed; Turn to detection" << tic.toc() << "ms";
+
+            if (roi.area() > MIN_ROI_AREA) {
+                last_roi = roi;
+                tracker.release();
+                tracker = create_tracker();
+                tracker->init(frame, roi);
+                success = true;
+            }
+        }
+
+        if (success) {
+            last_roi = roi;
+            detect_mtx.unlock();
+            if (new_add_pending_detect) {
+                roi_need_to_detect  = roi;
+            }
+        } else {
+            //std::cout << "Will unlock" << std::endl;
+            detect_mtx.unlock();
+            return make_pair(false, std::vector<Pose>());
+        }
+
     }
+
+    if (roi.area() < MIN_ROI_AREA) {
+        return make_pair(false, std::vector<Pose>());
+    }
+
+    face_roi = roi;
+    //Use FSA To Detect Rotation
+    TicToc fsa;
+    if(settings->use_fsa) {
+        fsa_roi = crop_roi(roi, frame);
+        static Rect2d fsa_roi_last;
+        if (fsa_roi_last.area() < MIN_ROI_AREA) {
+            fsa_roi_last = fsa_roi;
+        } else {
+            fsa_roi = fsa_roi_last = mixture_roi(fsa_roi_last, fsa_roi, settings->roi_filter_rate);
+        }
+
+        if (fsa_roi.area() > MIN_ROI_AREA) {
+            auto fsa_ypr_raw = fsanet.inference(frame(fsa_roi));
+            if (fsa_ypr_raw(0) > 0) {
+                face_roi.x = face_roi.x - fsa_ypr_raw(0)*face_roi.width*0.3;
+            }
+            face_roi.width = face_roi.width + fabs(fsa_ypr_raw(0))*face_roi.width*0.3;
+            fsa_ypr = fsa_ypr_raw - eul_by_crop(fsa_roi);
+        }
+    }
+    double dt_fsa = fsa.toc();
+
+    TicToc tic1;
+    landmarks = lmd->detect(frame, face_roi);
+    if (frame_count % ((int)settings->fps) == 0)
+        qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
+    landmarks_3d = model_points_68;
 
     TicToc ticpnp;
     auto ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
@@ -382,6 +377,8 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
             cv::Rodrigues(Rmat, rvec);
             cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.05, 3);
 
+            cv::Point2f center(roi.x + roi.width/2, roi.y + roi.height/2);
+            cv::arrowedLine(frame,  center, center+track_spd, cv::Scalar(0, 127, 255), 3);
         }
 
         last_clean_frame = frame_clean;
