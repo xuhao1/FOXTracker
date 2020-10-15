@@ -122,10 +122,11 @@ public:
         if (model_file.is_open())
         {
             double px, py, pz;
+            qDebug("Model 3D");
             while (!model_file.eof())
             {
                 model_file >> px >> py >> pz;
-                model_points_68.push_back(cv::Point3d(px, py, - pz));
+                model_points_68.push_back(cv::Point3d(px, py, - (pz + settings->cervical_face_mm)));
             }
         }
         model_file.close();

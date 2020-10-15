@@ -266,11 +266,11 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         if (success) {
             track_spd.x = (roi.x + roi.width/2 - last_roi.x - last_roi.width/2)/dt;
             track_spd.y = (roi.y + roi.height/2 - last_roi.y - last_roi.height/2)/dt;
-//            if (cv::norm(track_spd) > 10) {
-//               qDebug() << "Track SPD [" << track_spd.x << "," << track_spd.y << "]" << " ROI [" << roi.x
-//                        << "," << roi.y << "]" << " last ROI [" << last_roi.x << "," << last_roi.y <<"]"
-//                        << " dt " << dt;
-//            }
+            if (cv::norm(track_spd) > 10) {
+               qDebug() << "Track SPD [" << track_spd.x << "," << track_spd.y << "]" << " ROI [" << roi.x
+                        << "," << roi.y << "]" << " last ROI [" << last_roi.x << "," << last_roi.y <<"]"
+                        << " dt " << dt;
+            }
         }
 
         if (!success && !frame_pending_detect) {

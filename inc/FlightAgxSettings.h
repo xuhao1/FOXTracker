@@ -57,6 +57,8 @@ public:
 
     double roi_filter_rate = 0.8;
 
+    double cervical_face_mm = -80;
+
     //0 Use Head
     //1 Use Aruco
     int detect_method = 1;
