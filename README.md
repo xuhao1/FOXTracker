@@ -12,10 +12,11 @@ This program is still under development, not stable yet. **I will never collect 
 Download FlightAgentX at [Release](https://github.com/xuhao1/FlightAgentX/releases)
 
 
-This program supports control games directly or uses Opentrack as backend. For now, the spline function is in development, so use Opentrack is a good idea. If you are using this program individually, please modify the config.yaml.
+This program supports control games directly or uses Opentrack as backend. For now, the spline function is in development, so use Opentrack is a good idea. If you are using this program individually, please modify config or the config.yaml.
+
+![c1](./docs/config.PNG)
 
 Just turn your opentrack input to UDP and open FlightAgentX.exe. Everything works fine.
-
 ![c1](./docs/opentracker_config.PNG)
 ![c2](./docs/opentracker_config2.PNG)
 
