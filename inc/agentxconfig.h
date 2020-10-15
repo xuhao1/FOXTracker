@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <ekfconfig.h>
+#include <QMessageBox>
 //#include <
 #include <QJoysticks.h>
 
@@ -30,11 +31,22 @@ private slots:
 
     void on_buttonBox_accepted();
 
+    void on_SlerpRate_Input_valueChanged(int value);
+
+    void on_Bind_HotKey2_clicked();
+
+    void on_Bind_HotKey1_clicked();
+
+    void on_Bind_HotKey_clicked(int key);
+
 signals:
     void reset_camera();
+    void recenter_hotkey_pressed();
 
 private:
     Ui::AgentXConfig *ui;
+    QMessageBox * mbox = nullptr;
+    int wait_for_bind = -1;
 };
 
 #endif // AGENTXCONFIG_H

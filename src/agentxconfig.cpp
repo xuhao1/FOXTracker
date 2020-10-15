@@ -2,12 +2,12 @@
 #include "ui_agentxconfig.h"
 #include "FlightAgxSettings.h"
 #include <string>
+#include <QMessageBox>
 
 AgentXConfig::AgentXConfig(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AgentXConfig)
 {
-    //QJoysticks::getInstance()->setVirtualJoystickEnabled (false);
     ui->setupUi(this);
     qDebug() << "Start AgentX Config page";
     QStringList joystickNames = QJoysticks::getInstance()->deviceNames();
@@ -15,6 +15,7 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     QList<QJoystickDevice*> joysticks = QJoysticks::getInstance()->inputDevices();
     qDebug() << "Joysicks" << joysticks.size();
 
+    QJoysticks::getInstance()->setVirtualJoystickEnabled (true);
     connect(QJoysticks::getInstance(), &QJoysticks::buttonEvent, this, &AgentXConfig::buttonEvent);
 
     if(settings->use_ekf) {
@@ -40,10 +41,14 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     ui->CameraID_Input->setValue(settings->camera_id);
     ui->DetectDura_Input->setValue(settings->detect_duration);
     ui->IP_Input->setText(settings->udp_host.c_str());
-}
 
-void AgentXConfig::buttonEvent (const QJoystickButtonEvent& event) {
-    qDebug() << "Joystick" << event.joystick->name << " pressed " << event.button << " pressed" << event.pressed;
+    ui->SlerpRate_Input->setValue(settings->fsa_pnp_mixture_rate*100);
+
+    ui->Hotkey1_Joystick->setText(settings->hotkey_joystick_names[0].c_str());
+    ui->Hotkey1_Button->setText(QString::number(settings->hotkey_joystick_buttons[0]));
+
+    ui->Hotkey2_Joystick->setText(settings->hotkey_joystick_names[1].c_str());
+    ui->Hotkey2_Button->setText(QString::number(settings->hotkey_joystick_buttons[1]));
 }
 
 AgentXConfig::~AgentXConfig()
@@ -99,5 +104,65 @@ void AgentXConfig::on_buttonBox_accepted()
     settings->detect_duration = ui->DetectDura_Input->value();
     settings->set_value<int>("detect_duration", settings->detect_duration);
 
+    qDebug() << "Save config.yaml to file";
     settings->write_to_file();
+}
+
+void AgentXConfig::on_SlerpRate_Input_valueChanged(int value)
+{
+    settings->fsa_pnp_mixture_rate = ((double)value)/100;
+    settings->set_value<double>("fsa_pnp_mixture_rate", settings->fsa_pnp_mixture_rate);
+
+    qDebug() << "fsa_pnp_mixture_rate" << settings->fsa_pnp_mixture_rate;
+}
+
+void AgentXConfig::on_Bind_HotKey_clicked(int key) {
+    mbox = new QMessageBox();
+    mbox->setText("Press any key to bind re-center key");
+    mbox->setStandardButtons(QMessageBox::Cancel);
+    wait_for_bind = key;
+    int ret = mbox->exec();
+    qDebug() << "MBox recturn" << ret;
+}
+
+void AgentXConfig::buttonEvent (const QJoystickButtonEvent& event) {
+    std::string joyname = event.joystick->name.toUtf8().constData();
+    int btn_id =  event.button;
+    if(event.pressed && wait_for_bind >= 0) {
+        qDebug() << "Joystick" << event.joystick->name << " pressed " << event.button << " pressed" << event.pressed;
+        qDebug() << "Bind button to hotkey" << wait_for_bind;
+        settings->hotkey_joystick_names[wait_for_bind] = joyname;
+        settings->hotkey_joystick_buttons[wait_for_bind] = event.button;
+
+        if (mbox!=nullptr) {
+            mbox->done(0);
+        }
+        wait_for_bind = -1;
+        return;
+    }
+
+    if (event.pressed) {
+        for (size_t i = 0; i < settings->hotkey_joystick_names.size(); i++) {
+            if(settings->hotkey_joystick_names[i] == joyname &&
+               settings->hotkey_joystick_buttons[i] == btn_id) {
+                qDebug() << "Hotkey" << i << "pressed";
+                recenter_hotkey_pressed();
+            }
+            //Only trigger first hotkey function.
+            return;
+        }
+    }
+}
+
+
+void AgentXConfig::on_Bind_HotKey2_clicked() {
+    on_Bind_HotKey_clicked(1);
+    ui->Hotkey2_Joystick->setText(settings->hotkey_joystick_names[1].c_str());
+    ui->Hotkey2_Button->setText(QString::number(settings->hotkey_joystick_buttons[1]));
+}
+
+void AgentXConfig::on_Bind_HotKey1_clicked() {
+    on_Bind_HotKey_clicked(0);
+    ui->Hotkey1_Joystick->setText(settings->hotkey_joystick_names[0].c_str());
+    ui->Hotkey1_Button->setText(QString::number(settings->hotkey_joystick_buttons[0]));
 }

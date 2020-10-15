@@ -14,7 +14,9 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">font: 10pt &quot;Source Code Pro&quot;;</string>
+   <string notr="true">font: 10pt &quot;Source Code Pro&quot;;
+color: #8fbed4;
+background-color: rgb(31, 38, 38);</string>
   </property>
   <widget class="QLabel" name="label">
    <property name="geometry">

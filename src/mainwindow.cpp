@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&hd, &HeadPoseDetector::on_detect_pose, &remapper, &PoseRemapper::on_pose_data, Qt::QueuedConnection);
 
     connect(config_menu, &AgentXConfig::reset_camera, &hd, &HeadPoseDetector::reset);
+    connect(config_menu, &AgentXConfig::recenter_hotkey_pressed, this, &MainWindow::on_center_keyboard_event);
 
 //    connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
 //            &EKFConfig::on_detect_pose6d);
@@ -199,7 +200,6 @@ void MainWindow::on_config_button_clicked()
 
 
 void MainWindow::on_center_keyboard_event() {
-    qDebug() << "Ask recenter";
     remapper.reset_center();
 }
 
@@ -211,4 +211,9 @@ void MainWindow::on_pause_clicked()
     } else {
         Timer->start();
     }
+}
+
+void MainWindow::on_centerButton_clicked()
+{
+    on_center_keyboard_event();
 }

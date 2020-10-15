@@ -26,8 +26,6 @@ std::vector<cv::Rect2d> FaceDetector::detect_objs(const cv::Mat & frame) {
         cv::Mat _img;
         int _size_dnn = frame.cols*0.5;
 
-//        qDebug() << "Size dnn" << _size_dnn;
-
         cv::resize(frame, _img, cv::Size(_size_dnn, _size_dnn));
         auto blob = cv::dnn::blobFromImage(_img, 1.0, cv::Size(_size_dnn, _size_dnn), cv::Scalar(104.0, 177.0, 123.0));
         head_detector.setInput(blob);
@@ -80,21 +78,16 @@ cv::Rect2d FaceDetector::detect(const cv::Mat & frame, cv::Rect2d predict_roi) {
 //                roi = cv::Rect2d(0, 0, 640, 480);
             }
 
-            if (last_roi.area() < 10) {
+            if (last_roi.area() < MIN_ROI_AREA) {
                 last_roi = roi;
             }
 
-            double rate = 0.9;
-            roi.x = last_roi.x * rate +roi.x*(1-rate);
-            roi.y = last_roi.y * rate +roi.y*(1-rate);
-            roi.width = last_roi.width * rate + roi.width*(1-rate);
-            roi.height = last_roi.height * rate + roi.height*(1-rate);
-            last_roi = roi;
-
-            dets = detect_objs(frame(roi));
-            for (auto & det: dets) {
-                det.x = det.x + roi.x;
-                det.y = det.y + roi.y;
+            if (roi.area()>MIN_ROI_AREA) {
+                dets = detect_objs(frame(roi));
+                for (auto & det: dets) {
+                    det.x = det.x + roi.x;
+                    det.y = det.y + roi.y;
+                }
             }
         }
 

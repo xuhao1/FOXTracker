@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <yaml-cpp/yaml.h>
 
+#define MIN_ROI_AREA 10
+
 class FlightAgxSettings {
 public:
     cv::Mat K;
@@ -53,16 +55,18 @@ public:
 
     double SSDThreshold = 0.5;
 
+    double roi_filter_rate = 0.8;
+
     //0 Use Head
     //1 Use Aruco
     int detect_method = 1;
     double size = 0.09;
 
-    std::string center_joystick_name = "";
-    int center_joystick_id = 0;
+    std::vector<std::string> hotkey_joystick_names;
+    std::vector<int> hotkey_joystick_buttons;
 
     Eigen::Matrix3d Rcam;
-    FlightAgxSettings() {
+    FlightAgxSettings(): hotkey_joystick_names(0),hotkey_joystick_buttons(0) {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);
         K_eigen << 520.70925933,   0.,         319.58341522,

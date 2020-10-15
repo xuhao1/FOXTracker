@@ -1,5 +1,6 @@
 #include "poseremapper.h"
 #include <utility>
+#include <QDebug>
 
 PoseRemapper::PoseRemapper(QObject *parent) : QObject(parent)
 {
@@ -12,11 +13,12 @@ PoseRemapper::PoseRemapper(QObject *parent) : QObject(parent)
 void PoseRemapper::on_pose_data(double t, Pose_ pose_) {
     Pose pose(pose_.second, pose_.first);
     if(!is_inited) {
+        qDebug() << "Reset initial pose";
         initial_pose = pose;
         is_inited = true;
     }
 
-    auto Q = initial_pose.att() * pose.att();
+    auto Q = initial_pose.att().inverse() * pose.att();
     Eigen::Vector3d T = pose.pos() - initial_pose.pos();
 
     auto eul = quat2eulers(Q);

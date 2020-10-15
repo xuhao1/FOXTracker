@@ -27,6 +27,16 @@ T inline wrap_angle(T angle) {
     return angle;
 }
 
+inline cv::Rect2d mixture_roi(cv::Rect2d roia, cv::Rect2d roib, double rate) {
+    cv::Rect2d ret_rect2d;
+    ret_rect2d.x = roia.x * rate + roib.x*(1-rate);
+    ret_rect2d.y = roia.y * rate + roib.y*(1-rate);
+    ret_rect2d.width = roia.width * rate + roib.width*(1-rate);
+    ret_rect2d.height = roia.height * rate + roib.height*(1-rate);
+
+    return ret_rect2d;
+}
+
 inline Eigen::Vector3d quat2eulers(const Eigen::Quaterniond &quat, int degress = true) {
     Eigen::Vector3d ypr;
     ypr.z() = atan2(2 * (quat.w() * quat.x() + quat.y() * quat.z()),

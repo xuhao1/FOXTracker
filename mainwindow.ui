@@ -357,7 +357,7 @@ color: rgb(240, 241, 250);</string>
     <property name="geometry">
      <rect>
       <x>700</x>
-      <y>320</y>
+      <y>250</y>
       <width>191</width>
       <height>81</height>
      </rect>
@@ -401,6 +401,24 @@ color: rgb(240, 241, 250);</string>
     </property>
     <property name="text">
      <string>FPS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="centerButton">
+    <property name="geometry">
+     <rect>
+      <x>770</x>
+      <y>360</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(49, 143, 197);
+font: 15pt &quot;Source Code Pro&quot;;
+color: rgb(240, 241, 250);</string>
+    </property>
+    <property name="text">
+     <string>Center</string>
     </property>
    </widget>
   </widget>

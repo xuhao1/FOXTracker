@@ -29,10 +29,25 @@ void FlightAgxSettings::load_from_config_yaml() {
     disp_duration = config["disp_duration"].as<double>();
     disp_max_series_size = config["disp_max_series_size"].as<int>();
     fsa_pnp_mixture_rate = config["fsa_pnp_mixture_rate"].as<double>();
+
+    hotkey_joystick_names.resize(2);
+    hotkey_joystick_buttons.resize(2);
+
+    hotkey_joystick_names[0] = config["hotkey_joystick_name0"].as<std::string>();
+    hotkey_joystick_buttons[0] = config["hotkey_joystick_button0"].as<int>();
+
+    hotkey_joystick_names[1] = config["hotkey_joystick_name1"].as<std::string>();
+    hotkey_joystick_buttons[1] = config["hotkey_joystick_button1"].as<int>();
 }
 
 
 void FlightAgxSettings::write_to_file() {
+    config["hotkey_joystick_name0"] = hotkey_joystick_names[0];
+    config["hotkey_joystick_button0"] = hotkey_joystick_buttons[0];
+
+    config["hotkey_joystick_name1"] = hotkey_joystick_names[1];
+    config["hotkey_joystick_button1"] = hotkey_joystick_buttons[1];
+
     std::ofstream fout(cfg_name.c_str());
     fout << config;
     fout.close();

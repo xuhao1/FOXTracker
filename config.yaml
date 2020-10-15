@@ -5,17 +5,20 @@ retrack_queue_size: 10
 fps: 75
 send_posedata_udp: true
 port: 4242
-udp_host: "127.0.0.1"
-
+udp_host: 127.0.0.1
 use_ft: false
 use_npclient: false
-cov_Q: 0.1
-cov_T: 0.05
-cov_V: 10.0
-cov_W: 40.0
+cov_Q: 0.012022644346174128
+cov_T: 0.047136941821642298
+cov_V: 9.120108393559109
+cov_W: 9.120108393559109
 ekf_predict_dt: 0.01
 use_ekf: false
 disp_duration: 30
 disp_max_series_size: 1000
-
 detect_method: 0
+fsa_pnp_mixture_rate: 0.5
+hotkey_joystick_name0: ""
+hotkey_joystick_button0: 0
+hotkey_joystick_name1: ""
+hotkey_joystick_button1: 0

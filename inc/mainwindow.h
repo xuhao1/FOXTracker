@@ -23,12 +23,15 @@ class MainWindow : public QMainWindow
     PoseDataSender data_sender;
     PoseRemapper remapper;
     bool is_running = false;
+
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
 public slots:
     void on_show();
     void on_exit();
+
 private slots:
     void on_startButton_clicked();
 
@@ -50,6 +53,8 @@ private slots:
     void handle_global_hotkeys(unsigned int _id);
 
     void on_pause_clicked();
+
+    void on_centerButton_clicked();
 
 private:
     QTimer* Timer;

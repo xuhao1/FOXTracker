@@ -114,15 +114,11 @@ void HeadPoseDetector::run_detect_thread() {
 
            cv::Ptr<cv::Tracker> tracker = TrackerMOSSE::create();
            detect_mtx.lock();
-
            tracker->init(_frame, roi);
            bool success_track = true;
-
-//           qDebug() << "Track " << frames.size() << "frames";
            TicToc tic_retrack;
-
            for (auto & frame : frames) {
-                bool success = tracker->update(frame, roi);
+               bool success = tracker->update(frame, roi);
                 if (!success) {
                     success_track = false;
                     break;
@@ -173,8 +169,10 @@ void HeadPoseDetector::run_thread() {
         qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
         preview_image = cv::Mat(480, 640, CV_8UC3, cv::Scalar(0, 0, 0));
         char warn[100] = {0};
-        sprintf(warn, "Camera ID %d Error. Change in config.yaml!!!", settings->camera_id);
+        sprintf(warn, "Camera ID %d Error. Change it in config menu!!!", settings->camera_id);
         cv::putText(preview_image, warn, cv::Point2f(20, 240), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+        is_running = false;
+        detect_thread.join();
         return;
     }
     cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
@@ -237,7 +235,6 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         if (corners.size() > 0 ) {
             landmarks = corners[0];
             cv::aruco::drawDetectedMarkers(frame, corners, ids);
-            double size = 90;
             landmarks_3d = landmarks3D_ARMarker;
         }
 
@@ -246,7 +243,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         frame_clean = frame.clone();
         if (first_solve_pose) {
             roi = fd->detect(frame, last_roi);
-            if (roi.width > 1.0 && roi.height > 1.0) {
+            if (roi.area() > MIN_ROI_AREA) {
                 tracker = cv::TrackerMOSSE::create();
                 tracker->init(frame, roi);
             } else {
@@ -318,7 +315,14 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         TicToc fsa;
         if(settings->use_fsa) {
             fsa_roi = crop_roi(roi, frame);
-            if (fsa_roi.area() > 0) {
+            static Rect2d fsa_roi_last;
+            if (fsa_roi_last.area() < MIN_ROI_AREA) {
+                fsa_roi_last = fsa_roi;
+            } else {
+                fsa_roi = fsa_roi_last = mixture_roi(fsa_roi_last, fsa_roi, settings->roi_filter_rate);
+            }
+
+            if (fsa_roi.area() > MIN_ROI_AREA) {
                 auto fsa_ypr_raw = fsanet.inference(frame(fsa_roi));
                 if (fsa_ypr_raw(0) > 0) {
                     face_roi.x = face_roi.x - fsa_ypr_raw(0)*face_roi.width*0.3;
