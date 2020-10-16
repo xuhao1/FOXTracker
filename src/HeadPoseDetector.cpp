@@ -11,7 +11,7 @@ using namespace cv;
 using namespace std;
 
 cv::Ptr<cv::Tracker> create_tracker() {
-    return cv::TrackerMOSSE::create();
+    return cv::TrackerMedianFlow::create();
 }
 
 void HeadPoseTrackDetectWorker::run() {
@@ -46,16 +46,16 @@ void HeadPoseDetector::loop() {
 
     if (ret.first) {
         if (poses_raw.size() == 1) {
-            pose_raw = Rcam*poses_raw[0];
+            pose_raw = poses_raw[0];
         } else {
-            pose_raw = Rcam*(poses_raw[0].slerp(settings->fsa_pnp_mixture_rate, poses_raw[1]));
+            pose_raw = (poses_raw[0].slerp(settings->fsa_pnp_mixture_rate, poses_raw[1]));
         }
 
         TicToc tic;
         if(settings->use_ekf) {
-            pose = ekf.on_raw_pose_data(t, Rcam*poses_raw[0], 0);
+            pose = ekf.on_raw_pose_data(t, poses_raw[0], 0);
             if (poses_raw.size() > 1) {
-                pose = ekf.on_raw_pose_data(t, Rcam*poses_raw[1], 1);
+                pose = ekf.on_raw_pose_data(t, poses_raw[1], 1);
             }
         } else {
             pose = pose_raw;
@@ -104,7 +104,10 @@ void HeadPoseDetector::run_detect_thread() {
            cv::Mat _frame = frame_need_to_detect.clone();
            detect_frame_mtx.unlock();
            cv::Rect2d roi = fd->detect(_frame, roi_need_to_detect);
+
+           if (fc%10 == 0) {
            qDebug() << "Frontal face detector cost" << tic.toc() << "ms";
+           }
            //Track to now image
 
            if (roi.area() < MIN_ROI_AREA) {
@@ -266,12 +269,12 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         if (success) {
             track_spd.x = (roi.x + roi.width/2 - last_roi.x - last_roi.width/2)/dt;
             track_spd.y = (roi.y + roi.height/2 - last_roi.y - last_roi.height/2)/dt;
-            if (cv::norm(track_spd) > 10) {
-               qDebug() << "Track SPD [" << track_spd.x << "," << track_spd.y << "]" << " ROI [" << roi.x
-                        << "," << roi.y << "]" << " last ROI [" << last_roi.x << "," << last_roi.y <<"]"
-                        << " dt " << dt;
+//            if (cv::norm(track_spd) > 10) {
+//               qDebug() << "Track SPD [" << track_spd.x << "," << track_spd.y << "]" << " ROI [" << roi.x
+//                        << "," << roi.y << "]" << " last ROI [" << last_roi.x << "," << last_roi.y <<"]"
+//                        << " dt " << dt;
+//            }
             }
-        }
 
         if (!success && !frame_pending_detect) {
             qDebug() << "Will detect in main thread";
@@ -324,6 +327,11 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
                 face_roi.x = face_roi.x - fsa_ypr_raw(0)*face_roi.width*0.3;
             }
             face_roi.width = face_roi.width + fabs(fsa_ypr_raw(0))*face_roi.width*0.3;
+
+            if (fsa_ypr_raw(1) < 0) {
+                face_roi.height = face_roi.height - fabs(fsa_ypr_raw(1))*face_roi.height*0.1;
+            }
+
             fsa_ypr = fsa_ypr_raw - eul_by_crop(fsa_roi);
         }
     }
@@ -337,15 +345,32 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
 
     TicToc ticpnp;
     auto ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
-    if (ticpnp.toc() > 50) {
-        qDebug() << "PnP " << tic.toc();
-    }
+
+    //Estimate Planar speed of face with tracker
+
+    double z = ret.second.pos().z() + settings->cervical_face_mm/1000;
+    double roi_x = roi.x + roi.width/2;
+    double roi_y = roi.y + roi.height/2;
+
+    double roi_x_new = roi_x + track_spd.x * dt;
+    double roi_y_new = roi_y + track_spd.y * dt;
+
+//    std::vector<cv::Point2f> pts{cv::Point2f(roi_x_new, roi_y_new)};
+//    std::vector<cv::Point3f> pts3d;
+//    cv::undistortPoints(pts, pts3d, settings->K, settings->D);
+//    cv::Point3f pt3d = pts3d[0] * z;
+//    Eigen::Vector3d point_new_3d(pt3d.x, pt3d.y, pt3d.z);
+//    Eigen::Vector3d point_3d = ret.second.pos();
+//    point_3d.z() = z;
+    //We can use this velocity to recgonize the deadzone. Thus, lock the attitude
+//    Eigen::Vector3d vel_planar_face = (point_new_3d - point_3d)/dt;
+
+//    qDebug("Vel planar face %f %f %f", vel_planar_face.x(), vel_planar_face.y(), vel_planar_face.z());
 
     if (ret.first) {
         auto pose = ret.second;
         T = pose.pos();
         pose.att() = pose.att()*Rface;
-
         detected_poses.push_back(pose);
         //Use FSA YPR Here
         if (settings->use_fsa) {
@@ -415,6 +440,15 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
     if (tic.toc() > 30)
         qDebug() << "PnP Time" << tic.toc();
+    cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec/1000, 0.1, 1);
+
+    cv::cv2eigen(tvec, T);
+    cv::Mat Rcv;
+    cv::Rodrigues(rvec, Rcv);
+
+    cv::cv2eigen(Rcv, R);
+    R = R.transpose();
+    T = -T;
 
     if (success) {
         if (first_solve_pose) {
@@ -422,18 +456,15 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
             first_solve_pose = false;
         }
 
-        rvec_init = rvec;
-        tvec_init = tvec;
+        char info[100] = {0};
+        sprintf(info, "Tpnp [%3.1f,%3.1f,%3.1f] cm", T.x(), T.y(), T.z());
+        cv::putText(frame, info, cv::Point2f(20, 240), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
     } else {
         qDebug() << "pnp Solve failed";
     }
 
-    cv::Mat Rcv;
-    cv::Rodrigues(rvec, Rcv);
-
-    cv::cv2eigen(tvec/1000.0, T);
-    cv::cv2eigen(Rcv, R);
-    return make_pair(success, Pose(T, R));
+//    qDebug("T %f %f %f", T.x(), T.y(), T.z());
+    return make_pair(success, Pose(T/1000.0, R));
 }
 
 

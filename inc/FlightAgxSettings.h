@@ -71,12 +71,28 @@ public:
     FlightAgxSettings(): hotkey_joystick_names(0),hotkey_joystick_buttons(0) {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);
-        K_eigen << 520.70925933,   0.,         319.58341522,
-                  0.,         520.3492704,  231.99546224,
-                  0.,           0.,           1.   ;
-        D_eigen << 0.19808774, -0.68766424, -0.00180889,  0.0008008 ,  0.7539345;
+
+        //Surface camera
+        // K_eigen << 520.70925933,   0.,         319.58341522,
+        //           0.,         520.3492704,  231.99546224,
+        //           0.,           0.,           1.   ;
+        // D_eigen << 0.19808774, -0.68766424, -0.00180889,  0.0008008 ,  0.7539345;
+        // D_eigen = D_eigen.transpose();
+
+        // CL Eye
+        //  K 
+        // [[553.61456617   0.         308.32781287]
+        // [  0.         556.75788726 252.73270154]
+        // [  0.           0.           1.        ]] 
+        // D 
+        // [[-0.10055392  0.19422527  0.00414563 -0.00049292 -0.02306945]]
+        K_eigen << 553.61456617,   0.,         308.32781287,
+            0,         556.75788726, 252.73270154,
+            0.,           0.,           1.;
+
+        D_eigen <<  -0.10055392,  0.19422527,  0.00414563, -0.00049292, -0.02306945;
+
         cv::eigen2cv(K_eigen, K);
-        D_eigen = D_eigen.transpose();
         cv::eigen2cv(D_eigen, D);
 
         app_path = QCoreApplication::applicationDirPath().toStdString();

@@ -103,6 +103,7 @@ public:
     MainWindow * main_window;
 
     HeadPoseDetector() {
+        cv::setNumThreads(1);
         is_running = false;
         fd = new FaceDetector;
         lmd = new LandmarkDetector(settings->landmark_model);

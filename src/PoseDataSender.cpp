@@ -20,9 +20,9 @@ void PoseDataSender::send_data_udp(double t, Pose6DoF pose) {
     //Send packet
     //Debug only
     double data[6] = {0};
-    data[0] = - pose.second.x()*100;
-    data[1] = pose.second.y()*100;
-    data[2] = - pose.second.z()*100;
+    data[0] = pose.second.x()*100;
+    data[1] = - pose.second.y()*100;
+    data[2] = pose.second.z()*100;
 
     data[3] = eul(0);
     data[4] = eul(1);
