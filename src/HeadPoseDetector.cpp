@@ -396,11 +396,11 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
             }
 
             cv::Mat tvec, Rmat, rvec;
-            Eigen::Matrix3d _R = R*Rface.inverse();
+            Eigen::Matrix3d _R = R*Rface.transpose();
             cv::eigen2cv(T, tvec);
             cv::eigen2cv(_R, Rmat);
             cv::Rodrigues(Rmat, rvec);
-            cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.05, 3);
+            cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, -tvec, 0.05, 3);
 
             cv::Point2f center(roi.x + roi.width/2, roi.y + roi.height/2);
             cv::arrowedLine(frame,  center, center+track_spd, cv::Scalar(0, 127, 255), 3);
@@ -447,7 +447,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     cv::Rodrigues(rvec, Rcv);
 
     cv::cv2eigen(Rcv, R);
-    R = R.transpose();
     T = -T;
 
     if (success) {
