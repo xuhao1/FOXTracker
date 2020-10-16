@@ -109,7 +109,7 @@ public:
         lmd = new LandmarkDetector(settings->landmark_model);
 
         rvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -3.14392813);
-        tvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -500);
+        tvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -0.5);
 
         Rface << 0,  1, 0,
                     0,  0, -1, 
@@ -123,20 +123,17 @@ public:
         if (model_file.is_open())
         {
             double px, py, pz;
-            qDebug("Model 3D");
             while (!model_file.eof())
             {
                 model_file >> px >> py >> pz;
-                model_points_68.push_back(cv::Point3d(px, py, - (pz + settings->cervical_face_mm)));
+                model_points_68.push_back(cv::Point3d(px, -py, -(pz + settings->cervical_face_model)));
+                qDebug("Feature Point %f %f %f", px, py, pz);
             }
         }
+
+        qDebug("Load model with %ld pts", model_points_68.size());
+
         model_file.close();
-
-        if(model_points_68.size() != 68) {
-            qDebug() << "Model file error!";
-            exit(-1);
-        }
-
 
         connect(this, SIGNAL(start()),
                 this, SLOT(start_slot()));
@@ -146,15 +143,6 @@ public:
         this->moveToThread(&mainThread);
         mainThread.start();
 
-        if (settings->detect_method == 1) {
-            dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
-        }
-
-        auto size = settings->size;
-        landmarks3D_ARMarker.push_back(cv::Point3f(size/2, size/2, 0));
-        landmarks3D_ARMarker.push_back(cv::Point3f(-size/2, size/2, 0));
-        landmarks3D_ARMarker.push_back(cv::Point3f(-size/2, -size/2, 0));
-        landmarks3D_ARMarker.push_back(cv::Point3f(size/2, -size/2, 0));
     }
 
     //When using FSANet. First is PnP pose, next is FSANet pose

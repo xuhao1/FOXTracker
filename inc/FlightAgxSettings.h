@@ -28,11 +28,18 @@ public:
     std::string cfg_name = "/config.yaml";
     std::string trackir_path = "/assets/TrackIR.exe";
     std::string support_games_csv = "/assets/facetracknoir supported games.csv";
-    std::string model = "/assets/model.txt";
-    std::string landmark_model = "/assets/shape_predictor_68_face_landmarks.dat";
+    std::string model = "/assets/landmark_models/model_68.txt";
+    std::string landmark_model = "/assets/landmark_models/shape_predictor_68_face_landmarks.dat";
     std::string fsanet_model = "/assets/fsanet_capsule.onnx";
     std::string protoPath ="/assets/face_detector/deploy.prototxt";
     std::string modelPath = "/assets/face_detector/res10_300x300_ssd_iter_140000.caffemodel";
+
+    std::vector<std::string> emilianavt_models{
+        "/assets/landmark_models/lm_model0_opt.onnx",
+        "/assets/landmark_models/lm_model1_opt.onnx",
+        "/assets/landmark_models/lm_model2_opt.onnx",
+        "/assets/landmark_models/lm_model3_opt.onnx"
+    };
 
     std::string app_path;
     bool use_ft = false;
@@ -57,11 +64,16 @@ public:
 
     double roi_filter_rate = 0.8;
 
-    double cervical_face_mm = -80;
+    double cervical_face_model = -0.08;
 
-    //0 Use Head
-    //1 Use Aruco
-    int detect_method = 1;
+    //-1 dlib
+    //0 network 0
+    //network 1
+    //2
+    //3
+    int landmark_detect_method = -1;
+
+    int landmark_net_width = 224;
     double size = 0.09;
 
     std::vector<std::string> hotkey_joystick_names;
@@ -104,6 +116,10 @@ public:
         cfg_name = app_path + "/config.yaml";
         protoPath = app_path + protoPath;
         modelPath = app_path + modelPath;
+
+        for (auto & st : emilianavt_models) {
+            st = app_path + st;
+        }
 
         qDebug() << "App run at" << app_path.c_str();
 

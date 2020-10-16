@@ -158,7 +158,7 @@ void HeadPoseDetector::start_slot() {
 
     is_running = true;
 
-    if( settings->enable_multithread_detect && settings->detect_method == 0) {
+    if(settings->enable_multithread_detect) {
         detect_thread = std::thread([&]{
             this->run_detect_thread();
         });
@@ -323,16 +323,18 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
 
         if (fsa_roi.area() > MIN_ROI_AREA) {
             auto fsa_ypr_raw = fsanet.inference(frame(fsa_roi));
-            if (fsa_ypr_raw(0) > 0) {
-                face_roi.x = face_roi.x - fsa_ypr_raw(0)*face_roi.width*0.3;
-            }
-            face_roi.width = face_roi.width + fabs(fsa_ypr_raw(0))*face_roi.width*0.3;
-
-            if (fsa_ypr_raw(1) < 0) {
-                face_roi.height = face_roi.height - fabs(fsa_ypr_raw(1))*face_roi.height*0.1;
-            }
-
             fsa_ypr = fsa_ypr_raw - eul_by_crop(fsa_roi);
+            if (settings->landmark_detect_method < 0) {
+                if (fsa_ypr_raw(0) > 0) {
+                    face_roi.x = face_roi.x - fsa_ypr_raw(0)*face_roi.width*0.3;
+                }
+
+                face_roi.width = face_roi.width + fabs(fsa_ypr_raw(0))*face_roi.width*0.3;
+
+                if (fsa_ypr_raw(1) < 0) {
+                    face_roi.height = face_roi.height - fabs(fsa_ypr_raw(1))*face_roi.height*0.1;
+                }
+            }
         }
     }
     double dt_fsa = fsa.toc();
@@ -348,7 +350,8 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
 
     //Estimate Planar speed of face with tracker
 
-    double z = ret.second.pos().z() + settings->cervical_face_mm/1000;
+//    double z = ret.second.pos().z() + settings->cervical_face_mm/1000;
+    double z = ret.second.pos().z();
     double roi_x = roi.x + roi.width/2;
     double roi_y = roi.y + roi.height/2;
 
@@ -426,21 +429,17 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     if (landmarks.size() == 0) {
         return make_pair(false, Pose(T, R));
     }
-    bool success = false;
+
     auto rvec = rvec_init.clone();
     auto tvec = tvec_init.clone();
 
     TicToc tic;
-
-    if (settings->detect_method == 1) {
-        success = cv::solvePnP(landmarks_3d, landmarks, settings->K, settings->D, rvec, tvec, true, cv::SOLVEPNP_IPPE_SQUARE);
-    } else {
-        success = cv::solvePnP(landmarks_3d, landmarks, settings->K, settings->D, rvec, tvec, true);
+    bool success = cv::solvePnP(landmarks_3d, landmarks, settings->K, settings->D, rvec, tvec, true);
+    if (tic.toc() > 30) {
+        qDebug() << "PnP Time" << tic.toc();
     }
 
-    if (tic.toc() > 30)
-        qDebug() << "PnP Time" << tic.toc();
-    cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec/1000, 0.1, 1);
+    cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
 
     cv::cv2eigen(tvec, T);
     cv::Mat Rcv;
@@ -451,19 +450,19 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
     if (success) {
         if (first_solve_pose) {
-            cv::cv2eigen(tvec/1000.0, Tinit);
+//            cv::cv2eigen(tvec, Tinit);
             first_solve_pose = false;
         }
 
         char info[100] = {0};
-        sprintf(info, "Tpnp [%3.1f,%3.1f,%3.1f] cm", T.x(), T.y(), T.z());
-        cv::putText(frame, info, cv::Point2f(20, 240), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+        sprintf(info, "Tpnp [%3.1f,%3.1f,%3.1f] cm", T.x()*100, T.y()*100, T.z()*100);
+        cv::putText(frame, info, cv::Point2f(20, 100), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
     } else {
         qDebug() << "pnp Solve failed";
     }
 
 //    qDebug("T %f %f %f", T.x(), T.y(), T.z());
-    return make_pair(success, Pose(T/1000.0, R));
+    return make_pair(success, Pose(T, R));
 }
 
 

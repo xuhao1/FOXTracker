@@ -22,7 +22,7 @@ void FlightAgxSettings::load_from_config_yaml() {
     cov_V = config["cov_V"].as<double>();
     cov_W = config["cov_W"].as<double>();
 
-    detect_method = config["detect_method"].as<int>();
+    landmark_detect_method = config["landmark_detect_method"].as<int>();
 
     ekf_predict_dt = config["ekf_predict_dt"].as<double>();
     use_ekf = config["use_ekf"].as<bool>();
@@ -38,6 +38,10 @@ void FlightAgxSettings::load_from_config_yaml() {
 
     hotkey_joystick_names[1] = config["hotkey_joystick_name1"].as<std::string>();
     hotkey_joystick_buttons[1] = config["hotkey_joystick_button1"].as<int>();
+
+    if (landmark_detect_method >=0 ) {
+        model = app_path + "/assets/landmark_models/model_66.txt";
+    }
 }
 
 

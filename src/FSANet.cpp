@@ -5,8 +5,7 @@
 FSANet::FSANet():env(ORT_LOGGING_LEVEL_WARNING, "test") {
     Ort::SessionOptions session_options;
     session_options.SetIntraOpNumThreads(1);
-    session_options.SetInterOpNumThreads(1);
-    //session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     printf("Using Onnxruntime C++ API\n");
     std::wstring unicode(settings->fsanet_model.begin(), settings->fsanet_model.end());
@@ -35,8 +34,6 @@ Eigen::Vector3d FSANet::inference(const cv::Mat &image) {
 
     cv::resize(image, data, cv::Size(64, 64));
     cv::normalize(data, data, 0, 255, cv::NORM_MINMAX);
-    //std::cout << "Size" << data.size() << "type" << data.type() << std::endl;
-    //data.convertTo(data_F, CV_32FC3, 1/255.0);
     data.convertTo(data_F, CV_32FC3, 1.0);
 
     memcpy(input_image.data(), data_F.data, 64*64*3*sizeof(float));

@@ -1,6 +1,7 @@
 #include "FaceDetectors.h"
 #include <QDebug>
 #include <dlib/opencv.h>
+#include <opencv2/opencv.hpp>
 
 using namespace cv;
 
@@ -8,17 +9,149 @@ inline cv::Rect2d rect2roi(dlib::rectangle ret) {
     return cv::Rect2d(ret.left(), ret.top(), ret.right() - ret.left(), ret.bottom() - ret.top());
 }
 
-CvPts LandmarkDetector::detect(cv::Mat frame, cv::Rect roi) {
+
+
+LandmarkDetector::LandmarkDetector(std::string model_path):
+    mean_scaling(0.485f, 0.456f, 0.406f),
+    std_scaling(0.229f, 0.224f, 0.225f) {
+    cv::divide(mean_scaling, std_scaling, mean_scaling);
+    std_scaling *= 255.0f;
+    if (settings->landmark_detect_method < 0) {
+        qDebug() << "Will use dlib as landmark detector";
+        dlib::deserialize(model_path.c_str()) >> predictor;
+    } else {
+        qDebug() << "Will use onnx as landmark detector";
+        Ort::SessionOptions session_options;
+        session_options.SetIntraOpNumThreads(1);
+//        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
+        printf("Using Onnxruntime C++ API\n");
+        std::string model_path = settings->emilianavt_models[settings->landmark_detect_method];
+        std::wstring unicode(model_path.begin(), model_path.end());
+        session = new Ort::Session(env, unicode.c_str(), session_options);
+
+        Ort::AllocatorWithDefaultOptions allocator;
+        size_t num_input_nodes = session->GetInputCount();
+
+        std::vector<int64_t> input_node_dims{1, 3, 224, 224};
+        std::vector<int64_t> output_shape_{1, 2, 56, 56};
+        printf("Number of inputs = %zu\n", num_input_nodes);
+        auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+        input_tensor_ = Ort::Value::CreateTensor<float>(memory_info,
+                   input_image, 224*224*3, input_node_dims.data(), 4);
+        output_tensor_ = Ort::Value::CreateTensor<float>(memory_info, results_.data(), results_.size(), output_shape_.data(), output_shape_.size());
+    }
+}
+
+//Part of code is derived from AIRLegend's AITracker.
+//See also https://github.com/AIRLegend/aitrack/blob/master/AITracker/src/model.cpp
+void LandmarkDetector::normalize(cv::Mat& image)
+{
+    cv::divide(image, std_scaling, image);
+
+    /*float* ptr = image.ptr<float>();
+    for (int channel = 0; channel < 3; channel++){
+        for (int i = 0; i < 224 * 224; i++) {
+            ptr[224*224*channel + i] /= std_scaling[channel];
+        }
+    }*/
+
+    cv::subtract(image, mean_scaling, image);
+}
+
+void LandmarkDetector::transpose(float* from, float* dest, int dim_x, int dim_y)
+{
+    int stride = dim_x * dim_y;
+
+    for (int c = 0; c < 3; c++)
+    {
+        for (int i = 0; i < dim_x * dim_y; i++)
+        {
+            dest[i + stride*c] = from[c + i*3];
+        }
+    }
+}
+
+
+CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
     CvPts pts;
-    dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
-    dlib::rectangle rect(roi.x, roi.y, roi.x + roi.width, roi.y + roi.height);
-    dlib::full_object_detection shape = predictor(dlib_img, rect);
-    for (unsigned i = 0; i < shape.num_parts(); i++) {
-        auto p = shape.part(i);
-        pts.push_back(cv::Point2d(p.x(), p.y()));
+    if (settings->landmark_detect_method < 0) {
+        dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
+        dlib::rectangle rect(roi.x, roi.y, roi.x + roi.width, roi.y + roi.height);
+        dlib::full_object_detection shape = predictor(dlib_img, rect);
+        for (unsigned i = 0; i < shape.num_parts(); i++) {
+            auto p = shape.part(i);
+            pts.push_back(cv::Point2d(p.x(), p.y()));
+        }
+    } else {
+        cv::Rect2i roi_i = crop_roi(roi, frame, 0.);
+        cv::Mat face_crop = frame(roi_i);
+
+        face_crop.convertTo(face_crop, CV_32F);
+        cv::cvtColor(face_crop, face_crop, cv::COLOR_BGR2RGB);
+
+        cv::resize(face_crop, face_crop, cv::Size(224, 224), NULL, NULL, cv::INTER_LINEAR);
+        normalize(face_crop);
+        transpose((float*)face_crop.data, input_image);
+
+        //here we got the data
+        auto output_tensors = session->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
+        float* output_arr = output_tensors[0].GetTensorMutableData<float>();
+        pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/224, ((double)roi_i.width)/224);
+
+        cv::rectangle(frame, roi_i, cv::Scalar(0, 255, 255), 2);
     }
     return pts;
 }
+
+float logit(float p)
+{
+    if (p >= 1.0)
+        p = 0.99999;
+    else if (p <= 0.0)
+        p = 0.0000001;
+
+    p = p / (1 - p);
+    return log(p) / 16;
+}
+
+CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y)
+{
+    CvPts facical_landmarks;
+    int heatmap_size = 784; //28 * 28;
+    for (int landmark = 0; landmark < 66; landmark++)
+    {
+        int offset = heatmap_size * landmark;
+        int argmax = -100;
+        float maxval = -100;
+        for (int i = 0; i < heatmap_size; i++)
+        {
+            if (heatmaps[offset + i] > maxval)
+            {
+                argmax = i;
+                maxval = heatmaps[offset + i];
+            }
+        }
+
+        int x = argmax / 28;
+        int y = argmax % 28;
+
+
+        float conf = heatmaps[offset + argmax];
+        float res = 223;
+
+        int off_x = floor(res * (logit(heatmaps[66 * heatmap_size + offset + argmax])) + 0.1);
+        int off_y = floor(res * (logit(heatmaps[2 * 66 * heatmap_size + offset + argmax])) + 0.1);
+
+
+        float lm_y = (float)y0 + (float)(scale_x * (res * (float(x) / 27.) + off_x));
+        float lm_x = (float)x0 + (float)(scale_y * (res * (float(y) / 27.) + off_y));
+
+        facical_landmarks.push_back(cv::Point2f(lm_x, lm_y));
+    }
+    return facical_landmarks;
+}
+
 
 std::vector<cv::Rect2d> FaceDetector::detect_objs(const cv::Mat & frame) {
     std::vector<cv::Rect2d> ret;
