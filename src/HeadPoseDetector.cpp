@@ -450,7 +450,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
     if (success) {
         if (first_solve_pose) {
-//            cv::cv2eigen(tvec, Tinit);
             first_solve_pose = false;
         }
 
@@ -461,7 +460,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
         qDebug() << "pnp Solve failed";
     }
 
-//    qDebug("T %f %f %f", T.x(), T.y(), T.z());
     return make_pair(success, Pose(T, R));
 }
 
