@@ -84,7 +84,10 @@ CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
             pts.push_back(cv::Point2d(p.x(), p.y()));
         }
     } else {
-        cv::Rect2i roi_i = crop_roi(roi, frame, 0.);
+        cv::Rect2i roi_i = roi;
+        if (roi_i.area() < MIN_ROI_AREA) {
+            return pts;
+        }
         cv::Mat face_crop = frame(roi_i);
 
         face_crop.convertTo(face_crop, CV_32F);
@@ -98,8 +101,6 @@ CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
         auto output_tensors = session->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
         float* output_arr = output_tensors[0].GetTensorMutableData<float>();
         pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/224, ((double)roi_i.width)/224);
-
-        cv::rectangle(frame, roi_i, cv::Scalar(0, 255, 255), 2);
     }
     return pts;
 }

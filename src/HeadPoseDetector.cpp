@@ -323,7 +323,8 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
 
         if (fsa_roi.area() > MIN_ROI_AREA) {
             auto fsa_ypr_raw = fsanet.inference(frame(fsa_roi));
-            fsa_ypr = fsa_ypr_raw - eul_by_crop(fsa_roi);
+//            qDebug("EUL FIX Y %f P %f",eul_by_crop(roi)(0), eul_by_crop(roi)(1), eul_by_crop(roi)(2));
+            fsa_ypr = fsa_ypr_raw - eul_by_crop(roi);
             if (settings->landmark_detect_method < 0) {
                 if (fsa_ypr_raw(0) > 0) {
                     face_roi.x = face_roi.x - fsa_ypr_raw(0)*face_roi.width*0.3;
@@ -340,11 +341,15 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     double dt_fsa = fsa.toc();
 
     TicToc tic1;
-    landmarks = lmd->detect(frame, face_roi);
+    landmarks = lmd->detect(frame, crop_roi(face_roi, frame, 0));
     if (frame_count % ((int)settings->fps) == 0)
         qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
     landmarks_3d = model_points_68;
 
+    if (landmarks.size() != landmarks_3d.size()) {
+        qDebug("Landmark detection failed");
+        return make_pair(false, std::vector<Pose>());
+    }
     TicToc ticpnp;
     auto ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
 
@@ -375,6 +380,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         T = pose.pos();
         pose.att() = pose.att()*Rface;
         detected_poses.push_back(pose);
+        Eigen::Quaterniond dq;
         //Use FSA YPR Here
         if (settings->use_fsa) {
              R = Rcam.inverse() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
@@ -382,6 +388,9 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
                 * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX());
             Eigen::Quaterniond qR(R);
             detected_poses.push_back(Pose(T, qR));
+
+            //The mismatch here is a bug of the new model
+            dq = pose.att()*qR.inverse();
         }
 
         if (settings->enable_preview) {
@@ -407,6 +416,11 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
 
             cv::Point2f center(roi.x + roi.width/2, roi.y + roi.height/2);
             cv::arrowedLine(frame,  center, center+track_spd, cv::Scalar(0, 127, 255), 3);
+
+            char info[100] = {0};
+            auto eul = quat2eulers(dq, true);
+            sprintf(info, "dYPR [%3.1f,%3.1f,%3.1f]", eul(0), eul(1), eul(2));
+            cv::putText(frame, info, cv::Point2f(20, 150), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
         }
 
         last_clean_frame = frame_clean;
