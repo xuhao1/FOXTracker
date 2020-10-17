@@ -31,11 +31,11 @@ LandmarkDetector::LandmarkDetector():
 
     Ort::AllocatorWithDefaultOptions allocator;
 
-    std::vector<int64_t> input_node_dims{1, 3, 224, 224};
-    std::vector<int64_t> output_shape_{1, 2, 56, 56};
+    std::vector<int64_t> input_node_dims{1, 3, EMI_NN_SIZE, EMI_NN_SIZE};
+    std::vector<int64_t> output_shape_{1, EMI_OUTPUT_CHANNELS, EMI_NN_OUTPUT_SIZE, EMI_NN_OUTPUT_SIZE};
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     input_tensor_ = Ort::Value::CreateTensor<float>(memory_info,
-               input_image, 224*224*3, input_node_dims.data(), 4);
+               input_image, EMI_NN_SIZE*EMI_NN_SIZE*3, input_node_dims.data(), 4);
     output_tensor_ = Ort::Value::CreateTensor<float>(memory_info, results_.data(), results_.size(), output_shape_.data(), output_shape_.size());
 
 
@@ -115,10 +115,9 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
         }
         cv::Mat face_crop = frame(roi_i);
 
+        cv::resize(face_crop, face_crop, cv::Size(EMI_NN_SIZE, EMI_NN_SIZE), NULL, NULL, cv::INTER_LINEAR);
         face_crop.convertTo(face_crop, CV_32F);
         cv::cvtColor(face_crop, face_crop, cv::COLOR_BGR2RGB);
-
-        cv::resize(face_crop, face_crop, cv::Size(224, 224), NULL, NULL, cv::INTER_LINEAR);
         normalize(face_crop);
         transpose((float*)face_crop.data, input_image);
 
@@ -126,8 +125,9 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
         assert(settings->landmark_detect_method < sessions.size() && "Landmark detect method must less than models");
         auto output_tensors = sessions[settings->landmark_detect_method]->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
         float* output_arr = output_tensors[0].GetTensorMutableData<float>();
-        pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/224, ((double)roi_i.width)/224);
-        return std::make_pair(pts, model_points_66);
+        pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/EMI_NN_SIZE, ((double)roi_i.width)/EMI_NN_SIZE);
+        CvPts3d pts3d(model_points_66.begin(), model_points_66.begin() + EMI_FEATURE_NUM);
+        return std::make_pair(pts, pts3d);
     }
 
     return std::make_pair(pts, model_points_66);
@@ -141,14 +141,19 @@ float logit(float p)
         p = 0.0000001;
 
     p = p / (1 - p);
-    return log(p) / 16;
+
+    if (EMI_NN_OUTPUT_SIZE == 28) {
+        return log(p) / 16;
+    } else {
+        return log(p) / 8;
+    }
 }
 
 CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y)
 {
     CvPts facical_landmarks;
-    int heatmap_size = 784; //28 * 28;
-    for (int landmark = 0; landmark < 66; landmark++)
+    int heatmap_size = EMI_NN_OUTPUT_SIZE*EMI_NN_OUTPUT_SIZE;
+    for (int landmark = 0; landmark < EMI_FEATURE_NUM; landmark++)
     {
         int offset = heatmap_size * landmark;
         int argmax = -100;
@@ -162,19 +167,18 @@ CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float sca
             }
         }
 
-        int x = argmax / 28;
-        int y = argmax % 28;
+        int x = argmax / EMI_NN_OUTPUT_SIZE;
+        int y = argmax % EMI_NN_OUTPUT_SIZE;
 
 
         float conf = heatmaps[offset + argmax];
-        float res = 223;
+        float res = EMI_NN_SIZE - 1;
 
-        int off_x = floor(res * (logit(heatmaps[66 * heatmap_size + offset + argmax])) + 0.1);
-        int off_y = floor(res * (logit(heatmaps[2 * 66 * heatmap_size + offset + argmax])) + 0.1);
+        int off_x = floor(res * (logit(heatmaps[EMI_FEATURE_NUM * heatmap_size + offset + argmax])) + 0.1);
+        int off_y = floor(res * (logit(heatmaps[2 * EMI_FEATURE_NUM * heatmap_size + offset + argmax])) + 0.1);
 
-
-        float lm_y = (float)y0 + (float)(scale_x * (res * (float(x) / 27.) + off_x));
-        float lm_x = (float)x0 + (float)(scale_y * (res * (float(y) / 27.) + off_y));
+        float lm_y = (float)y0 + (float)(scale_x * (res * (float(x) / (EMI_NN_OUTPUT_SIZE-1)) + off_x));
+        float lm_x = (float)x0 + (float)(scale_y * (res * (float(y) / (EMI_NN_OUTPUT_SIZE-1)) + off_y));
 
         facical_landmarks.push_back(cv::Point2f(lm_x, lm_y));
     }

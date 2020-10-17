@@ -13,6 +13,21 @@
 #define DEG2RAD 3.1415926535/180
 #define RAD2DEG 180/3.1415926535
 
+//#define EMI_NN_SIZE (56)
+//#define EMI_NN_OUTPUT_SIZE (7)
+//#define EMI_FEATURE_NUM 30
+//#define EMI_OUTPUT_CHANNELS (90)
+
+
+//#define EMI_NN_SIZE (112)
+//#define EMI_NN_OUTPUT_SIZE (14)
+//#define EMI_FEATURE_NUM 66
+
+#define EMI_NN_SIZE (224)
+#define EMI_NN_OUTPUT_SIZE (28)
+#define EMI_FEATURE_NUM 66
+#define EMI_OUTPUT_CHANNELS (198)
+
 class FlightAgxSettings {
 public:
     cv::Mat K;
@@ -45,6 +60,7 @@ public:
         "/assets/landmark_models/lm_model2_opt.onnx",
         "/assets/landmark_models/lm_model3_opt.onnx"
     };
+
 
     std::string app_path;
     bool use_ft = false;

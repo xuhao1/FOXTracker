@@ -11,7 +11,7 @@
 ## 使用
 首先这玩意还没有成熟，问题很多。体验党慎用。**作者永远不会从你的摄像头里收集任何用户数据。**
 
-在 [Release](https://github.com/xuhao1/FlightAgentX/releases) 下载FlightAgentX
+在 [Release](https://github.com/xuhao1/FlightAgentX/releases) 下载FlightAgentX。注意由于作者的偷懒，解压缩时请务必不要使用中文路径，否则会无法运行。
 
 你可以使用本程序直接控制游戏，或者使用opentrack作为后端。考虑到目前曲线功能还没有开发完成，推荐使用opentrack。
 
@@ -41,8 +41,6 @@ ekf_predict_dt: 0.001 #EKF 每次预测的最小时间
 
 disp_duration: 30 #预览图像刷新的帧率
 disp_max_series_size: 1000 #EKF config界面显示的最多点数
-
-detect_method: 0 #进行头部跟踪的方法，0为默认的脸部识别，1位尚在开发中二维码。
 
 fsa_pnp_mixture_rate: 0.5 #用于调节非EKF模式下。FSA Net和PnP姿态估计结果混合的比例。当设置为0完全使用FSANet，设置为1完全使用PnP。当预览画面中的特征点和面部贴合明显较差时，将这个值改小直到抖动减小为止。
 ```
