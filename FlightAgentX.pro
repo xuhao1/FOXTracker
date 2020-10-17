@@ -46,7 +46,7 @@ win32:CONFIG(release, debug|release): LIBS += ../third_party/dlib/lib/dlib19.21.
 win32:CONFIG(release, debug|release): LIBS += -L../third_party/opencv-4.4.0-build/x64/vc15/lib \
     -lopencv_core440 -lopencv_highgui440 -lopencv_tracking440 -lopencv_video440 -lopencv_imgproc440 -lopencv_videoio440 -lopencv_calib3d440 -lopencv_aruco440 -lopencv_dnn440
 
-win32:CONFIG(debug, debug|release): LIBS += -L../third_party/opencv-4.4.0-build/x86/vc15/lib \
+win32:CONFIG(debug, debug|release): LIBS += -L../third_party/opencv-4.4.0-build/x64/vc15/lib \
     -lopencv_core440d -lopencv_highgui440d -lopencv_tracking440d -lopencv_video440d -lopencv_imgproc440d -lopencv_videoio440d -lopencv_calib3d440d -lopencv_aruco440d
 
 win32:CONFIG(release, debug|release): LIBS += -L"../third_party/YAML_CPP/lib" -lyaml-cpp
