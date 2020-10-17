@@ -6,11 +6,11 @@
 
 using namespace Eigen;
 
-typedef Matrix<double, 13, 1> Vector13d;
+typedef Matrix<double, 19, 1> Vector19d;
 typedef Matrix<double, 7, 1> Vector7d;
 
 class ExtendKalmanFilter12DOF {
-    Vector13d X; //qx qy qz qw x y z wx wy wz vx vy vz
+    Vector19d X; //qx qy qz qw x y z wx wy wz vx vy vz
 
     //x y z w
     Map<Quaterniond> q; //store as  qx, qy, qz, qw
@@ -18,10 +18,13 @@ class ExtendKalmanFilter12DOF {
     Map<Vector3d> w; //angular velocity in world
     Map<Vector3d> v; //angular velocity in world
 
-    Eigen::Matrix<double, 13, 13> P;
+    Map<Vector3d> wa; //angular acceleration
+    Map<Vector3d> a; //acc
+
+    Eigen::Matrix<double, 19, 19> P;
 
     Eigen::Matrix<double, 7, 7> R;
-    Eigen::Matrix<double, 13, 13> Q;
+    Eigen::Matrix<double, 19, 19> Q;
     //[0-3] Q
     //[4-6] T
     //[7-10] W
@@ -40,7 +43,9 @@ public:
         q(X.data()),
         T(X.data()+4),
         w(X.data()+7),
-        v(X.data()+10)
+        v(X.data()+10),
+        wa(X.data() + 13),
+        a(X.data()+16)
     {
         this->update_cov(settings->cov_Q_lm);
     }
@@ -59,7 +64,7 @@ public:
         return v;
     }
 
-    Matrix13d getP() const {
+    Eigen::Matrix<double, 19, 19> getP() const {
         return P;
     }
 
@@ -73,11 +78,11 @@ public:
         return X.block<7, 1>(0, 0);
     }
 
-    Vector13d f(double dt);
+    Vector19d f(double dt);
 
-    Eigen::Matrix<double, 7, 13> H0mat();
+    Eigen::Matrix<double, 7, 19> H0mat();
 
-    Eigen::Matrix<double, 13, 13> Fmat(double dt);
+    Eigen::Matrix<double, 19, 19> Fmat(double dt);
 
     void update_by_feature_pts(double t, std::pair<CvPts, CvPts> pts, std::vector<cv::Point3f> pts3d);
 };

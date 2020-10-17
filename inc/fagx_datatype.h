@@ -15,7 +15,7 @@ typedef std::pair<Eigen::Matrix3d, Eigen::Vector3d> Pose_;
 typedef std::vector<cv::Point2f> CvPts;
 typedef std::vector<cv::Point3f> CvPts3d;
 
-typedef Eigen::Matrix<double, 13, 13> Matrix13d;
+typedef Eigen::Matrix<double, 19, 19> Matrix19d;
 
 template <typename T>
 T inline wrap_angle(T angle) {
@@ -89,6 +89,11 @@ public:
 
     Eigen::Vector3d ypr() const {
         return quat2eulers(attitude, false);
+    }
+
+    Pose(const Pose & a) {
+        position = a.position;
+        attitude = a.attitude;
     }
 
     Pose(Eigen::Isometry3d trans) {

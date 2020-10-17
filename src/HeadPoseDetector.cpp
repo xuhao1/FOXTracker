@@ -53,9 +53,12 @@ void HeadPoseDetector::loop() {
 
         TicToc tic;
         if(settings->use_ekf) {
-           ekf.on_raw_pose_data(t, Rcam*poses_raw[0], 0);
+            // qDebug("P0 %f %f %f", poses_raw[0].pos().x(), poses_raw[0].pos().y(), poses_raw[0].pos().z());
+            qDebug("Q0 %f %f %f %f", poses_raw[0].att().w(), poses_raw[0].att().x(), poses_raw[0].att().y(), poses_raw[0].att().z());
+            ekf.on_raw_pose_data(t, poses_raw[0], 0);
             if (poses_raw.size() > 1) {
-                ekf.on_raw_pose_data(t, Rcam*poses_raw[1], 1);
+                // ekf.on_raw_pose_data(t, poses_raw[1], 1);
+                // qDebug("P1 %f %f %f", poses_raw[1].pos().x(), poses_raw[1].pos().y(), poses_raw[1].pos().z());
             }
         } else {
             pose = pose_raw;
@@ -69,7 +72,8 @@ void HeadPoseDetector::loop() {
     TicToc tic_ekf;
 
     if(inited && settings->use_ekf) {
-        pose = Rcam.transpose()*ekf.predict(t);
+        pose = ekf.predict(t);
+        qDebug("QEKF %f %f %f %f", pose.att().w(), pose.att().x(), pose.att().y(), pose.att().z());
     }
     this->on_detect_P(t, ekf.getP());
 

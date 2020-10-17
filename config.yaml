@@ -1,4 +1,4 @@
-detect_duration: 1
+detect_duration: 10
 camera_id: 0
 enable_multithread_detect: true
 retrack_queue_size: 10

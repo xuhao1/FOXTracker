@@ -45,7 +45,7 @@ void EKFConfig::initalize_translation_charts() {
     std::string T_names[3] = {
         "X",
         "Y",
-        "X"
+        "Z"
     };
 
     for (int i = 0; i < 3; i ++) {
@@ -62,7 +62,7 @@ void EKFConfig::initalize_translation_charts() {
 
         auto chart = ekf_disp_charts[i + 3] = new QChart;
 
-        chart->setTitle((T_names[i] + "Angle and Angular Velocity").c_str());
+        chart->setTitle((T_names[i] + "Position and Velocity").c_str());
 
         axisX = new QValueAxis;
         axisX->setTickCount(10);
@@ -112,7 +112,7 @@ void EKFConfig::initalize_angle_charts() {
         chart->addSeries(w_splines[i]);
         chart->addSeries(angle_raw_splines[i]);
         chart->createDefaultAxes();
-        chart->axes(Qt::Vertical).first()->setRange(-30, 30);
+        chart->axes(Qt::Vertical).first()->setRange(-45, 45);
         chart->axes(Qt::Horizontal).first()->setRange(0, 30);
         chart->legend()->setAlignment(Qt::AlignBottom);
     }
@@ -179,7 +179,7 @@ void EKFConfig::on_detect_pose6d(double t, Pose6DoF pose) {
 
 }
 
-void EKFConfig::on_Pmat(double t, Matrix13d P) {
+void EKFConfig::on_Pmat(double t, Matrix19d P) {
 //    Pt_splines[0]->append(t, P(11, 11)*10000);
 }
 

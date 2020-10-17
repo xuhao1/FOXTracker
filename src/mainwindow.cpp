@@ -27,12 +27,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(config_menu, &AgentXConfig::reset_camera, &hd, &HeadPoseDetector::reset);
     connect(config_menu, &AgentXConfig::recenter_hotkey_pressed, this, &MainWindow::on_center_keyboard_event);
 
-//    connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
-//            &EKFConfig::on_detect_pose6d);
+    connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
+            &EKFConfig::on_detect_pose6d);
 //    connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, config_menu->ekf_config_menu(),
 //            &EKFConfig::on_detect_pose6d_raw);
-//    connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
-//            &EKFConfig::on_detect_twist);
+    connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
+            &EKFConfig::on_detect_twist);
 //    connect(&hd, &HeadPoseDetector::on_detect_P, config_menu->ekf_config_menu(),
 //            &EKFConfig::on_Pmat);
 

@@ -1,11 +1,13 @@
 #include "KalmanFilter.h"
+#include <qDebug>
+
 Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose, int type) {
     if(!initialized) {
         q = pose.att();
         T = pose.pos();
         w = Eigen::Vector3d::Zero();
         v = Eigen::Vector3d::Zero();
-        P = Eigen::Matrix<double, 13, 13>::Identity();
+        P = Eigen::Matrix<double, 19, 19>::Identity();
 
         t0 = t;
         initialized = true;
@@ -46,7 +48,7 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose, int type) {
 
     //std::cout << "y_after" << (Z - h0()).transpose() << std::endl;
 
-    P = (Eigen::Matrix<double, 13, 13>::Identity() - K * H )*P;
+    P = (Eigen::Matrix<double, 19, 19>::Identity() - K * H )*P;
 
     //std::cout << "Pose Measurement Z[" << Z.transpose();
 
@@ -85,11 +87,11 @@ Eigen::Quaterniond w_dot_q(Eigen::Vector3d omg, Eigen::Quaterniond q) {
 }
 
 
-Vector13d ExtendKalmanFilter12DOF::f(double dt) {
-    Vector13d _X;
+Vector19d ExtendKalmanFilter12DOF::f(double dt) {
+    Vector19d _X;
     _X.block<4, 1>(0, 0) = q.coeffs() + 0.5*w_dot_q(w, q).coeffs()*dt;
     _X.block<3, 1>(4, 0) = T + v*dt;
-    _X.block<6, 1>(7, 0) = X.block<6, 1>(7, 0);
+    _X.block<12, 1>(7, 0) = X.block<12, 1>(7, 0);
 
     return _X;
 }
@@ -112,14 +114,14 @@ Matrix<double, 4, 3> Dwq_by_w(Eigen::Vector3d omg, Eigen::Quaterniond q) {
     return J;
 }
 
-Eigen::Matrix<double, 13, 13> ExtendKalmanFilter12DOF::Fmat(double dt) {
-    Eigen::Matrix<double, 13, 13> F;
+Eigen::Matrix<double, 19, 19> ExtendKalmanFilter12DOF::Fmat(double dt) {
+    Eigen::Matrix<double, 19, 19> F;
     F.setZero();
     F.block<4, 4>(0, 0) = Matrix4d::Identity() + 0.5*Dwq_by_q(w, q)*dt;
     F.block<4, 3>(0, 7) = 0.5*dt*Dwq_by_w(w, q);
     F.block<3, 3>(4, 4) = Matrix3d::Identity();
     F.block<3, 3>(4, 10) = Matrix3d::Identity() * dt;
-    F.block<6, 6>(7, 7) = Matrix<double, 6, 6>::Identity();
+    F.block<12, 12>(7, 7) = Matrix<double, 12, 12>::Identity();
     //    std::cout << "F\n" << F << std::endl;
     return F;
 }
@@ -138,12 +140,16 @@ void ExtendKalmanFilter12DOF::update_cov(double _cov_Q) {
 
    Matrix4d covQ = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;
    Matrix3d covW = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
+
+   Matrix3d covWa = Eigen::Matrix3d::Identity() * settings->cov_W*dt;
+   
    Matrix<double, 4, 3> covQW = Matrix<double, 4, 3>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
    Matrix<double, 3, 4> covWQ = Matrix<double, 3, 4>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
 
 
    Matrix3d covT = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 4)*0.25;
    Matrix3d covV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 2)*0.5;
+   Matrix3d covA = Eigen::Matrix3d::Identity() * settings->cov_V*dt;
    Matrix3d covTV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 3);
 
    Q.block<4, 4>(0, 0) = covQ;
@@ -155,12 +161,14 @@ void ExtendKalmanFilter12DOF::update_cov(double _cov_Q) {
    Q.block<3, 3>(10, 10) = covV;
    Q.block<3, 3>(10, 4) = covTV;
    Q.block<3, 3>(4, 10) = covTV;
+   Q.block<3, 3>(13, 13) = covWa;
+   Q.block<3, 3>(16, 16) = covA;
 
    //   std::cout << "Q\n" << Q << std::endl;
 }
 
-Eigen::Matrix<double, 7, 13> ExtendKalmanFilter12DOF::H0mat() {
-    return Eigen::Matrix<double, 7, 13>::Identity();
+Eigen::Matrix<double, 7, 19> ExtendKalmanFilter12DOF::H0mat() {
+    return Eigen::Matrix<double, 7, 19>::Identity();
 }
 
 
