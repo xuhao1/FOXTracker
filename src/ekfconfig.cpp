@@ -21,7 +21,9 @@ EKFConfig::EKFConfig(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->qnoise_slider->setSliderPosition(log_v_inv(settings->cov_Q, qcov_min, qcov_max)*100);
+    ui->qnoise_slider_lm->setSliderPosition(log_v_inv(settings->cov_Q_lm, qcov_min, qcov_max)*100);
+    ui->qnoise_slider_fsa->setSliderPosition(log_v_inv(settings->cov_Q_fsa, qcov_min, qcov_max)*100);
+
     ui->tnoise_slider->setSliderPosition(log_v_inv(settings->cov_T, tcov_min, tcov_max)*100);
     ui->vnoise_slider->setSliderPosition(log_v_inv(settings->cov_V, vcov_min, vcov_max)*100);
     ui->wnoise_slider->setSliderPosition(log_v_inv(settings->cov_W, wcov_min, wcov_max)*100);
@@ -217,11 +219,19 @@ void EKFConfig::on_detect_pose6d_raw(double t, Pose6DoF pose) {
     }
 
 }
-void EKFConfig::setQNoise(double cov_q) {
+
+void EKFConfig::setQNoiseLM(double cov_q) {
     qDebug() << "Set Q Noise" << cov_q;
-    settings->cov_Q = cov_q;
-    settings->set_value<double>("cov_Q", cov_q);
-    ui->QNoise->setText(QString::number(cov_q));
+    settings->cov_Q_lm = cov_q;
+    settings->set_value<double>("cov_Q_lm", cov_q);
+    ui->QNoiseLM->setText(QString::number(cov_q));
+}
+
+void EKFConfig::setQNoiseFSA(double cov_q) {
+    qDebug() << "Set Q Noise" << cov_q;
+    settings->cov_Q_fsa = cov_q;
+    settings->set_value<double>("cov_Q_fsa", cov_q);
+    ui->QNoiseFSA->setText(QString::number(cov_q));
 }
 
 void EKFConfig::setTNoise(double cov_t) {
@@ -247,12 +257,6 @@ EKFConfig::~EKFConfig()
     delete ui;
 }
 
-
-void EKFConfig::on_qnoise_slider_valueChanged(int value)
-{
-    double v = value / 100.0;
-    setQNoise(log_v(v, qcov_min, qcov_max));
-}
 
 void EKFConfig::on_tnoise_slider_valueChanged(int value)
 {
@@ -281,4 +285,16 @@ void EKFConfig::reset() {
 void EKFConfig::on_comboBox_currentIndexChanged(int index)
 {
     this->set_activate_chart(index);
+}
+
+void EKFConfig::on_qnoise_slider_lm_valueChanged(int value)
+{
+    double v = value / 100.0;
+    setQNoiseLM(log_v(v, qcov_min, qcov_max));
+}
+
+void EKFConfig::on_qnoise_slider_fsa_valueChanged(int value)
+{
+    double v = value / 100.0;
+    setQNoiseFSA(log_v(v, qcov_min, qcov_max));
 }

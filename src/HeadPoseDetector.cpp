@@ -53,9 +53,9 @@ void HeadPoseDetector::loop() {
 
         TicToc tic;
         if(settings->use_ekf) {
-            pose = ekf.on_raw_pose_data(t, poses_raw[0], 0);
+           ekf.on_raw_pose_data(t, Rcam*poses_raw[0], 0);
             if (poses_raw.size() > 1) {
-                pose = ekf.on_raw_pose_data(t, poses_raw[1], 1);
+                ekf.on_raw_pose_data(t, Rcam*poses_raw[1], 1);
             }
         } else {
             pose = pose_raw;
@@ -69,7 +69,7 @@ void HeadPoseDetector::loop() {
     TicToc tic_ekf;
 
     if(inited && settings->use_ekf) {
-        pose = ekf.predict(t);
+        pose = Rcam.transpose()*ekf.predict(t);
     }
     this->on_detect_P(t, ekf.getP());
 

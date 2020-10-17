@@ -42,10 +42,10 @@ public:
         w(X.data()+7),
         v(X.data()+10)
     {
-        this->update_cov();
+        this->update_cov(settings->cov_Q_lm);
     }
 
-    void update_cov();
+    void update_cov(double _cov_Q);
 
     Pose get_realtime_pose() const {
         return Pose(T, q);

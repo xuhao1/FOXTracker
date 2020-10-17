@@ -62,7 +62,6 @@ class HeadPoseDetector: public QObject {
     QTimer * main_loop_timer;
     QThread detectThread;
 
-
     cv::Mat rvec_init, tvec_init;
 
     Eigen::Matrix3d Rface, Rcam;

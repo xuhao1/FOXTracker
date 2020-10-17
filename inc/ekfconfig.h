@@ -57,7 +57,8 @@ public:
     explicit EKFConfig(QWidget *parent = nullptr);
     ~EKFConfig();
 
-    void setQNoise(double cov_q);
+    void setQNoiseLM(double cov_q);
+    void setQNoiseFSA(double cov_q);
     void setTNoise(double cov_q);
     void setVNoise(double cov_V);
     void setWNoise(double cov_W);
@@ -72,8 +73,6 @@ public slots:
     void set_activate_chart(int _chart);
 
 private slots:
-    void on_qnoise_slider_valueChanged(int value);
-
     void on_tnoise_slider_valueChanged(int value);
 
     void on_wnoise_slider_valueChanged(int value);
@@ -83,6 +82,10 @@ private slots:
     void update_plot();
 
     void on_comboBox_currentIndexChanged(int index);
+
+    void on_qnoise_slider_lm_valueChanged(int value);
+
+    void on_qnoise_slider_fsa_valueChanged(int value);
 
 private:
     Ui::EKFConfig *ui;

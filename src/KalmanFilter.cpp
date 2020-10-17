@@ -22,7 +22,11 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose, int type) {
     Z.block<4, 1>(0, 0) = zq.coeffs();
     Z.block<3, 1>(4, 0) = zT;
 
-    this->update_cov();
+    if(type == 0) {
+        this->update_cov(settings->cov_Q_lm);
+    } else {
+        this->update_cov(settings->cov_Q_fsa);
+    }
    //First we need to predict to this time
     predict(t);
 
@@ -122,11 +126,11 @@ Eigen::Matrix<double, 13, 13> ExtendKalmanFilter12DOF::Fmat(double dt) {
 
 
 
-void ExtendKalmanFilter12DOF::update_cov() {
+void ExtendKalmanFilter12DOF::update_cov(double _cov_Q) {
 //   R.setOnes();
 //   R = 0.001 * R;
    R.setZero();
-   R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * settings->cov_Q;
+   R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * _cov_Q;
    R.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_T;
 
    Q.setZero();

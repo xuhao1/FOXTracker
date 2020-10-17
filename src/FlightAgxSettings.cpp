@@ -16,7 +16,8 @@ void FlightAgxSettings::load_from_config_yaml() {
     qDebug() << "Will send to" << udp_host.c_str();
     use_ft = config["use_ft"].as<bool>();
     use_npclient = config["use_npclient"].as<bool>();
-    cov_Q = config["cov_Q"].as<double>();
+    cov_Q_fsa = config["cov_Q_fsa"].as<double>();
+    cov_Q_lm = config["cov_Q_lm"].as<double>();
     cov_T = config["cov_T"].as<double>();
 
     cov_V = config["cov_V"].as<double>();

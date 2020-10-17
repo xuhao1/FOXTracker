@@ -49,7 +49,9 @@ public:
     std::string app_path;
     bool use_ft = false;
     bool use_npclient = false;
-    double cov_Q = 0.006;
+    double cov_Q_fsa = 0.006;
+    double cov_Q_lm = 0.006;
+
     double cov_T = 0.01;
 
     double cov_V = 10.0;
@@ -67,7 +69,7 @@ public:
 
     double SSDThreshold = 0.5;
 
-    double roi_filter_rate = 0.8;
+    double roi_filter_rate = 0.7;
 
     double cervical_face_model = -0.08;
 
