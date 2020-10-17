@@ -21,6 +21,7 @@ LandmarkDetector::LandmarkDetector():
     dlib::deserialize(settings->landmark_model.c_str()) >> predictor;
 
     Ort::SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(1);
     for (size_t i = 0; i < settings->emilianavt_models.size(); i ++) {
         std::string model_path = settings->emilianavt_models[i];
         std::wstring unicode(model_path.begin(), model_path.end());

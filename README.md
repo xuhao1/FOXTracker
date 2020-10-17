@@ -46,6 +46,10 @@ MIT.
 
 [FSA-Net](https://github.com/shamangary/FSA-Net) LICENSE: Apache 2.0 https://github.com/shamangary/FSA-Net/blob/master/LICENSE
 
+[OpenSeeFace](https://github.com/emilianavt/OpenSeeFace) Thanks @emilianavt 's network!
+
+[aitracker](https://github.com/AIRLegend/aitrack)
+
 ## 介绍
 这是一个基于面部识别的头瞄，用于模拟类游戏。和TrackIR或者[opentrack](https://github.com/opentrack/opentrack)（如国内流行的pointtracker）功能类似，但是只需要摄像头。
 请参阅[中文文档](./docs/user_manual_chinese.md)

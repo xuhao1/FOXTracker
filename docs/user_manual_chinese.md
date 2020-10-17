@@ -18,7 +18,7 @@
 目前所有主要配置功能都在主页面下的Config页面中，一部分很少需要改动的可以在config.yaml中修改，请设置程序满足你的需求。
 ![c1](./config.PNG)
 
-
+注意，landmark model第一档和第二档都是比较合适使用的。取决于摄像头FPS以及电脑性能。
 设置好config.yaml后，一般推荐结合opentrack使用（即关闭use_ft 和use_npclient）。
 
 把你的opentrack的input设置为UDP，打开FlightAgentX.exe，然后即可运行对应的游戏。务必在Opentrack设置曲线和滤波以获得最好的游戏体验。
