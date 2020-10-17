@@ -15,35 +15,9 @@
 
 你可以使用本程序直接控制游戏，或者使用opentrack作为后端。考虑到目前曲线功能还没有开发完成，推荐使用opentrack。
 
-目前所有主要配置功能都在目录下的config中，一部分很少需要改动的可以在config.yaml中修改，请设置程序满足你的需求。
+目前所有主要配置功能都在主页面下的Config页面中，一部分很少需要改动的可以在config.yaml中修改，请设置程序满足你的需求。
 ![c1](./config.PNG)
 
-```
-detect_duration: 10 #重复检测的帧数，如果屏幕上的蓝框跳动，可改低，最小为1，注意这个值越低cpu占用越高
-camera_id: 0 #默认的camera id
-enable_multithread_detect: true #多线程，如果false了就没法使用了
-retrack_queue_size: 10 #如果你的电脑cpu很烂这个选项才有用。不过很烂建议换电脑，作者不对小霸王进行特殊优化。
-fps: 75 #默认FPS，CL Eye 如果使用codelaboratories的付费驱动请设置为75，如果使用PS3EyeDirectShow设置为60，其他摄像头设置能达到的最高帧率，如果设置以后帧率仍然锁定为30说明不支持。
-send_posedata_udp: true #是否发送udp，结合opentrack使用时设置为true
-port: 4242 #默认端口
-udp_host: "127.0.0.1" #IP,如果你在不同的电脑运行头瞄和opentrack，请改为对应的ip
-
-use_ft: false #打开后直接使用FlightAgentX控制游戏的头部，但是目前不支持曲线映射
-use_npclient: false #打开后直接使用FlightAgentX控制游戏的头部，但是目前不支持曲线映射
-
-#EKF 参数，仅在ekf设置为true的情况下工作。目前推荐关闭。
-use_ekf: false
-cov_Q: 0.1 #姿态准确性 
-cov_T: 0.05 #位移准确性
-cov_V: 10.0 #速度稳定性
-cov_W: 40.0 #角速度稳定性
-ekf_predict_dt: 0.001 #EKF 每次预测的最小时间
-
-disp_duration: 30 #预览图像刷新的帧率
-disp_max_series_size: 1000 #EKF config界面显示的最多点数
-
-fsa_pnp_mixture_rate: 0.5 #用于调节非EKF模式下。FSA Net和PnP姿态估计结果混合的比例。当设置为0完全使用FSANet，设置为1完全使用PnP。当预览画面中的特征点和面部贴合明显较差时，将这个值改小直到抖动减小为止。
-```
 
 设置好config.yaml后，一般推荐结合opentrack使用（即关闭use_ft 和use_npclient）。
 
@@ -55,8 +29,7 @@ fsa_pnp_mixture_rate: 0.5 #用于调节非EKF模式下。FSA Net和PnP姿态估�
 
 或者这里的[dcs.ini](./docs/dcs.ini)文件。点击Opentrack的Profile，打开open configuration directory，把[dcs.ini](./docs/dcs.ini)拷进去，然后在右边选择dcs.ini。
 
-视角回中FlightAgentX默认是左alc+c，但是该键位会被dcs屏蔽。请隐藏dcs页面后使用，opentrack还需要设置独立回中按键。请参阅Opentrack相关文档。
-
-注意对于站在雷霆等游戏，请先打开头瞄软件再打开游戏。
+回中请同时在FlightAgentX的配置页面和Opentrack的配置页面绑定到摇杆上。键盘视角回中FlightAgentX默认是左alc+c，无法修改，但是该键位会被dcs屏蔽。请隐藏dcs页面后使用.
+注意对于战争雷霆等游戏，请先打开头瞄软件再打开游戏。
 
 视频见b站 https://www.bilibili.com/video/BV1ey4y1C7Za
