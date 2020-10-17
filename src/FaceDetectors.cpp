@@ -23,7 +23,7 @@ LandmarkDetector::LandmarkDetector(std::string model_path):
         qDebug() << "Will use onnx as landmark detector";
         Ort::SessionOptions session_options;
         session_options.SetIntraOpNumThreads(1);
-//        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
         printf("Using Onnxruntime C++ API\n");
         std::string model_path = settings->emilianavt_models[settings->landmark_detect_method];

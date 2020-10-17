@@ -14,7 +14,9 @@
    <string>Dialog</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(31, 38, 38);</string>
+   <string notr="true">background-color: rgb(31, 38, 38);
+font: 10pt;
+</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -71,7 +73,7 @@ background-color: rgb(31, 38, 38);</string>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+      <string notr="true">font: 10pt &quot;Source Code Pro&quot;;
 background-color: rgb(46, 86, 105);
 color: #8fbed4;</string>
      </property>
@@ -84,14 +86,14 @@ color: #8fbed4;</string>
      <widget class="QCheckBox" name="DCtrl_Check">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>110</y>
-        <width>281</width>
+        <x>130</x>
+        <y>60</y>
+        <width>191</width>
         <height>61</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 15pt &quot;Source Code Pro&quot;;
+       <string notr="true">
 </string>
       </property>
       <property name="text">
@@ -103,12 +105,12 @@ color: #8fbed4;</string>
        <rect>
         <x>30</x>
         <y>60</y>
-        <width>281</width>
+        <width>71</width>
         <height>61</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 15pt &quot;Source Code Pro&quot;;
+       <string notr="true">
 </string>
       </property>
       <property name="text">
@@ -118,40 +120,44 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>90</x>
+        <x>0</x>
         <y>10</y>
-        <width>151</width>
-        <height>61</height>
+        <width>341</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="font">
        <font>
         <family>Source Code Pro</family>
-        <pointsize>25</pointsize>
-        <weight>50</weight>
+        <pointsize>10</pointsize>
+        <weight>2</weight>
         <italic>false</italic>
         <bold>false</bold>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 25pt &quot;Source Code Pro&quot;;
+       <string notr="true">font: 23
+pt &quot;Source Code Pro&quot;;
 </string>
       </property>
       <property name="text">
        <string>General</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
      <widget class="QCheckBox" name="SendUDP_Check">
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>160</y>
-        <width>281</width>
+        <y>100</y>
+        <width>101</width>
         <height>61</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 15pt &quot;Source Code Pro&quot;;
+       <string notr="true">
 </string>
       </property>
       <property name="text">
@@ -161,9 +167,9 @@ color: #8fbed4;</string>
      <widget class="QLineEdit" name="IP_Input">
       <property name="geometry">
        <rect>
-        <x>110</x>
-        <y>220</y>
-        <width>191</width>
+        <x>60</x>
+        <y>150</y>
+        <width>131</width>
         <height>20</height>
        </rect>
       </property>
@@ -178,7 +184,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>220</y>
+        <y>150</y>
         <width>31</width>
         <height>21</height>
        </rect>
@@ -190,8 +196,8 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>260</y>
+        <x>210</x>
+        <y>150</y>
         <width>54</width>
         <height>21</height>
        </rect>
@@ -203,8 +209,8 @@ color: #8fbed4;</string>
      <widget class="QSpinBox" name="DetectDura_Input">
       <property name="geometry">
        <rect>
-        <x>230</x>
-        <y>300</y>
+        <x>240</x>
+        <y>190</y>
         <width>71</width>
         <height>22</height>
        </rect>
@@ -223,8 +229,8 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>300</y>
-        <width>191</width>
+        <y>190</y>
+        <width>161</width>
         <height>21</height>
        </rect>
       </property>
@@ -235,9 +241,9 @@ color: #8fbed4;</string>
      <widget class="QSpinBox" name="Port_Input">
       <property name="geometry">
        <rect>
-        <x>230</x>
-        <y>260</y>
-        <width>71</width>
+        <x>250</x>
+        <y>150</y>
+        <width>61</width>
         <height>22</height>
        </rect>
       </property>
@@ -254,11 +260,17 @@ color: #8fbed4;</string>
      <widget class="QSlider" name="SlerpRate_Input">
       <property name="geometry">
        <rect>
-        <x>90</x>
-        <y>390</y>
-        <width>160</width>
-        <height>16</height>
+        <x>30</x>
+        <y>260</y>
+        <width>281</width>
+        <height>20</height>
        </rect>
+      </property>
+      <property name="minimum">
+       <number>0</number>
+      </property>
+      <property name="maximum">
+       <number>100</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -267,14 +279,120 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_12">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>360</y>
+        <x>30</x>
+        <y>230</y>
         <width>221</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
        <string>FSA/PnP Slerp Rate</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_13">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>290</y>
+        <width>221</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>FSA/PnP Pitch Offset</string>
+      </property>
+     </widget>
+     <widget class="QSlider" name="FSAPnPOffset_input">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>320</y>
+        <width>281</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="minimum">
+       <number>-100</number>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLCDNumber" name="FSAPnPOffset_disp">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>290</y>
+        <width>64</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="smallDecimalPoint">
+       <bool>true</bool>
+      </property>
+      <property name="digitCount">
+       <number>3</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_14">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>350</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Landmark Model</string>
+      </property>
+     </widget>
+     <widget class="QSlider" name="FSAPnPOffset_input_2">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>380</y>
+        <width>281</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="minimum">
+       <number>-1</number>
+      </property>
+      <property name="maximum">
+       <number>3</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_15">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>400</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>FAST/NOISY</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_16">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>400</y>
+        <width>101</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SLOW/ACCURACY</string>
       </property>
      </widget>
     </widget>

@@ -39,9 +39,8 @@ void FlightAgxSettings::load_from_config_yaml() {
     hotkey_joystick_names[1] = config["hotkey_joystick_name1"].as<std::string>();
     hotkey_joystick_buttons[1] = config["hotkey_joystick_button1"].as<int>();
 
-    if (landmark_detect_method >=0 ) {
-        model = app_path + "/assets/landmark_models/model_66.txt";
-    }
+    pitch_offset_fsa_pnp = config["pitch_offset_fsa_pnp"].as<float>();
+
 }
 
 

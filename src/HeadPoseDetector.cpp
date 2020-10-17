@@ -313,7 +313,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     //Use FSA To Detect Rotation
     TicToc fsa;
     if(settings->use_fsa) {
-        fsa_roi = crop_roi(roi, frame);
+        fsa_roi = crop_roi(roi, frame, 0.2);
         static Rect2d fsa_roi_last;
         if (fsa_roi_last.area() < MIN_ROI_AREA) {
             fsa_roi_last = fsa_roi;
@@ -344,7 +344,12 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     landmarks = lmd->detect(frame, crop_roi(face_roi, frame, 0));
     if (frame_count % ((int)settings->fps) == 0)
         qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
-    landmarks_3d = model_points_68;
+
+    if(settings->landmark_detect_method < 0) {
+        landmarks_3d = model_points_68;
+    } else {
+        landmarks_3d = model_points_66;
+    }
 
     if (landmarks.size() != landmarks_3d.size()) {
         qDebug("Landmark detection failed");
@@ -380,11 +385,11 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         T = pose.pos();
         pose.att() = pose.att()*Rface;
         detected_poses.push_back(pose);
-        Eigen::Quaterniond dq;
+
         //Use FSA YPR Here
         if (settings->use_fsa) {
              R = Rcam.inverse() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
-                * Eigen::AngleAxisd(fsa_ypr(1), Eigen::Vector3d::UnitY())
+                * Eigen::AngleAxisd(fsa_ypr(1) + settings->pitch_offset_fsa_pnp, Eigen::Vector3d::UnitY())
                 * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX());
             Eigen::Quaterniond qR(R);
             detected_poses.push_back(Pose(T, qR));
@@ -394,33 +399,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         }
 
         if (settings->enable_preview) {
-            //Head or face ROI
-            cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
-
-            //FSANet ROI
-            if (settings->use_fsa) {
-                cv::rectangle(frame, fsa_roi, cv::Scalar(255, 255, 255), 2);
-                cv::rectangle(frame, face_roi, cv::Scalar(0, 255, 0), 2);
-            }
-
-            for (auto pt: landmarks) {
-                cv::circle(frame, pt, 1, cv::Scalar(0, 255, 0), -1);
-            }
-
-            cv::Mat tvec, Rmat, rvec;
-            Eigen::Matrix3d _R = R*Rface.transpose();
-            cv::eigen2cv(T, tvec);
-            cv::eigen2cv(_R, Rmat);
-            cv::Rodrigues(Rmat, rvec);
-            cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, -tvec, 0.05, 3);
-
-            cv::Point2f center(roi.x + roi.width/2, roi.y + roi.height/2);
-            cv::arrowedLine(frame,  center, center+track_spd, cv::Scalar(0, 127, 255), 3);
-
-            char info[100] = {0};
-            auto eul = quat2eulers(dq, true);
-            sprintf(info, "dYPR [%3.1f,%3.1f,%3.1f]", eul(0), eul(1), eul(2));
-            cv::putText(frame, info, cv::Point2f(20, 150), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+            draw(frame, roi, face_roi, fsa_roi, landmarks, Pose(T, R), track_spd);
         }
 
         last_clean_frame = frame_clean;
@@ -436,6 +415,37 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     return make_pair(false, detected_poses);
 }
 
+void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point2f track_spd) {
+    //Head or face ROI
+    cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
+
+    //FSANet ROI
+    if (settings->use_fsa) {
+        cv::rectangle(frame, fsa_roi, cv::Scalar(255, 255, 255), 2);
+        cv::rectangle(frame, face_roi, cv::Scalar(0, 255, 0), 2);
+    }
+
+    for (auto pt: landmarks) {
+        cv::circle(frame, pt, 1, cv::Scalar(0, 255, 0), -1);
+    }
+
+    cv::Mat tvec, Rmat, rvec;
+    Eigen::Matrix3d _R = p.R()*Rface.transpose();
+    cv::eigen2cv(p.pos(), tvec);
+    cv::eigen2cv(_R, Rmat);
+    cv::Rodrigues(Rmat, rvec);
+    cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, -tvec, 0.05, 3);
+
+    cv::Point2f center(face_roi.x + face_roi.width/2, face_roi.y + face_roi.height/2);
+    cv::arrowedLine(frame,  center, center+track_spd, cv::Scalar(0, 127, 255), 3);
+
+    char info[100] = {0};
+    auto eul = quat2eulers(dq, true);
+    sprintf(info, "dYPR [%3.1f,%3.1f,%3.1f]", eul(0), eul(1), eul(2));
+    cv::putText(frame, info, cv::Point2f(20, 150), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
+
+}
+
 std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame) {
     Eigen::Vector3d T;
     Eigen::Matrix3d R;
@@ -448,7 +458,9 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     auto tvec = tvec_init.clone();
 
     TicToc tic;
+    std::vector<uchar> inlier(landmarks.size());
     bool success = cv::solvePnP(landmarks_3d, landmarks, settings->K, settings->D, rvec, tvec, true);
+
     if (tic.toc() > 30) {
         qDebug() << "PnP Time" << tic.toc();
     }
@@ -462,6 +474,12 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     cv::cv2eigen(Rcv, R);
     T = -T;
 
+    for (size_t i =0; i < landmarks.size(); i++) {
+        if(inlier[i]) {
+            cv::circle(frame, landmarks[i], 5, cv::Scalar(255, 255, 0), 1);
+        }
+    }
+
     if (success) {
         if (first_solve_pose) {
             first_solve_pose = false;
@@ -469,7 +487,7 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
         char info[100] = {0};
         sprintf(info, "Tpnp [%3.1f,%3.1f,%3.1f] cm", T.x()*100, T.y()*100, T.z()*100);
-        cv::putText(frame, info, cv::Point2f(20, 100), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+        cv::putText(frame, info, cv::Point2f(20, 100), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
     } else {
         qDebug() << "pnp Solve failed";
     }

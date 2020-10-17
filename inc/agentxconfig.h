@@ -39,6 +39,8 @@ private slots:
 
     void on_Bind_HotKey_clicked(int key);
 
+    void on_FSAPnPOffset_input_valueChanged(int value);
+
 signals:
     void reset_camera();
     void recenter_hotkey_pressed();

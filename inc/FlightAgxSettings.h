@@ -10,6 +10,9 @@
 
 #define MIN_ROI_AREA 10
 
+#define DEG2RAD 3.1415926535/180
+#define RAD2DEG 180/3.1415926535
+
 class FlightAgxSettings {
 public:
     cv::Mat K;
@@ -28,7 +31,9 @@ public:
     std::string cfg_name = "/config.yaml";
     std::string trackir_path = "/assets/TrackIR.exe";
     std::string support_games_csv = "/assets/facetracknoir supported games.csv";
-    std::string model = "/assets/landmark_models/model_68.txt";
+    std::string model_66 = "/assets/landmark_models/model_66.txt";
+    std::string model_68 = "/assets/landmark_models/model_68.txt";
+
     std::string landmark_model = "/assets/landmark_models/shape_predictor_68_face_landmarks.dat";
     std::string fsanet_model = "/assets/fsanet_capsule.onnx";
     std::string protoPath ="/assets/face_detector/deploy.prototxt";
@@ -65,6 +70,8 @@ public:
     double roi_filter_rate = 0.8;
 
     double cervical_face_model = -0.08;
+
+    double pitch_offset_fsa_pnp = 11/180*3.1415926;
 
     //-1 dlib
     //0 network 0
@@ -110,7 +117,8 @@ public:
         app_path = QCoreApplication::applicationDirPath().toStdString();
         trackir_path = app_path + trackir_path;
         support_games_csv = app_path + support_games_csv;
-        model = app_path + model;
+        model_66 = app_path + model_66;
+        model_68 = app_path + model_68;
         landmark_model = app_path + landmark_model;
         fsanet_model = app_path + fsanet_model;
         cfg_name = app_path + "/config.yaml";

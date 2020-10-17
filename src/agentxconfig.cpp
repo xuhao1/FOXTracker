@@ -49,6 +49,10 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
 
     ui->Hotkey2_Joystick->setText(settings->hotkey_joystick_names[1].c_str());
     ui->Hotkey2_Button->setText(QString::number(settings->hotkey_joystick_buttons[1]));
+
+    ui->FSAPnPOffset_disp->display(settings->pitch_offset_fsa_pnp*RAD2DEG);
+    ui->FSAPnPOffset_input->setValue(settings->pitch_offset_fsa_pnp*RAD2DEG/20*100);
+
 }
 
 AgentXConfig::~AgentXConfig()
@@ -165,4 +169,14 @@ void AgentXConfig::on_Bind_HotKey1_clicked() {
     on_Bind_HotKey_clicked(0);
     ui->Hotkey1_Joystick->setText(settings->hotkey_joystick_names[0].c_str());
     ui->Hotkey1_Button->setText(QString::number(settings->hotkey_joystick_buttons[0]));
+}
+
+void AgentXConfig::on_FSAPnPOffset_input_valueChanged(int value)
+{
+    float v = ((float)value)/100;
+    float offset_degree = v * 20;
+    float offset = offset_degree*DEG2RAD;
+    settings->pitch_offset_fsa_pnp = offset;
+    settings->set_value("pitch_offset_fsa_pnp", offset);
+    ui->FSAPnPOffset_disp->display(offset_degree);
 }

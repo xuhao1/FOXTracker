@@ -62,10 +62,9 @@ class HeadPoseDetector: public QObject {
     QTimer * main_loop_timer;
     QThread detectThread;
 
-    std::pair<bool, Pose> solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame);
 
     cv::Mat rvec_init, tvec_init;
-    std::vector<cv::Point3f> model_points_68;
+    std::vector<cv::Point3f> model_points_66, model_points_68;
 
     Eigen::Matrix3d Rface, Rcam;
 
@@ -90,6 +89,9 @@ class HeadPoseDetector: public QObject {
     double dt = 0.03;
     double last_t = 0;
 
+    //dQ of FSA and PnP result
+    Eigen::Quaterniond dq;
+
     bool inited = false;
 
     cv::Ptr<cv::aruco::Dictionary> dictionary;
@@ -98,6 +100,9 @@ class HeadPoseDetector: public QObject {
 
 
     FSANet fsanet;
+
+    std::pair<bool, Pose> solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame);
+    void draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point2f track_spd);
 
 public:
     MainWindow * main_window;
@@ -108,7 +113,7 @@ public:
         fd = new FaceDetector;
         lmd = new LandmarkDetector(settings->landmark_model);
 
-        rvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -3.14392813);
+        rvec_init = (cv::Mat_<double>(3,1) << 0.0, -0.5, -3);
         tvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -0.5);
 
         Rface << 0,  1, 0,
@@ -119,7 +124,7 @@ public:
                 -1, 0, 0,
                  0, 1, 0;
 
-        std::ifstream model_file (settings->model);
+        std::ifstream model_file (settings->model_68);
         if (model_file.is_open())
         {
             double px, py, pz;
@@ -127,7 +132,17 @@ public:
             {
                 model_file >> px >> py >> pz;
                 model_points_68.push_back(cv::Point3d(px, -py, -(pz + settings->cervical_face_model)));
-                qDebug("Feature Point %f %f %f", px, py, pz);
+            }
+        }
+
+        std::ifstream model_file_66(settings->model_66);
+        if (model_file_66.is_open())
+        {
+            double px, py, pz;
+            while (!model_file_66.eof())
+            {
+                model_file_66 >> px >> py >> pz;
+                model_points_66.push_back(cv::Point3d(px, -py, -(pz + settings->cervical_face_model)));
             }
         }
 
@@ -152,6 +167,7 @@ public:
 
     void run_detect_thread();
 
+
 public:
     cv::Mat & get_preview_image() {
         return preview_image;
@@ -166,6 +182,7 @@ signals:
     void on_detect_pose6d_raw(double t, Pose6DoF pose);
     void on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v);
     void on_detect_P(double t, Matrix13d P);
+
 
 private slots:
     void loop();
