@@ -324,9 +324,9 @@ pt &quot;Source Code Pro&quot;;
      <widget class="QLCDNumber" name="FSAPnPOffset_disp">
       <property name="geometry">
        <rect>
-        <x>250</x>
+        <x>243</x>
         <y>290</y>
-        <width>64</width>
+        <width>71</width>
         <height>23</height>
        </rect>
       </property>

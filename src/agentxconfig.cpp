@@ -50,6 +50,8 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     ui->Hotkey2_Joystick->setText(settings->hotkey_joystick_names[1].c_str());
     ui->Hotkey2_Button->setText(QString::number(settings->hotkey_joystick_buttons[1]));
 
+    ui->FSAPnPOffset_disp->setDecMode();
+    ui->FSAPnPOffset_disp->setDigitCount(5);
     ui->FSAPnPOffset_disp->display(settings->pitch_offset_fsa_pnp*RAD2DEG);
     ui->FSAPnPOffset_input->setValue(settings->pitch_offset_fsa_pnp*RAD2DEG/20*100);
 
