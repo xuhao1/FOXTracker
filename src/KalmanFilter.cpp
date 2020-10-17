@@ -50,6 +50,8 @@ Pose ExtendKalmanFilter12DOF::on_raw_pose_data(double t, Pose pose, int type) {
 
     P = (Eigen::Matrix<double, 19, 19>::Identity() - K * H )*P;
 
+    q.normalize();
+
     //std::cout << "Pose Measurement Z[" << Z.transpose();
 
     //std::cout << "Residual y[" << y.transpose() << "]^T" << std::endl;
@@ -70,7 +72,6 @@ Pose ExtendKalmanFilter12DOF::predict(double t) {
         this->predict_by_dt(dt);
     }
     this->t_state = t;
-
     return get_realtime_pose();
 }
 
@@ -82,8 +83,8 @@ void ExtendKalmanFilter12DOF::predict_by_dt(double dt){
 }
 
 Eigen::Quaterniond w_dot_q(Eigen::Vector3d omg, Eigen::Quaterniond q) {
-    Eigen::Quaterniond w(0, omg.x(), omg.y(), omg.z());
-    return w*q;
+    Eigen::Quaterniond _w(0, omg.x(), omg.y(), omg.z());
+    return _w*q;
 }
 
 
@@ -91,7 +92,9 @@ Vector19d ExtendKalmanFilter12DOF::f(double dt) {
     Vector19d _X;
     _X.block<4, 1>(0, 0) = q.coeffs() + 0.5*w_dot_q(w, q).coeffs()*dt;
     _X.block<3, 1>(4, 0) = T + v*dt;
-    _X.block<12, 1>(7, 0) = X.block<12, 1>(7, 0);
+    _X.block<3, 1>(7, 0) = w + wa*dt;
+    _X.block<3, 1>(10, 0) = v + a*dt;
+    _X.block<6, 1>(13, 0) = X.block<6, 1>(13, 0);
 
     return _X;
 }
@@ -122,6 +125,9 @@ Eigen::Matrix<double, 19, 19> ExtendKalmanFilter12DOF::Fmat(double dt) {
     F.block<3, 3>(4, 4) = Matrix3d::Identity();
     F.block<3, 3>(4, 10) = Matrix3d::Identity() * dt;
     F.block<12, 12>(7, 7) = Matrix<double, 12, 12>::Identity();
+    F.block<3, 3>(7, 13) = Matrix3d::Identity() * dt;
+    F.block<3, 3>(10, 16) = Matrix3d::Identity() * dt;
+
     //    std::cout << "F\n" << F << std::endl;
     return F;
 }
