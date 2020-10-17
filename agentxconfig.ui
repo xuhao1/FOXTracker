@@ -350,11 +350,11 @@ pt &quot;Source Code Pro&quot;;
        <string>Landmark Model</string>
       </property>
      </widget>
-     <widget class="QSlider" name="FSAPnPOffset_input_2">
+     <widget class="QSlider" name="LandmarkModel_input">
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>380</y>
+        <y>370</y>
         <width>281</width>
         <height>20</height>
        </rect>

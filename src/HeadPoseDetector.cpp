@@ -341,20 +341,18 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     double dt_fsa = fsa.toc();
 
     TicToc tic1;
-    landmarks = lmd->detect(frame, crop_roi(face_roi, frame, 0));
+    auto lmd_ret = lmd->detect(frame, crop_roi(face_roi, frame, 0));
+    landmarks = lmd_ret.first;
+    landmarks_3d = lmd_ret.second;
+
+    if (landmarks.size() != landmarks_3d.size()) {
+        qDebug("Landmark detection failed. 2D pts %d 3D pts %d", landmarks.size(), landmarks_3d.size());
+        return make_pair(false, std::vector<Pose>());
+    }
+
     if (frame_count % ((int)settings->fps) == 0)
         qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
 
-    if(settings->landmark_detect_method < 0) {
-        landmarks_3d = model_points_68;
-    } else {
-        landmarks_3d = model_points_66;
-    }
-
-    if (landmarks.size() != landmarks_3d.size()) {
-        qDebug("Landmark detection failed");
-        return make_pair(false, std::vector<Pose>());
-    }
     TicToc ticpnp;
     auto ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
 

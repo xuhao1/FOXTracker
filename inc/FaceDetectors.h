@@ -30,7 +30,7 @@ public:
 class LandmarkDetector {
     dlib::shape_predictor predictor;
     Ort::Env env;
-    Ort::Session * session = nullptr;
+    std::vector<Ort::Session*> sessions;
     float input_image[224*224*3] = {0};
     Ort::Value output_tensor_{nullptr};
     Ort::Value input_tensor_{nullptr};
@@ -40,12 +40,15 @@ class LandmarkDetector {
 
     cv::Scalar mean_scaling;
     cv::Scalar std_scaling;
+
+    std::vector<cv::Point3f> model_points_66, model_points_68;
+
 public:
-    LandmarkDetector(std::string model_path);
+    LandmarkDetector();
 
     virtual ~LandmarkDetector() {}
 
-    virtual CvPts detect(cv::Mat & frame, cv::Rect roi);
+    virtual std::pair<CvPts,CvPts3d> detect(cv::Mat & frame, cv::Rect roi);
 
     //This part of code is derived from AIRLegend's aitrack
     //See https://github.com/AIRLegend/aitrack/blob/master/AITracker/src/model.cpp

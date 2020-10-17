@@ -64,7 +64,6 @@ class HeadPoseDetector: public QObject {
 
 
     cv::Mat rvec_init, tvec_init;
-    std::vector<cv::Point3f> model_points_66, model_points_68;
 
     Eigen::Matrix3d Rface, Rcam;
 
@@ -111,7 +110,7 @@ public:
         cv::setNumThreads(1);
         is_running = false;
         fd = new FaceDetector;
-        lmd = new LandmarkDetector(settings->landmark_model);
+        lmd = new LandmarkDetector();
 
         rvec_init = (cv::Mat_<double>(3,1) << 0.0, -0.5, -3);
         tvec_init = (cv::Mat_<double>(3,1) << 0.0, 0.0, -0.5);
@@ -124,31 +123,7 @@ public:
                 -1, 0, 0,
                  0, 1, 0;
 
-        std::ifstream model_file (settings->model_68);
-        if (model_file.is_open())
-        {
-            double px, py, pz;
-            while (!model_file.eof())
-            {
-                model_file >> px >> py >> pz;
-                model_points_68.push_back(cv::Point3d(px, -py, -(pz + settings->cervical_face_model)));
-            }
-        }
 
-        std::ifstream model_file_66(settings->model_66);
-        if (model_file_66.is_open())
-        {
-            double px, py, pz;
-            while (!model_file_66.eof())
-            {
-                model_file_66 >> px >> py >> pz;
-                model_points_66.push_back(cv::Point3d(px, -py, -(pz + settings->cervical_face_model)));
-            }
-        }
-
-        qDebug("Load model with %ld pts", model_points_68.size());
-
-        model_file.close();
 
         connect(this, SIGNAL(start()),
                 this, SLOT(start_slot()));

@@ -13,6 +13,8 @@ typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> Pose6DoF;
 typedef std::pair<Eigen::Matrix3d, Eigen::Vector3d> Pose_;
 
 typedef std::vector<cv::Point2f> CvPts;
+typedef std::vector<cv::Point3f> CvPts3d;
+
 typedef Eigen::Matrix<double, 13, 13> Matrix13d;
 
 template <typename T>

@@ -53,6 +53,7 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     ui->FSAPnPOffset_disp->display(settings->pitch_offset_fsa_pnp*RAD2DEG);
     ui->FSAPnPOffset_input->setValue(settings->pitch_offset_fsa_pnp*RAD2DEG/20*100);
 
+    ui->LandmarkModel_input->setValue(settings->landmark_detect_method);
 }
 
 AgentXConfig::~AgentXConfig()
@@ -179,4 +180,10 @@ void AgentXConfig::on_FSAPnPOffset_input_valueChanged(int value)
     settings->pitch_offset_fsa_pnp = offset;
     settings->set_value("pitch_offset_fsa_pnp", offset);
     ui->FSAPnPOffset_disp->display(offset_degree);
+}
+
+void AgentXConfig::on_LandmarkModel_input_valueChanged(int value)
+{
+    settings->landmark_detect_method = value;
+    settings->set_value("landmark_detect_method", value);
 }

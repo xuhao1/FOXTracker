@@ -11,36 +11,60 @@ inline cv::Rect2d rect2roi(dlib::rectangle ret) {
 
 
 
-LandmarkDetector::LandmarkDetector(std::string model_path):
+LandmarkDetector::LandmarkDetector():
     mean_scaling(0.485f, 0.456f, 0.406f),
     std_scaling(0.229f, 0.224f, 0.225f) {
     cv::divide(mean_scaling, std_scaling, mean_scaling);
     std_scaling *= 255.0f;
-    if (settings->landmark_detect_method < 0) {
-        qDebug() << "Will use dlib as landmark detector";
-        dlib::deserialize(model_path.c_str()) >> predictor;
-    } else {
-        qDebug() << "Will use onnx as landmark detector";
-        Ort::SessionOptions session_options;
-        session_options.SetIntraOpNumThreads(1);
-        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
-        printf("Using Onnxruntime C++ API\n");
-        std::string model_path = settings->emilianavt_models[settings->landmark_detect_method];
+    dlib::deserialize(settings->landmark_model.c_str()) >> predictor;
+
+    Ort::SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(1);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    for (size_t i = 0; i < settings->emilianavt_models.size(); i ++) {
+        std::string model_path = settings->emilianavt_models[i];
         std::wstring unicode(model_path.begin(), model_path.end());
-        session = new Ort::Session(env, unicode.c_str(), session_options);
-
-        Ort::AllocatorWithDefaultOptions allocator;
-        size_t num_input_nodes = session->GetInputCount();
-
-        std::vector<int64_t> input_node_dims{1, 3, 224, 224};
-        std::vector<int64_t> output_shape_{1, 2, 56, 56};
-        printf("Number of inputs = %zu\n", num_input_nodes);
-        auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-        input_tensor_ = Ort::Value::CreateTensor<float>(memory_info,
-                   input_image, 224*224*3, input_node_dims.data(), 4);
-        output_tensor_ = Ort::Value::CreateTensor<float>(memory_info, results_.data(), results_.size(), output_shape_.data(), output_shape_.size());
+        auto session = new Ort::Session(env, unicode.c_str(), session_options);
+        sessions.push_back(session);
     }
+
+    Ort::AllocatorWithDefaultOptions allocator;
+
+    std::vector<int64_t> input_node_dims{1, 3, 224, 224};
+    std::vector<int64_t> output_shape_{1, 2, 56, 56};
+    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    input_tensor_ = Ort::Value::CreateTensor<float>(memory_info,
+               input_image, 224*224*3, input_node_dims.data(), 4);
+    output_tensor_ = Ort::Value::CreateTensor<float>(memory_info, results_.data(), results_.size(), output_shape_.data(), output_shape_.size());
+
+
+    std::ifstream model_file (settings->model_68);
+    if (model_file.is_open())
+    {
+        double px, py, pz;
+        while (!model_file.eof())
+        {
+            model_file >> px >> py >> pz;
+            model_points_68.push_back(cv::Point3d(px, -py, -(pz + settings->cervical_face_model)));
+        }
+    }
+
+    std::ifstream model_file_66(settings->model_66);
+    if (model_file_66.is_open())
+    {
+        double px, py, pz;
+        while (!model_file_66.eof())
+        {
+            model_file_66 >> px >> py >> pz;
+            model_points_66.push_back(cv::Point3d(px, -py, -(pz + settings->cervical_face_model)));
+        }
+    }
+
+    qDebug("Load model with %ld pts", model_points_68.size());
+
+    model_file.close();
+    model_file_66.close();
 }
 
 //Part of code is derived from AIRLegend's AITracker.
@@ -73,7 +97,7 @@ void LandmarkDetector::transpose(float* from, float* dest, int dim_x, int dim_y)
 }
 
 
-CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
+std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
     CvPts pts;
     if (settings->landmark_detect_method < 0) {
         dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
@@ -83,10 +107,11 @@ CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
             auto p = shape.part(i);
             pts.push_back(cv::Point2d(p.x(), p.y()));
         }
+        return std::make_pair(pts, model_points_68);
     } else {
         cv::Rect2i roi_i = roi;
         if (roi_i.area() < MIN_ROI_AREA) {
-            return pts;
+            return std::make_pair(pts, model_points_66);
         }
         cv::Mat face_crop = frame(roi_i);
 
@@ -98,11 +123,14 @@ CvPts LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
         transpose((float*)face_crop.data, input_image);
 
         //here we got the data
-        auto output_tensors = session->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
+        assert(settings->landmark_detect_method < sessions.size() && "Landmark detect method must less than models");
+        auto output_tensors = sessions[settings->landmark_detect_method]->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
         float* output_arr = output_tensors[0].GetTensorMutableData<float>();
         pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/224, ((double)roi_i.width)/224);
+        return std::make_pair(pts, model_points_66);
     }
-    return pts;
+
+    return std::make_pair(pts, model_points_66);
 }
 
 float logit(float p)

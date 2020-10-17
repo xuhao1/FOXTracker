@@ -41,6 +41,8 @@ private slots:
 
     void on_FSAPnPOffset_input_valueChanged(int value);
 
+    void on_LandmarkModel_input_valueChanged(int value);
+
 signals:
     void reset_camera();
     void recenter_hotkey_pressed();
