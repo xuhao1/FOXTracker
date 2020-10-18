@@ -47,68 +47,70 @@ Eigen::Matrix<double, 13, 13> ExtendKalmanFilter12DOF_13::Fmat(double dt) {
 
 void ExtendKalmanFilter12DOF_13::update_cov(double _cov_Q) {
     R.setZero();
-   R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * _cov_Q;
-   R.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_T;
+    R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * _cov_Q;
+    R.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_T;
+    R1 = Eigen::Matrix2d::Identity() * settings->cov_gspd_planar;
 
-   Q.setZero();
-   double dt = settings->ekf_predict_dt;
+    Q.setZero();
+    double dt = settings->ekf_predict_dt;
 
-   Matrix4d covQ = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;
-   Matrix3d covW = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
-   Matrix<double, 4, 3> covQW = Matrix<double, 4, 3>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
-   Matrix<double, 3, 4> covWQ = Matrix<double, 3, 4>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
+    Matrix4d covQ = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;
+    Matrix3d covW = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
+    Matrix<double, 4, 3> covQW = Matrix<double, 4, 3>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
+    Matrix<double, 3, 4> covWQ = Matrix<double, 3, 4>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
 
 
-   Matrix3d covT = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 4)*0.25;
-   Matrix3d covV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 2)*0.5;
-   Matrix3d covTV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 3);
+    Matrix3d covT = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 4)*0.25;
+    Matrix3d covV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 2)*0.5;
+    Matrix3d covTV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 3);
 
-   Q.block<4, 4>(0, 0) = covQ;
-   Q.block<3, 3>(7, 7) = covW;
-//    Q.block<4, 3>(7, 0) = covQW;
-//    Q.block<3, 4>(0, 7) = covWQ;
+    Q.block<4, 4>(0, 0) = covQ;
+    Q.block<3, 3>(7, 7) = covW;
+    //    Q.block<4, 3>(7, 0) = covQW;
+    //    Q.block<3, 4>(0, 7) = covWQ;
 
-   Q.block<3, 3>(4, 4) = covT;
-   Q.block<3, 3>(10, 10) = covV;
-   Q.block<3, 3>(10, 4) = covTV;
-   Q.block<3, 3>(4, 10) = covTV;
+    Q.block<3, 3>(4, 4) = covT;
+    Q.block<3, 3>(10, 10) = covV;
+    Q.block<3, 3>(10, 4) = covTV;
+    Q.block<3, 3>(4, 10) = covTV;
 }
 
 void ExtendKalmanFilter12DOF_19::update_cov(double _cov_Q) {
 //   R.setOnes();
 //   R = 0.001 * R;
-   R.setZero();
-   R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * _cov_Q;
-   R.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_T;
+    R.setZero();
+    R.block<4, 4>(0, 0) = Eigen::Matrix4d::Identity() * _cov_Q;
+    R.block<3, 3>(4, 4) = Eigen::Matrix3d::Identity() * settings->cov_T;
+    R1 = Eigen::Matrix2d::Identity() * settings->cov_gspd_planar;
+    
+    Q.setZero();
+    double dt = settings->ekf_predict_dt;
 
-   Q.setZero();
-   double dt = settings->ekf_predict_dt;
+    Matrix4d covQ = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;
+    Matrix3d covW = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
 
-   Matrix4d covQ = Eigen::Matrix4d::Identity() * settings->cov_W*pow(dt, 4)*0.25;
-   Matrix3d covW = Eigen::Matrix3d::Identity() * settings->cov_W*pow(dt, 2);
-
-   Matrix3d covWa = Eigen::Matrix3d::Identity() * settings->cov_W*dt;
-   
-   Matrix<double, 4, 3> covQW = Matrix<double, 4, 3>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
-   Matrix<double, 3, 4> covWQ = Matrix<double, 3, 4>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
+    Matrix3d covWa = Eigen::Matrix3d::Identity() * settings->cov_W*dt;
+    
+    Matrix<double, 4, 3> covQW = Matrix<double, 4, 3>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
+    Matrix<double, 3, 4> covWQ = Matrix<double, 3, 4>::Identity() * settings->cov_W*pow(dt, 3)*0.5;
 
 
-   Matrix3d covT = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 4)*0.25;
-   Matrix3d covV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 2)*0.5;
-   Matrix3d covA = Eigen::Matrix3d::Identity() * settings->cov_V*dt;
-   Matrix3d covTV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 3);
+    Matrix3d covT = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 4)*0.25;
+    Matrix3d covV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 2)*0.5;
+    Matrix3d covA = Eigen::Matrix3d::Identity() * settings->cov_V*dt;
+    Matrix3d covTV = Eigen::Matrix3d::Identity() * settings->cov_V*pow(dt, 3);
 
-   Q.block<4, 4>(0, 0) = covQ;
-   Q.block<3, 3>(7, 7) = covW;
-   Q.block<4, 3>(7, 0) = covQW;
-   Q.block<3, 4>(0, 7) = covWQ;
+    Q.block<4, 4>(0, 0) = covQ;
+    Q.block<3, 3>(7, 7) = covW;
+    // Q.block<4, 3>(7, 0) = covQW;
+    // Q.block<3, 4>(0, 7) = covWQ;
 
-   Q.block<3, 3>(4, 4) = covT;
-   Q.block<3, 3>(10, 10) = covV;
-   Q.block<3, 3>(10, 4) = covTV;
-   Q.block<3, 3>(4, 10) = covTV;
-   Q.block<3, 3>(13, 13) = covWa;
-   Q.block<3, 3>(16, 16) = covA;
+    Q.block<3, 3>(4, 4) = covT;
+    Q.block<3, 3>(10, 10) = covV;
+    // Q.block<3, 3>(10, 4) = covTV;
+    // Q.block<3, 3>(4, 10) = covTV;
+    Q.block<3, 3>(13, 13) = covWa;
+    Q.block<3, 3>(16, 16) = covA;
 
    //   std::cout << "Q\n" << Q << std::endl;
 }

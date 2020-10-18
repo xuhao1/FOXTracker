@@ -73,6 +73,8 @@ public:
     double cov_V = 10.0;
     double cov_W = 2.0;
 
+    double cov_gspd_planar = 0.01;
+
     double ekf_predict_dt = 0.01;
 
     bool use_ekf = false;
@@ -87,7 +89,8 @@ public:
 
     double roi_filter_rate = 0.7;
 
-    double cervical_face_model = -0.08;
+    double cervical_face_model = -0.088;
+    double cervical_face_model_y = 0.16;
 
     double pitch_offset_fsa_pnp = 11/180*3.1415926;
 

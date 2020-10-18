@@ -135,11 +135,14 @@ class HeadPoseDetector: public QObject {
     //In camera frame
     Eigen::Vector3d estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd, cv::Mat & frame);
 
+    std::ofstream log;
+
 public:
     MainWindow * main_window;
 
     HeadPoseDetector() {
         cv::setNumThreads(1);
+        log.open(settings->app_path + "/debug.txt", std::ofstream::out);
         is_running = false;
         fd = new FaceDetector;
         lmd = new LandmarkDetector();

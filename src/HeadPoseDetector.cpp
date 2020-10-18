@@ -54,21 +54,11 @@ void HeadPoseDetector::loop() {
 
         TicToc tic;
         if(settings->use_ekf) {
-            auto eul = quat2eulers(poses_raw[0].att());
-            Eigen::Quaterniond q = Eigen::Quaterniond(-poses_raw[0].att().coeffs());
-            auto eul1 = quat2eulers(q);
-
-            // qDebug("Q0 %f %f %f %f eul %f %f %f. Q1 %f %f %f %f eul %f %f %f",
-            //     poses_raw[0].att().x(), poses_raw[0].att().y(), poses_raw[0].att().z(), poses_raw[0].att().w(), 
-            //     eul(0), eul(1), eul(2),
-            //     q.x(), q.y(), q.z(), q.w(),
-            //     eul1(0), eul1(1), eul1(2)
-            // );
-
-            pose = ekf.on_raw_pose_data(t, poses_raw[0], 0);
+            pose = ekf.update_ground_speed(t, ret.face_ground_speed);
+            pose = ekf.update_raw_pose_data(t, poses_raw[0], 0);
             
             if (poses_raw.size() > 1) {
-                pose = ekf.on_raw_pose_data(t, poses_raw[1], 1);
+                pose = ekf.update_raw_pose_data(t, poses_raw[1], 1);
             }
         } else {
             pose = pose_raw;
@@ -93,14 +83,20 @@ void HeadPoseDetector::loop() {
     auto R = pose.R();
     auto q = pose.att();
     auto T = pose.pos();
+    auto l = fabs(settings->cervical_face_model);
+    auto ly = fabs(settings->cervical_face_model_y);
 
     //This pose is in world frame
     if (ret.success || (settings->use_ekf && inited)) {
-        this->on_detect_pose(t, make_pair(R, T));
+        this->on_detect_pose(t, make_pair(R*Rface, T));
 
+        auto omg = ekf.get_angular_velocity();
         auto eul = quat2eulers(q0_inv*q);
         this->on_detect_pose6d(t, make_pair(eul, q0_inv*T));
         this->on_detect_twist(t, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
+
+        qDebug("Angular*l %f %f GSPD %f %f", -omg(1)*l, omg(0)*ly, ret.face_ground_speed(0), ret.face_ground_speed(1));
+        log << -omg(1)*l << "," <<  omg(0)*l << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << std::endl;
     }
 
     if (settings->enable_preview) {

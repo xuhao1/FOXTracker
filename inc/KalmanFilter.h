@@ -20,6 +20,7 @@ protected:
     Eigen::Matrix<double, D, D> P;
 
     Eigen::Matrix<double, 7, 7> R;
+    Eigen::Matrix<double, 2, 2> R1;
     Eigen::Matrix<double, D, D> Q;
     //[0-3] Q
     //[4-6] T
@@ -33,6 +34,22 @@ protected:
 
     virtual Eigen::Matrix<double, 7, D> H0mat() {
         return Eigen::Matrix<double, 7, D>::Identity();
+    }
+
+    Eigen::Vector2d h1(double l, double ly) {
+        return Vector2d(v.x() - w.y()*l, v.y() + w.x()*ly);
+    }
+
+    Eigen::Matrix<double, 2, D> H1mat(double l, double ly) {
+        Eigen::Matrix<double, 2, D> H1;
+        H1.setZero();
+        H1(0, 8) = -l;
+        H1(0, 10) = 1;
+        
+        H1(1, 7) = ly;
+        H1(1, 10) = 1;
+
+        return H1;
     }
 
     Vector7d h0() {
@@ -53,11 +70,9 @@ protected:
     
 public:
 
-    Pose on_raw_pose_data(double t, Pose pose, int type);
+    Pose update_raw_pose_data(double t, Pose pose, int type);
 
-    void on_ground_speed(Eigen::Vector3d spd) {
-        
-    }
+    Pose update_ground_speed(double t, Eigen::Vector3d spd);
 
     Pose get_realtime_pose() const {
         return Pose(T, q);
@@ -124,10 +139,34 @@ public:
     virtual Eigen::Matrix<double, 19, 19> Fmat(double dt) override;
 };
 
+template<int D>
+Pose ExtendKalmanFilter12DOF<D>::update_ground_speed(double t, Eigen::Vector3d spd) {
+    double l = fabs(settings->cervical_face_model);
+    double ly = fabs(settings->cervical_face_model_y);
 
+    Eigen::Vector2d Z(spd.x(), spd.y());
+    if (!initialized) {
+        return get_realtime_pose();
+    }
+
+    predict(t);
+
+    auto H = H1mat(l, ly);
+
+    Vector2d y = Z - h1(l, ly);
+    Eigen::Matrix2d S = H*P*H.transpose() + R1;
+    auto K = P*H.transpose()*S.inverse();
+
+    X = X + K*y;
+
+    P = (Eigen::Matrix<double, D, D>::Identity() - K * H )*P;
+
+    q.normalize();
+    return get_realtime_pose();
+}
 
 template <int D>
-Pose ExtendKalmanFilter12DOF<D>::on_raw_pose_data(double t, Pose pose, int type) {
+Pose ExtendKalmanFilter12DOF<D>::update_raw_pose_data(double t, Pose pose, int type) {
     if(!initialized) {
         q = pose.att();
         T = pose.pos();
