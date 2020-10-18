@@ -139,8 +139,13 @@ Pose ExtendKalmanFilter12DOF<D>::on_raw_pose_data(double t, Pose pose, int type)
         std::cout << "Initialized Q[" << q.coeffs().transpose() << "]T[" << T.transpose() << "]^T" << std::endl;
         return pose;
     }
-
+    
     Quaterniond zq(pose.att());
+    if ((pose.att().coeffs() - q.coeffs()).norm() > (-pose.att().coeffs() - q.coeffs()).norm()) {
+        zq = Quaterniond(-pose.att().coeffs());
+    }
+
+
     Eigen::Vector3d zT = pose.pos();
     Vector7d Z;
     Z.block<4, 1>(0, 0) = zq.coeffs();
@@ -160,7 +165,7 @@ Pose ExtendKalmanFilter12DOF<D>::on_raw_pose_data(double t, Pose pose, int type)
 
     //Bug happen on auto on eigen
     Vector7d y = Z - h0();
-    //std::cout << "y[" << y.transpose() <<  "]^T" << std::endl;
+    // std::cout << "y      [" << y.transpose() <<  "]^T" << std::endl;
     Eigen::Matrix<double, 7, 7> S = H*P*H.transpose() + R;
     auto K = P*H.transpose()*S.inverse();
 
@@ -168,7 +173,7 @@ Pose ExtendKalmanFilter12DOF<D>::on_raw_pose_data(double t, Pose pose, int type)
 
     X = X + K*y;
 
-    //std::cout << "y_after" << (Z - h0()).transpose() << std::endl;
+    // std::cout << "y_after[" << (Z - h0()).transpose() << std::endl;
 
     P = (Eigen::Matrix<double, D, D>::Identity() - K * H )*P;
 
@@ -186,7 +191,6 @@ Pose ExtendKalmanFilter12DOF<D>::on_raw_pose_data(double t, Pose pose, int type)
 
 template <int D>
 Pose ExtendKalmanFilter12DOF<D>::predict(double t) {
-
     for (double t1 = this->t_state; t1 < t; t1 += settings->ekf_predict_dt) {
         double dt = settings->ekf_predict_dt;
         if (t - t1 < dt) {

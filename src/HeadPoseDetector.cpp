@@ -54,10 +54,21 @@ void HeadPoseDetector::loop() {
         TicToc tic;
         if(settings->use_ekf) {
             // qDebug("P0 %f %f %f", poses_raw[0].pos().x(), poses_raw[0].pos().y(), poses_raw[0].pos().z());
-            qDebug("Q0 %f %f %f %f", poses_raw[0].att().x(), poses_raw[0].att().y(), poses_raw[0].att().z(), poses_raw[0].att().w());
-            ekf.on_raw_pose_data(t, Rcam*poses_raw[0], 0);
+            auto eul = quat2eulers(poses_raw[0].att());
+            Eigen::Quaterniond q = Eigen::Quaterniond(-poses_raw[0].att().coeffs());
+            auto eul1 = quat2eulers(q);
+
+            // qDebug("Q0 %f %f %f %f eul %f %f %f. Q1 %f %f %f %f eul %f %f %f",
+            //     poses_raw[0].att().x(), poses_raw[0].att().y(), poses_raw[0].att().z(), poses_raw[0].att().w(), 
+            //     eul(0), eul(1), eul(2),
+            //     q.x(), q.y(), q.z(), q.w(),
+            //     eul1(0), eul1(1), eul1(2)
+            // );
+
+            ekf.on_raw_pose_data(t, poses_raw[0], 0);
+            
             if (poses_raw.size() > 1) {
-                // ekf.on_raw_pose_data(t, poses_raw[1], 1);
+                ekf.on_raw_pose_data(t, poses_raw[1], 1);
                 // qDebug("P1 %f %f %f", poses_raw[1].pos().x(), poses_raw[1].pos().y(), poses_raw[1].pos().z());
             }
         } else {
@@ -72,18 +83,17 @@ void HeadPoseDetector::loop() {
     TicToc tic_ekf;
 
     if(inited && settings->use_ekf) {
-        pose = Rcam.transpose() * ekf.predict(t);
-        qDebug("QEKF %f %f %f %f", pose.att().x(), pose.att().y(), pose.att().z(), pose.att().w());
+        //Debug EKF ONLY        
+        pose = ekf.predict(t);
+        // qDebug("QEKF %f %f %f %f", pose.att().x(), pose.att().y(), pose.att().z(), pose.att().w());
     }
     
-    // this->on_detect_P(t, ekf.getP());
-
     auto R = pose.R();
     auto T = pose.pos();
 
     //This pose is in world frame
     if (ret.first || (settings->use_ekf && inited)) {
-        this->on_detect_pose(t, make_pair(pose.R(), pose.pos()));
+        this->on_detect_pose(t, make_pair(R, T));
         this->on_detect_pose6d(t, make_pair(R2ypr(R), T));
         this->on_detect_twist(t, ekf.get_angular_velocity(), ekf.get_linear_velocity());
     }

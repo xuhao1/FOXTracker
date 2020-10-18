@@ -65,8 +65,8 @@ void ExtendKalmanFilter12DOF_13::update_cov(double _cov_Q) {
 
    Q.block<4, 4>(0, 0) = covQ;
    Q.block<3, 3>(7, 7) = covW;
-   Q.block<4, 3>(7, 0) = covQW;
-   Q.block<3, 4>(0, 7) = covWQ;
+//    Q.block<4, 3>(7, 0) = covQW;
+//    Q.block<3, 4>(0, 7) = covWQ;
 
    Q.block<3, 3>(4, 4) = covT;
    Q.block<3, 3>(10, 10) = covV;
