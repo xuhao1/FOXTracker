@@ -47,7 +47,7 @@ protected:
         H1(0, 10) = 1;
         
         H1(1, 7) = ly;
-        H1(1, 10) = 1;
+        H1(1, 11) = 1;
 
         return H1;
     }
@@ -141,7 +141,7 @@ public:
 
 template<int D>
 Pose ExtendKalmanFilter12DOF<D>::update_ground_speed(double t, Eigen::Vector3d spd) {
-    double l = fabs(settings->cervical_face_model);
+    double l = fabs(settings->cervical_face_model_x);
     double ly = fabs(settings->cervical_face_model_y);
 
     Eigen::Vector2d Z(spd.x(), spd.y());

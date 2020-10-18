@@ -21,16 +21,16 @@ class EKFConfig : public QWidget
     Q_OBJECT
 
     double qcov_min = 0.001;
-    double qcov_max = 1.0;
+    double qcov_max = 0.5;
 
     double tcov_min = 0.001;
-    double tcov_max = 0.5;
+    double tcov_max = 0.1;
 
-    double wcov_min = 0.001;
-    double wcov_max = 10.0;
+    double wcov_min = 0.1;
+    double wcov_max = 20.0;
 
-    double vcov_min = 0.001;
-    double vcov_max = 10.0;
+    double vcov_min = 0.1;
+    double vcov_max = 20.0;
 
     QtCharts::QLineSeries * angle_splines[3] = {0};
     QtCharts::QLineSeries * T_splines[3] = {0};

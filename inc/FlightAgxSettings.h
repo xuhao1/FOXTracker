@@ -90,6 +90,7 @@ public:
     double roi_filter_rate = 0.7;
 
     double cervical_face_model = -0.088;
+    double cervical_face_model_x = 0.12;
     double cervical_face_model_y = 0.16;
 
     double pitch_offset_fsa_pnp = 11/180*3.1415926;

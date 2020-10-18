@@ -83,7 +83,7 @@ void HeadPoseDetector::loop() {
     auto R = pose.R();
     auto q = pose.att();
     auto T = pose.pos();
-    auto l = fabs(settings->cervical_face_model);
+    auto l = fabs(settings->cervical_face_model_x);
     auto ly = fabs(settings->cervical_face_model_y);
 
     //This pose is in world frame
@@ -91,12 +91,16 @@ void HeadPoseDetector::loop() {
         this->on_detect_pose(t, make_pair(R*Rface, T));
 
         auto omg = ekf.get_angular_velocity();
+        auto spd = ekf.get_linear_velocity();
         auto eul = quat2eulers(q0_inv*q);
         this->on_detect_pose6d(t, make_pair(eul, q0_inv*T));
         this->on_detect_twist(t, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
-
+    
+        auto _T = pose_raw.pos();
         qDebug("Angular*l %f %f GSPD %f %f", -omg(1)*l, omg(0)*ly, ret.face_ground_speed(0), ret.face_ground_speed(1));
-        log << -omg(1)*l << "," <<  omg(0)*l << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << std::endl;
+        log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
+            << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
+            << T(0) << "," << T(1) << "," << T(2) << std::endl;
     }
 
     if (settings->enable_preview) {
@@ -245,6 +249,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     frame_clean = frame.clone();
     if (first_solve_pose) {
         roi = fd->detect(frame, last_roi);
+        last_roi = roi;
         if (roi.area() > MIN_ROI_AREA) {
             tracker = create_tracker();
             tracker->init(frame, roi);

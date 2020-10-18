@@ -42,6 +42,10 @@ void FlightAgxSettings::load_from_config_yaml() {
 
     pitch_offset_fsa_pnp = config["pitch_offset_fsa_pnp"].as<float>();
 
+    cervical_face_model_x = config["cervical_face_model_x"].as<float>();
+    cervical_face_model_y = config["cervical_face_model_y"].as<float>();
+    cervical_face_model = config["cervical_face_model"].as<float>();
+
 }
 
 
