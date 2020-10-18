@@ -54,7 +54,7 @@ void HeadPoseDetector::loop() {
 
         TicToc tic;
         if(settings->use_ekf) {
-            pose = ekf.update_ground_speed(t, ret.face_ground_speed);
+//            pose = ekf.update_ground_speed(t, ret.face_ground_speed);
             pose = ekf.update_raw_pose_data(t, poses_raw[0], 0);
             
             if (poses_raw.size() > 1) {
