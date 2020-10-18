@@ -39,7 +39,8 @@ void HeadPoseDetector::loop() {
     dt = t - last_t;
     last_t = t;
     TicToc tic;
-    auto ret = detect_head_pose(frame, t, dt);
+    cv::Mat _show;
+    auto ret = detect_head_pose(frame, _show, t, dt);
     auto poses_raw = ret.second;
     Pose pose;
     Pose pose_raw;
@@ -53,7 +54,6 @@ void HeadPoseDetector::loop() {
 
         TicToc tic;
         if(settings->use_ekf) {
-            // qDebug("P0 %f %f %f", poses_raw[0].pos().x(), poses_raw[0].pos().y(), poses_raw[0].pos().z());
             auto eul = quat2eulers(poses_raw[0].att());
             Eigen::Quaterniond q = Eigen::Quaterniond(-poses_raw[0].att().coeffs());
             auto eul1 = quat2eulers(q);
@@ -65,45 +65,47 @@ void HeadPoseDetector::loop() {
             //     eul1(0), eul1(1), eul1(2)
             // );
 
-            ekf.on_raw_pose_data(t, poses_raw[0], 0);
+            pose = ekf.on_raw_pose_data(t, poses_raw[0], 0);
             
             if (poses_raw.size() > 1) {
-                ekf.on_raw_pose_data(t, poses_raw[1], 1);
-                // qDebug("P1 %f %f %f", poses_raw[1].pos().x(), poses_raw[1].pos().y(), poses_raw[1].pos().z());
+                pose = ekf.on_raw_pose_data(t, poses_raw[1], 1);
             }
         } else {
             pose = pose_raw;
         }
-        this->on_detect_pose6d_raw(t, make_pair(R2ypr(pose_raw.R()), pose_raw.pos()));
-
-        inited = true;
+        if (!inited) {
+            P0 = pose;
+            inited = true;
+        }
     }
+
+    auto q0_inv = P0.att().inverse();
+    q0_inv = Eigen::Quaterniond::Identity();
+    this->on_detect_pose6d_raw(t, make_pair(R2ypr(q0_inv*pose_raw.R()), q0_inv*pose_raw.pos()));
 
     t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
     TicToc tic_ekf;
 
     if(inited && settings->use_ekf) {
-        //Debug EKF ONLY        
         pose = ekf.predict(t);
-        // qDebug("QEKF %f %f %f %f", pose.att().x(), pose.att().y(), pose.att().z(), pose.att().w());
     }
     
     auto R = pose.R();
+    auto q = pose.att();
     auto T = pose.pos();
 
     //This pose is in world frame
     if (ret.first || (settings->use_ekf && inited)) {
         this->on_detect_pose(t, make_pair(R, T));
-        this->on_detect_pose6d(t, make_pair(R2ypr(R), T));
-        this->on_detect_twist(t, ekf.get_angular_velocity(), ekf.get_linear_velocity());
+
+        auto eul = quat2eulers(q0_inv*q);
+        this->on_detect_pose6d(t, make_pair(eul, q0_inv*T));
+        this->on_detect_twist(t, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
     }
 
     if (settings->enable_preview) {
-        frame.copyTo(preview_image);
+        _show.copyTo(preview_image);
     }
-
-//    qDebug() << "Loop takes" << tic_cap.toc();
-
 }
 
 
@@ -227,7 +229,7 @@ void HeadPoseDetector::reset() {
 
 
 
-std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & frame, double t, double dt) {
+std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Mat & _show, double t, double dt) {
     TicToc tic;
     Eigen::Matrix3d R;
     Eigen::Vector3d T;
@@ -237,7 +239,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     cv::Rect2d roi;
     cv::Rect2d fsa_roi;
     cv::Rect2d face_roi;
-    cv::Point2f track_spd(0, 0);
+    cv::Point3f track_spd(0, 0, 0);
 
     Eigen::Vector3d fsa_ypr;
 
@@ -284,6 +286,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         if (success) {
             track_spd.x = (roi.x + roi.width/2 - last_roi.x - last_roi.width/2)/dt;
             track_spd.y = (roi.y + roi.height/2 - last_roi.y - last_roi.height/2)/dt;
+            track_spd.z = (1/roi.area() - 1/last_roi.area());
 //            if (cv::norm(track_spd) > 10) {
 //               qDebug() << "Track SPD [" << track_spd.x << "," << track_spd.y << "]" << " ROI [" << roi.x
 //                        << "," << roi.y << "]" << " last ROI [" << last_roi.x << "," << last_roi.y <<"]"
@@ -372,38 +375,18 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     auto ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
 
     //Estimate Planar speed of face with tracker
-
-//    double z = ret.second.pos().z() + settings->cervical_face_mm/1000;
-    double z = ret.second.pos().z();
-    double roi_x = roi.x + roi.width/2;
-    double roi_y = roi.y + roi.height/2;
-
-    double roi_x_new = roi_x + track_spd.x * dt;
-    double roi_y_new = roi_y + track_spd.y * dt;
-
-//    std::vector<cv::Point2f> pts{cv::Point2f(roi_x_new, roi_y_new)};
-//    std::vector<cv::Point3f> pts3d;
-//    cv::undistortPoints(pts, pts3d, settings->K, settings->D);
-//    cv::Point3f pt3d = pts3d[0] * z;
-//    Eigen::Vector3d point_new_3d(pt3d.x, pt3d.y, pt3d.z);
-//    Eigen::Vector3d point_3d = ret.second.pos();
-//    point_3d.z() = z;
-    //We can use this velocity to recgonize the deadzone. Thus, lock the attitude
-//    Eigen::Vector3d vel_planar_face = (point_new_3d - point_3d)/dt;
-
-//    qDebug("Vel planar face %f %f %f", vel_planar_face.x(), vel_planar_face.y(), vel_planar_face.z());
+    auto gspd = estimate_ground_speed_by_tracker(ret.second.pos().z(), roi, track_spd, frame);
 
     if (ret.first) {
         auto pose = ret.second;
         T = pose.pos();
-        pose.att() = pose.att()*Rface;
         detected_poses.push_back(pose);
 
         //Use FSA YPR Here
         if (settings->use_fsa) {
-             R = Rcam.inverse() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
+             R = Rcam.transpose() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
                 * Eigen::AngleAxisd(fsa_ypr(1) + settings->pitch_offset_fsa_pnp, Eigen::Vector3d::UnitY())
-                * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX());
+                * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX())*Rface.transpose();
             Eigen::Quaterniond qR(R);
             detected_poses.push_back(Pose(T, qR));
 
@@ -412,7 +395,8 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
         }
 
         if (settings->enable_preview) {
-            draw(frame, roi, face_roi, fsa_roi, landmarks, Pose(T, R), track_spd);
+            _show = frame.clone();
+            draw(_show, roi, face_roi, fsa_roi, landmarks, Pose(T, R), track_spd);
         }
 
         last_clean_frame = frame_clean;
@@ -428,7 +412,35 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat & 
     return make_pair(false, detected_poses);
 }
 
-void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point2f track_spd) {
+Eigen::Vector3d HeadPoseDetector::estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd, cv::Mat & frame) {
+    double roi_x = roi.x + roi.width/2;
+    double roi_y = roi.y + roi.height/2;
+
+    double roi_x_new = roi_x + track_spd.x * dt;
+    double roi_y_new = roi_y + track_spd.y * dt;
+
+    std::vector<cv::Point2f> pts{cv::Point2f(roi_x_new, roi_y_new)};
+    std::vector<cv::Point2f> pts_un;
+    cv::undistortPoints(pts, pts_un, settings->K, settings->D);
+    Eigen::Vector3d point_new_3d(pts_un[0].x*z, pts_un[0].y*z, z);
+    
+    std::vector<cv::Point2f> pts_roi{cv::Point2f(roi_x, roi_y)};
+    std::vector<cv::Point2f> pts_roi_un;
+    cv::undistortPoints(pts_roi, pts_roi_un, settings->K, settings->D);
+
+    Eigen::Vector3d point_3d(pts_roi_un[0].x*z, pts_roi_un[0].y*z, z);
+
+    // We can use this velocity to recgonize the deadzone. Thus, lock the attitude
+    Eigen::Vector3d gspd = (point_new_3d - point_3d)/dt;
+    char info[100] = {0};
+    sprintf(info, "GSPD %3.1f %3.1f %3.1f", gspd.x()*100, gspd.y()*100, gspd.z()*100);
+    cv::putText(frame, info, cv::Point2f(20, 200), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
+
+    return gspd;
+}
+
+
+void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point3f track_spd) {
     //Head or face ROI
     cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
 
@@ -450,7 +462,7 @@ void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi
     cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, -tvec, 0.05, 3);
 
     cv::Point2f center(face_roi.x + face_roi.width/2, face_roi.y + face_roi.height/2);
-    cv::arrowedLine(frame,  center, center+track_spd, cv::Scalar(0, 127, 255), 3);
+    cv::arrowedLine(frame,  center, center+cv::Point2f(track_spd.x, track_spd.y), cv::Scalar(0, 127, 255), 3);
 
     char info[100] = {0};
     auto eul = quat2eulers(dq, true);
@@ -478,7 +490,7 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
         qDebug() << "PnP Time" << tic.toc();
     }
 
-    cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
+    // cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
 
     cv::cv2eigen(tvec, T);
     cv::Mat Rcv;
@@ -486,12 +498,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
     cv::cv2eigen(Rcv, R);
     T = -T;
-
-    for (size_t i =0; i < landmarks.size(); i++) {
-        if(inlier[i]) {
-            cv::circle(frame, landmarks[i], 5, cv::Scalar(255, 255, 0), 1);
-        }
-    }
 
     if (success) {
         if (first_solve_pose) {

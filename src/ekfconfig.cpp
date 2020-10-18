@@ -123,8 +123,9 @@ void EKFConfig::initalize_angle_charts() {
 
 void EKFConfig::on_detect_twist(double t, Eigen::Vector3d w, Eigen::Vector3d v) {
     if (this->isVisible()) {
-        v = settings->Rcam.transpose()*v;
-        w = settings->Rcam.transpose()*w;
+        // v = settings->Rcam.transpose()*v;
+        // w = settings->Rcam.transpose()*w;
+        
         w_splines[0]->append(t, w.z()*180/3.1415);
         w_splines[1]->append(t, w.y()*180/3.1415);
         w_splines[2]->append(t, w.x()*180/3.1415);
@@ -150,7 +151,7 @@ void EKFConfig::on_detect_pose6d(double t, Pose6DoF pose) {
             Tinit = pose.second;
             inited = true;
         }
-        auto T = settings->Rcam.transpose()*(pose.second - Tinit);
+        auto T = pose.second - Tinit;
         auto eul = pose.first;
         double yaw = eul.x();
 
@@ -190,7 +191,7 @@ void EKFConfig::on_detect_pose6d_raw(double t, Pose6DoF pose) {
             Tinit = pose.second;
             inited = true;
         }
-        auto T = settings->Rcam.transpose()*(pose.second - Tinit);
+        auto T = (pose.second - Tinit);
         auto eul = pose.first;
         double yaw = eul.x();
 

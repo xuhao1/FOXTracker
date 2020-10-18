@@ -55,6 +55,10 @@ public:
 
     Pose on_raw_pose_data(double t, Pose pose, int type);
 
+    void on_ground_speed(Eigen::Vector3d spd) {
+        
+    }
+
     Pose get_realtime_pose() const {
         return Pose(T, q);
     }

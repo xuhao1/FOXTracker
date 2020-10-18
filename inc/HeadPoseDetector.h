@@ -45,6 +45,9 @@ class HeadPoseDetector: public QObject {
     LandmarkDetector * lmd = nullptr;
 
     ExtendKalmanFilter12DOF_13 ekf;
+    // ExtendKalmanFilter12DOF_19 ekf;
+    
+
     bool is_running = false;
     cv::VideoCapture cap;
 
@@ -96,11 +99,16 @@ class HeadPoseDetector: public QObject {
 
     std::vector<cv::Point3f> landmarks3D_ARMarker;
 
+    Pose P0;
+
 
     FSANet fsanet;
 
     std::pair<bool, Pose> solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame);
-    void draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point2f track_spd);
+    void draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point3f track_spd);
+
+    //In camera frame
+    Eigen::Vector3d estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd, cv::Mat & frame);
 
 public:
     MainWindow * main_window;
@@ -135,7 +143,7 @@ public:
     }
 
     //When using FSANet. First is PnP pose, next is FSANet pose
-    std::pair<bool, std::vector<Pose>> detect_head_pose(cv::Mat & frame, double t, double dt);
+    std::pair<bool, std::vector<Pose>> detect_head_pose(cv::Mat frame, cv::Mat & _show, double t, double dt);
 
     void run_thread();
 
