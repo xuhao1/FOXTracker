@@ -54,12 +54,13 @@ void HeadPoseDetector::loop() {
 
         TicToc tic;
         if(settings->use_ekf) {
-//            pose = ekf.update_ground_speed(t, ret.face_ground_speed);
             pose = ekf.update_raw_pose_data(t, poses_raw[0], 0);
-            
             if (poses_raw.size() > 1) {
                 pose = ekf.update_raw_pose_data(t, poses_raw[1], 1);
             }
+
+            pose = ekf.update_ground_speed(t, ret.face_ground_speed);
+
         } else {
             pose = pose_raw;
         }
@@ -98,9 +99,9 @@ void HeadPoseDetector::loop() {
     
         auto _T = pose_raw.pos();
         // qDebug("Angular*l %f %f GSPD %f %f", -omg(1)*l, omg(0)*ly, ret.face_ground_speed(0), ret.face_ground_speed(1));
-        // log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
-        //     << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
-        //     << T(0) << "," << T(1) << "," << T(2) << std::endl;
+        log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
+            << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
+            << T(0) << "," << T(1) << "," << T(2) << std::endl;
     }
 
     if (settings->enable_preview) {
@@ -288,12 +289,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
             track_spd.x = (roi.x + roi.width/2 - last_roi.x - last_roi.width/2)/dt;
             track_spd.y = (roi.y + roi.height/2 - last_roi.y - last_roi.height/2)/dt;
             track_spd.z = (1/roi.area() - 1/last_roi.area());
-//            if (cv::norm(track_spd) > 10) {
-//               qDebug() << "Track SPD [" << track_spd.x << "," << track_spd.y << "]" << " ROI [" << roi.x
-//                        << "," << roi.y << "]" << " last ROI [" << last_roi.x << "," << last_roi.y <<"]"
-//                        << " dt " << dt;
-//            }
-            }
+        }
 
         if (!success && !frame_pending_detect) {
             qDebug() << "Will detect in main thread";
@@ -433,9 +429,6 @@ Eigen::Vector3d HeadPoseDetector::estimate_ground_speed_by_tracker(double z, cv:
 
     // We can use this velocity to recgonize the deadzone. Thus, lock the attitude
     Eigen::Vector3d gspd = (point_new_3d - point_3d)/dt;
-    char info[100] = {0};
-    sprintf(info, "GSPD %3.1f %3.1f %3.1f", gspd.x()*100, gspd.y()*100, gspd.z()*100);
-    cv::putText(frame, info, cv::Point2f(20, 200), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
 
     return gspd;
 }

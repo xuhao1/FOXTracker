@@ -8,13 +8,13 @@ port: 4242
 udp_host: 127.000.000.1
 use_ft: false
 use_npclient: false
-cov_Q_lm: 0.46773514128719829
+cov_Q_lm: 0.089125093813374565
 cov_Q_fsa: 0.095499258602143575
-cov_T: 0.010964781961431854
-cov_V: 0.24613597775010124
+cov_T: 0.0010471285480508996
+cov_V: 0.5745659676818673
 cov_W: 28.336750230328732
 ekf_predict_dt: 0.01
-use_ekf: false
+use_ekf: true
 disp_duration: 30
 disp_max_series_size: 10000
 detect_method: 0
