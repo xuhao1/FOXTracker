@@ -97,10 +97,10 @@ void HeadPoseDetector::loop() {
         this->on_detect_twist(t, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
     
         auto _T = pose_raw.pos();
-        qDebug("Angular*l %f %f GSPD %f %f", -omg(1)*l, omg(0)*ly, ret.face_ground_speed(0), ret.face_ground_speed(1));
-        log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
-            << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
-            << T(0) << "," << T(1) << "," << T(2) << std::endl;
+        // qDebug("Angular*l %f %f GSPD %f %f", -omg(1)*l, omg(0)*ly, ret.face_ground_speed(0), ret.face_ground_speed(1));
+        // log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
+        //     << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
+        //     << T(0) << "," << T(1) << "," << T(2) << std::endl;
     }
 
     if (settings->enable_preview) {
