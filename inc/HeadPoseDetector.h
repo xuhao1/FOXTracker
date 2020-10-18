@@ -44,7 +44,7 @@ class HeadPoseDetector: public QObject {
     FaceDetector * fd = nullptr;
     LandmarkDetector * lmd = nullptr;
 
-    ExtendKalmanFilter12DOF ekf;
+    ExtendKalmanFilter12DOF_13 ekf;
     bool is_running = false;
     cv::VideoCapture cap;
 

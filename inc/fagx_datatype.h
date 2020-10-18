@@ -17,6 +17,10 @@ typedef std::vector<cv::Point3f> CvPts3d;
 
 typedef Eigen::Matrix<double, 19, 19> Matrix19d;
 
+typedef Eigen::Matrix<double, 19, 1> Vector19d;
+typedef Eigen::Matrix<double, 13, 1> Vector13d;
+typedef Eigen::Matrix<double, 7, 1> Vector7d;
+
 template <typename T>
 T inline wrap_angle(T angle) {
     while (angle > M_PI) {

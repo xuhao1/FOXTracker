@@ -75,7 +75,8 @@ void HeadPoseDetector::loop() {
         pose = Rcam.transpose() * ekf.predict(t);
         qDebug("QEKF %f %f %f %f", pose.att().x(), pose.att().y(), pose.att().z(), pose.att().w());
     }
-    this->on_detect_P(t, ekf.getP());
+    
+    // this->on_detect_P(t, ekf.getP());
 
     auto R = pose.R();
     auto T = pose.pos();
