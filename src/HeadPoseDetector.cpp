@@ -70,7 +70,7 @@ void HeadPoseDetector::loop() {
     }
 
     auto q0_inv = P0.att().inverse();
-    q0_inv = Eigen::Quaterniond::Identity();
+    // q0_inv = Eigen::Quaterniond::Identity();
     this->on_detect_pose6d_raw(t, make_pair(R2ypr(q0_inv*pose_raw.R()), q0_inv*pose_raw.pos()));
 
     t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
