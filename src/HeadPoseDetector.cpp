@@ -41,11 +41,11 @@ void HeadPoseDetector::loop() {
     TicToc tic;
     cv::Mat _show;
     auto ret = detect_head_pose(frame, _show, t, dt);
-    auto poses_raw = ret.second;
+    auto poses_raw = ret.detected_poses;
     Pose pose;
     Pose pose_raw;
 
-    if (ret.first) {
+    if (ret.success) {
         if (poses_raw.size() == 1) {
             pose_raw = poses_raw[0];
         } else {
@@ -95,7 +95,7 @@ void HeadPoseDetector::loop() {
     auto T = pose.pos();
 
     //This pose is in world frame
-    if (ret.first || (settings->use_ekf && inited)) {
+    if (ret.success || (settings->use_ekf && inited)) {
         this->on_detect_pose(t, make_pair(R, T));
 
         auto eul = quat2eulers(q0_inv*q);
@@ -229,7 +229,7 @@ void HeadPoseDetector::reset() {
 
 
 
-std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Mat & _show, double t, double dt) {
+HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Mat & _show, double t, double dt) {
     TicToc tic;
     Eigen::Matrix3d R;
     Eigen::Vector3d T;
@@ -243,7 +243,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat fr
 
     Eigen::Vector3d fsa_ypr;
 
-    std::vector<Pose> detected_poses;
+    HeadPoseDetectionResult ret;
 
     frame_count ++;
     frame_clean = frame.clone();
@@ -253,7 +253,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat fr
             tracker = create_tracker();
             tracker->init(frame, roi);
         } else {
-            return make_pair(false, std::vector<Pose>());
+            return ret;
         }
 
     } else {
@@ -318,13 +318,13 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat fr
         } else {
             //std::cout << "Will unlock" << std::endl;
             detect_mtx.unlock();
-            return make_pair(false, std::vector<Pose>());
+            return ret;
         }
 
     }
 
     if (roi.area() < MIN_ROI_AREA) {
-        return make_pair(false, std::vector<Pose>());
+        return ret;
     }
 
     face_roi = roi;
@@ -365,22 +365,23 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat fr
 
     if (landmarks.size() != landmarks_3d.size()) {
         qDebug("Landmark detection failed. 2D pts %d 3D pts %d", landmarks.size(), landmarks_3d.size());
-        return make_pair(false, std::vector<Pose>());
+        return ret;
     }
 
     if (frame_count % ((int)settings->fps) == 0)
         qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
 
     TicToc ticpnp;
-    auto ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
+    auto _ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
 
     //Estimate Planar speed of face with tracker
-    auto gspd = estimate_ground_speed_by_tracker(ret.second.pos().z(), roi, track_spd, frame);
+    ret.face_ground_speed = estimate_ground_speed_by_tracker(_ret.second.pos().z(), roi, track_spd, frame);
 
-    if (ret.first) {
-        auto pose = ret.second;
+    if (_ret.first) {
+        auto pose = _ret.second;
         T = pose.pos();
-        detected_poses.push_back(pose);
+        ret.detected_poses.push_back(pose);
+        ret.success = true;
 
         //Use FSA YPR Here
         if (settings->use_fsa) {
@@ -388,7 +389,7 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat fr
                 * Eigen::AngleAxisd(fsa_ypr(1) + settings->pitch_offset_fsa_pnp, Eigen::Vector3d::UnitY())
                 * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX())*Rface.transpose();
             Eigen::Quaterniond qR(R);
-            detected_poses.push_back(Pose(T, qR));
+            ret.detected_poses.push_back(Pose(T, qR));
 
             //The mismatch here is a bug of the new model
             dq = pose.att()*qR.inverse();
@@ -406,10 +407,9 @@ std::pair<bool, std::vector<Pose>> HeadPoseDetector::detect_head_pose(cv::Mat fr
             last_ids.push_back(i);
         }
 
-
-        return make_pair(true, detected_poses);
+        return ret;
     }
-    return make_pair(false, detected_poses);
+    return ret;
 }
 
 Eigen::Vector3d HeadPoseDetector::estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd, cv::Mat & frame) {

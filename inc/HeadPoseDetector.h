@@ -38,6 +38,31 @@ public:
     HeadPoseTrackDetectWorker(HeadPoseDetector * _hd): hd(_hd) {}
 };
 
+struct HeadPoseDetectionResult {
+    bool success = false;
+    std::vector<Pose> detected_poses;
+
+    //This is face surface ground speed
+    Eigen::Vector3d face_ground_speed;
+
+    HeadPoseDetectionResult(bool _success, std::vector<Pose> _poses, Eigen::Vector3d gspd):
+        success(_success), detected_poses(_poses), face_ground_speed(gspd)
+    {
+
+    }
+
+    HeadPoseDetectionResult():
+        success(false), detected_poses(0), face_ground_speed(0, 0, 0) {
+
+    }
+
+    HeadPoseDetectionResult(const HeadPoseDetectionResult & hd) {
+        success = hd.success;
+        detected_poses = hd.detected_poses;
+        face_ground_speed = hd.face_ground_speed;
+    }
+};
+
 class HeadPoseDetector: public QObject {
     Q_OBJECT
 
@@ -143,7 +168,7 @@ public:
     }
 
     //When using FSANet. First is PnP pose, next is FSANet pose
-    std::pair<bool, std::vector<Pose>> detect_head_pose(cv::Mat frame, cv::Mat & _show, double t, double dt);
+    HeadPoseDetectionResult detect_head_pose(cv::Mat frame, cv::Mat & _show, double t, double dt);
 
     void run_thread();
 
