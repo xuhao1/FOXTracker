@@ -21,13 +21,13 @@ class EKFConfig : public QWidget
     Q_OBJECT
 
     double qcov_min = 0.001;
-    double qcov_max = 0.5;
+    double qcov_max = 1.0;
 
     double tcov_min = 0.001;
     double tcov_max = 0.1;
 
     double wcov_min = 0.1;
-    double wcov_max = 20.0;
+    double wcov_max = 30.0;
 
     double vcov_min = 0.1;
     double vcov_max = 20.0;
