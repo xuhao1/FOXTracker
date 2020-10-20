@@ -59,7 +59,7 @@ void HeadPoseDetector::loop() {
                 pose = ekf.update_raw_pose_data(t, poses_raw[1], 1);
             }
 
-            pose = ekf.update_ground_speed(t, ret.face_ground_speed);
+            // pose = ekf.update_ground_speed(t, ret.face_ground_speed);
 
         } else {
             pose = pose_raw;
