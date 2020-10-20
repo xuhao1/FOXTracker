@@ -200,12 +200,12 @@ void HeadPoseDetector::run_thread() {
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     cap.set(cv::CAP_PROP_FPS, settings->fps);
 
-    qDebug() << "Start Timer with fps of" << settings->fps << "Cap FPS"<< cap.get(cv::CAP_PROP_FPS);
+    qDebug() << "Start Timer with fps of" << settings->fps + 10 << "Cap FPS"<< cap.get(cv::CAP_PROP_FPS);
     main_loop_timer = new QTimer;
     main_loop_timer->moveToThread(&mainThread);
     connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()), Qt::DirectConnection);
 
-    main_loop_timer->start(1/settings->fps*1000);
+    main_loop_timer->start(1.0/(settings->fps + 10)*1000);
 }
 
 void HeadPoseDetector::stop_slot() {
@@ -468,6 +468,17 @@ void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi
 std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame) {
     Eigen::Vector3d T;
     Eigen::Matrix3d R;
+    // std::vector<int> indices{ 0,1,8,15,16,27,28,29,30,31,32,33,34,35,36,39,42,45 };
+    std::vector<int> indices{ 0,1,15,16,27,28,29,30,31,32,33,34,35,36,39,42,45 };
+
+    std::vector<uchar> pts_mask(landmarks_3d.size());
+
+    for (auto i : indices) {
+        pts_mask[i] = 1;
+    }
+
+    reduceVector(landmarks, pts_mask);
+    reduceVector(landmarks_3d, pts_mask);
 
     if (landmarks.size() == 0) {
         return make_pair(false, Pose(T, R));
@@ -484,7 +495,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
         qDebug() << "PnP Time" << tic.toc();
     }
 
-    // cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
 
     cv::cv2eigen(tvec, T);
     cv::Mat Rcv;
@@ -492,6 +502,15 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
     cv::cv2eigen(Rcv, R);
     T = -T;
+
+    cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
+
+    CvPts reproject_landmarks;
+    cv::projectPoints(landmarks_3d, rvec, tvec, settings->K, settings->D, reproject_landmarks);
+    
+    for (auto pt: landmarks) {
+        cv::circle(frame, pt, 3, cv::Scalar(0, 0, 255), 1);
+    }
 
     if (success) {
         if (first_solve_pose) {
@@ -506,24 +525,4 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     }
 
     return make_pair(success, Pose(T, R));
-}
-
-
-void reduceVector(vector<cv::Point2f> &v, vector<uchar> status)
-{
-    int j = 0;
-    for (int i = 0; i < int(v.size()); i++)
-        if (status[i])
-            v[j++] = v[i];
-    v.resize(j);
-}
-
-
-void reduceVector(vector<int> &v, vector<uchar> status)
-{
-    int j = 0;
-    for (int i = 0; i < int(v.size()); i++)
-        if (status[i])
-            v[j++] = v[i];
-    v.resize(j);
 }

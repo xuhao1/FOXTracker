@@ -200,9 +200,18 @@ private slots:
     void stop_slot();
 public slots:
     void reset();
+public:
+    template<typename T>
+    void reduceVector(std::vector<T> &v, std::vector<uchar> status)
+    {
+        int j = 0;
+        for (int i = 0; i < int(v.size()); i++)
+            if (status[i])
+                v[j++] = v[i];
+        v.resize(j);
+    }
 
 };
 
-void reduceVector(std::vector<cv::Point2f> &v, std::vector<uchar> status);
-void reduceVector(std::vector<int> &v, std::vector<uchar> status);
+
 #endif // HEADPOSEDETECTOR_H
