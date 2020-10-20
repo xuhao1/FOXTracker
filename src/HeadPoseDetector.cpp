@@ -49,7 +49,7 @@ void HeadPoseDetector::loop() {
         if (poses_raw.size() == 1) {
             pose_raw = poses_raw[0];
         } else {
-            pose_raw = (poses_raw[0].slerp(settings->fsa_pnp_mixture_rate, poses_raw[1]));
+            pose_raw = (poses_raw[1].slerp(settings->fsa_pnp_mixture_rate, poses_raw[0]));
         }
 
         TicToc tic;
@@ -377,6 +377,9 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     if (_ret.first) {
         auto pose = _ret.second;
         T = pose.pos();
+
+        //Pose 0 is PnP pose
+        //Pose 1 is FSA Pose
         ret.detected_poses.push_back(pose);
         ret.success = true;
 
