@@ -69,8 +69,8 @@ class HeadPoseDetector: public QObject {
     FaceDetector * fd = nullptr;
     LandmarkDetector * lmd = nullptr;
 
-    // ExtendKalmanFilter12DOF_13 ekf;
-    ExtendKalmanFilter12DOF_19 ekf;
+     ExtendKalmanFilter12DOF_13 ekf;
+//    ExtendKalmanFilter12DOF_19 ekf;
     
 
     bool is_running = false;

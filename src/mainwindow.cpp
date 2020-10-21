@@ -15,7 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->hd.main_window = this;
 
-    this->on_startButton_clicked();
+    is_running = false;
+    this->on_endbutton_clicked();
     config_menu = new AgentXConfig;
 
 
@@ -33,8 +34,6 @@ MainWindow::MainWindow(QWidget *parent)
            &EKFConfig::on_detect_pose6d_raw);
     connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
             &EKFConfig::on_detect_twist);
-//    connect(&hd, &HeadPoseDetector::on_detect_P, config_menu->ekf_config_menu(),
-//            &EKFConfig::on_Pmat);
 
     ui->time_disp->setDigitCount(5);
     ui->time_disp->setSmallDecimalPoint(false);
@@ -49,19 +48,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     hotkeyManager = new UGlobalHotkeys();
     hotkeyManager->registerHotkey("alt+c", 1);
-    hotkeyManager->registerHotkey("alt+t", 2);
 
     connect(hotkeyManager, &UGlobalHotkeys::activated, this, &MainWindow::handle_global_hotkeys);
 
-    //this->setWindowFlags(Qt::WindowStaysOnTopHint);
+
 }
 
 void MainWindow::handle_global_hotkeys(unsigned int _id) {
     if (_id == 1) {
         this->on_center_keyboard_event();
-    }
-    if (_id == 2) {
-        this->setWindowFlags(Qt::WindowStaysOnTopHint);
     }
 }
 
@@ -143,23 +138,20 @@ void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
     ui->fps_disp->display(fps);
 }
 
-void MainWindow::on_startButton_clicked()
-{
-    if (!is_running) {
-        emit hd.start();
-        this->remapper.reset_center();
-        this->start_camera_preview();
-    }
-    is_running = true;
-}
-
 void MainWindow::on_endbutton_clicked()
 {
     if(is_running) {
         emit hd.stop();
         this->stop_camera_preview();
+        is_running = false;
+        ui->endbutton->setText("START");
+    } else {
+        emit hd.start();
+        this->remapper.reset_center();
+        this->start_camera_preview();
+        is_running = true;
+        ui->endbutton->setText("STOP");
     }
-    is_running = false;
 }
 
 void MainWindow::start_camera_preview() {

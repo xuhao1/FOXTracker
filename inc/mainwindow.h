@@ -33,8 +33,6 @@ public slots:
     void on_exit();
 
 private slots:
-    void on_startButton_clicked();
-
     void on_endbutton_clicked();
 
     void on_toggle_preview_clicked();

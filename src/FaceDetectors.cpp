@@ -22,8 +22,11 @@ LandmarkDetector::LandmarkDetector():
 
     Ort::SessionOptions session_options;
     session_options.SetIntraOpNumThreads(1);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
     for (size_t i = 0; i < settings->emilianavt_models.size(); i ++) {
         std::string model_path = settings->emilianavt_models[i];
+        qDebug("Add model from %s", model_path.c_str());
         std::wstring unicode(model_path.begin(), model_path.end());
         auto session = new Ort::Session(env, unicode.c_str(), session_options);
         sessions.push_back(session);
@@ -100,6 +103,7 @@ void LandmarkDetector::transpose(float* from, float* dest, int dim_x, int dim_y)
 std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
     CvPts pts;
     if (settings->landmark_detect_method < 0) {
+#ifndef Q_OS_ANDROID
         dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
         dlib::rectangle rect(roi.x, roi.y, roi.x + roi.width, roi.y + roi.height);
         dlib::full_object_detection shape = predictor(dlib_img, rect);
@@ -108,6 +112,7 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
             pts.push_back(cv::Point2d(p.x(), p.y()));
         }
         return std::make_pair(pts, model_points_68);
+#endif
     } else {
         cv::Rect2i roi_i = crop_roi(roi, frame, 0.3);
         if (roi_i.area() < MIN_ROI_AREA) {
@@ -174,8 +179,8 @@ CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float sca
         float conf = heatmaps[offset + argmax];
         float res = EMI_NN_SIZE - 1;
 
-        int off_x = floor(res * (logit(heatmaps[EMI_FEATURE_NUM * heatmap_size + offset + argmax])) + 0.1);
-        int off_y = floor(res * (logit(heatmaps[2 * EMI_FEATURE_NUM * heatmap_size + offset + argmax])) + 0.1);
+        float off_x = res * (logit(heatmaps[EMI_FEATURE_NUM * heatmap_size + offset + argmax]));
+        float off_y = res * (logit(heatmaps[2 * EMI_FEATURE_NUM * heatmap_size + offset + argmax]));
 
         float lm_y = (float)y0 + (float)(scale_x * (res * (float(x) / (EMI_NN_OUTPUT_SIZE-1)) + off_x));
         float lm_x = (float)x0 + (float)(scale_y * (res * (float(y) / (EMI_NN_OUTPUT_SIZE-1)) + off_y));
@@ -188,42 +193,32 @@ CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float sca
 
 std::vector<cv::Rect2d> FaceDetector::detect_objs(const cv::Mat & frame) {
     std::vector<cv::Rect2d> ret;
-    if (settings->use_fsa) {
-        cv::Mat _img;
-        int _size_dnn = frame.cols*0.5;
+    cv::Mat _img;
+    int _size_dnn = frame.cols*0.5;
 
-        cv::resize(frame, _img, cv::Size(_size_dnn, _size_dnn));
-        auto blob = cv::dnn::blobFromImage(_img, 1.0, cv::Size(_size_dnn, _size_dnn), cv::Scalar(104.0, 177.0, 123.0));
-        head_detector.setInput(blob);
-        auto detection = head_detector.forward();
+    cv::resize(frame, _img, cv::Size(_size_dnn, _size_dnn));
+    auto blob = cv::dnn::blobFromImage(_img, 1.0, cv::Size(_size_dnn, _size_dnn), cv::Scalar(104.0, 177.0, 123.0));
+    head_detector.setInput(blob);
+    auto detection = head_detector.forward();
 
-        Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
+    Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
 
-        for (int i = 0; i < detectionMat.rows; i++)
-        {
-            float confidence = detectionMat.at<float>(i, 2);
-            if (confidence > settings->SSDThreshold) {
-                   int idx = static_cast<int>(detectionMat.at<float>(i, 1));
-                   int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frame.cols);
-                   int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frame.rows);
-                   int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
-                   int yRightTop = static_cast<int>(detectionMat.at<float>(i, 6) * frame.rows);
+    for (int i = 0; i < detectionMat.rows; i++)
+    {
+        float confidence = detectionMat.at<float>(i, 2);
+        if (confidence > settings->SSDThreshold) {
+               int idx = static_cast<int>(detectionMat.at<float>(i, 1));
+               int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frame.cols);
+               int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frame.rows);
+               int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
+               int yRightTop = static_cast<int>(detectionMat.at<float>(i, 6) * frame.rows);
 
-                   Rect object((int)xLeftBottom, (int)yLeftBottom,
-                               (int)(xRightTop - xLeftBottom),
-                               (int)(yRightTop - yLeftBottom));
-                   ret.push_back(object);
-            }
-        }
-    } else {
-
-        dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
-        std::vector<dlib::rectangle> dets = detector(dlib_img);
-        for (auto _det : dets) {
-            ret.push_back(rect2roi(_det));
+               Rect object((int)xLeftBottom, (int)yLeftBottom,
+                           (int)(xRightTop - xLeftBottom),
+                           (int)(yRightTop - yLeftBottom));
+               ret.push_back(object);
         }
     }
-
     return ret;
 }
 

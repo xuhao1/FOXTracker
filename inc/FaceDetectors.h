@@ -8,7 +8,6 @@
 #include <onnxruntime_cxx_api.h>
 
 class FaceDetector {
-    dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
     cv::dnn::Net head_detector;
     cv::Rect2d last_roi;
 public:
@@ -28,7 +27,9 @@ public:
 
 
 class LandmarkDetector {
+#ifndef Q_OS_ANDROID
     dlib::shape_predictor predictor;
+#endif
     Ort::Env env;
     std::vector<Ort::Session*> sessions;
     float input_image[EMI_NN_SIZE*EMI_NN_SIZE*3] = {0};
