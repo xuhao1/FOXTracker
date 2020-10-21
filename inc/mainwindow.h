@@ -23,6 +23,7 @@ class MainWindow : public QMainWindow
     PoseDataSender data_sender;
     PoseRemapper remapper;
     bool is_running = false;
+    bool is_always_on_top = false;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -53,6 +54,8 @@ private slots:
     void on_pause_clicked();
 
     void on_centerButton_clicked();
+
+    void on_always_on_top_clicked();
 
 private:
     QTimer* Timer;

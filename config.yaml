@@ -14,7 +14,7 @@ cov_T: 0.0010471285480508996
 cov_V: 0.5745659676818673
 cov_W: 28.336750230328732
 ekf_predict_dt: 0.01
-use_ekf: true
+use_ekf: false
 disp_duration: 30
 disp_max_series_size: 10000
 detect_method: 0

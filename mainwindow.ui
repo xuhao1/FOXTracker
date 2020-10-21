@@ -403,6 +403,24 @@ color: rgb(240, 241, 250);</string>
      <string>Center</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="always_on_top">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>280</y>
+      <width>191</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(49, 143, 197);
+font: 15pt &quot;Source Code Pro&quot;;
+color: rgb(240, 241, 250);</string>
+    </property>
+    <property name="text">
+     <string>Always On Top</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

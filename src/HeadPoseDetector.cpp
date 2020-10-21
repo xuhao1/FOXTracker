@@ -356,7 +356,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     double dt_fsa = fsa.toc();
 
     TicToc tic1;
-    auto lmd_ret = lmd->detect(frame, crop_roi(face_roi, frame, 0));
+    auto lmd_ret = lmd->detect(frame, fsa_roi);
     landmarks = lmd_ret.first;
     landmarks_3d = lmd_ret.second;
 

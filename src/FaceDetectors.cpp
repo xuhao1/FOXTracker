@@ -114,7 +114,7 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
         return std::make_pair(pts, model_points_68);
 #endif
     } else {
-        cv::Rect2i roi_i = crop_roi(roi, frame, 0.3);
+        cv::Rect2i roi_i = roi;
         if (roi_i.area() < MIN_ROI_AREA) {
             return std::make_pair(pts, model_points_66);
         }

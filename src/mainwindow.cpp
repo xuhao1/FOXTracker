@@ -209,3 +209,18 @@ void MainWindow::on_centerButton_clicked()
 {
     on_center_keyboard_event();
 }
+
+void MainWindow::on_always_on_top_clicked()
+{
+    if (is_always_on_top) {
+        QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        //this->setWindowFlags(Qt::WindowTitleHint|Qt::WindowStaysOnBottomHint);
+        is_always_on_top = false;
+        this->show();
+    } else {
+        QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+        this->setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
+        is_always_on_top = true;
+        this->show();
+    }
+}
