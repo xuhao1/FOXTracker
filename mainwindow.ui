@@ -26,29 +26,11 @@
    <string notr="true">background-color: rgb(31, 38, 38);</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="startButton">
-    <property name="geometry">
-     <rect>
-      <x>700</x>
-      <y>40</y>
-      <width>191</width>
-      <height>81</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color: rgb(49, 143, 197);
-font: 28pt &quot;Source Code Pro&quot;;
-color: rgb(240, 241, 250);</string>
-    </property>
-    <property name="text">
-     <string>START</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="endbutton">
     <property name="geometry">
      <rect>
       <x>700</x>
-      <y>150</y>
+      <y>20</y>
       <width>191</width>
       <height>81</height>
      </rect>
@@ -59,7 +41,7 @@ font: 28pt &quot;Source Code Pro&quot;;
 color: rgb(240, 241, 250);</string>
     </property>
     <property name="text">
-     <string>END</string>
+     <string>STOP</string>
     </property>
    </widget>
    <widget class="QPushButton" name="toggle_preview">
@@ -357,7 +339,7 @@ color: rgb(240, 241, 250);</string>
     <property name="geometry">
      <rect>
       <x>700</x>
-      <y>250</y>
+      <y>120</y>
       <width>191</width>
       <height>81</height>
      </rect>
@@ -406,9 +388,9 @@ color: rgb(240, 241, 250);</string>
    <widget class="QPushButton" name="centerButton">
     <property name="geometry">
      <rect>
-      <x>770</x>
-      <y>360</y>
-      <width>121</width>
+      <x>700</x>
+      <y>220</y>
+      <width>191</width>
       <height>31</height>
      </rect>
     </property>
