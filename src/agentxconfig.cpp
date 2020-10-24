@@ -9,6 +9,7 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     ui(new Ui::AgentXConfig)
 {
     ui->setupUi(this);
+    this->setWindowTitle("Config");
     qDebug() << "Start AgentX Config page";
     QStringList joystickNames = QJoysticks::getInstance()->deviceNames();
     qDebug() << "Joysticks" << joystickNames;
