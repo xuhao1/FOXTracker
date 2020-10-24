@@ -46,6 +46,7 @@ private slots:
 signals:
     void reset_camera();
     void recenter_hotkey_pressed();
+    void pause_hotkey_pressed();
 
 private:
     Ui::AgentXConfig *ui;

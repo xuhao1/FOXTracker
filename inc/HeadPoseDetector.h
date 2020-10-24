@@ -115,6 +115,7 @@ class HeadPoseDetector: public QObject {
     double dt = 0.03;
     double last_t = 0;
 
+    bool paused = false;
     //dQ of FSA and PnP result
     Eigen::Quaterniond dq;
 
@@ -140,7 +141,7 @@ class HeadPoseDetector: public QObject {
 public:
     MainWindow * main_window;
 
-    HeadPoseDetector() {
+    HeadPoseDetector(): last_roi(0, 0, 0, 0) {
         cv::setNumThreads(1);
         log.open(settings->app_path + "/debug.txt", std::ofstream::out);
         is_running = false;
@@ -186,7 +187,6 @@ public:
 signals:
     void start();
     void stop();
-
     void on_detect_pose(double t, Pose_ pose);
     void on_detect_pose6d(double t, Pose6DoF pose);
     void on_detect_pose6d_raw(double t, Pose6DoF pose);
@@ -198,8 +198,11 @@ private slots:
     void loop();
     void start_slot();
     void stop_slot();
+
 public slots:
     void reset();
+    void reset_detect();
+    void pause();
 public:
     template<typename T>
     void reduceVector(std::vector<T> &v, std::vector<uchar> status)

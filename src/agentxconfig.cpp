@@ -153,10 +153,12 @@ void AgentXConfig::buttonEvent (const QJoystickButtonEvent& event) {
             if(settings->hotkey_joystick_names[i] == joyname &&
                settings->hotkey_joystick_buttons[i] == btn_id) {
                 qDebug() << "Hotkey" << i << "pressed";
-                recenter_hotkey_pressed();
+                if (i==0) {
+                    recenter_hotkey_pressed();
+                } else if (i==1)  {
+                    pause_hotkey_pressed();
+                }
             }
-            //Only trigger first hotkey function.
-            return;
         }
     }
 }

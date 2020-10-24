@@ -25,6 +25,10 @@ void HeadPoseTrackDetectWorker::stop() {
 }
 
 void HeadPoseDetector::loop() {
+    if (paused) {
+        return;
+    }
+
     TicToc tic_cap;
     Mat frame;
     cap >> frame;
@@ -203,7 +207,7 @@ void HeadPoseDetector::run_thread() {
     qDebug() << "Start Timer with fps of" << settings->fps + 10 << "Cap FPS"<< cap.get(cv::CAP_PROP_FPS);
     main_loop_timer = new QTimer;
     main_loop_timer->moveToThread(&mainThread);
-    connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()), Qt::DirectConnection);
+    connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()));
 
     main_loop_timer->start(1.0/(settings->fps + 10)*1000);
 }
@@ -222,12 +226,21 @@ void HeadPoseDetector::stop_slot() {
     }
 }
 
+void HeadPoseDetector::pause() {
+    paused = !paused;
+}
+
 void HeadPoseDetector::reset() {
     first_solve_pose = true;
     stop();
     start();
 }
 
+void HeadPoseDetector::reset_detect() {
+    last_roi = cv::Rect2d(0, 0, 0, 0);
+    roi_need_to_detect = cv::Rect2d(0, 0, 0, 0);
+    first_solve_pose  = true;
+}
 
 
 HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Mat & _show, double t, double dt) {
@@ -255,6 +268,10 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
             tracker = create_tracker();
             tracker->init(frame, roi);
         } else {
+            if (settings->enable_preview) {
+                _show = frame.clone();
+                draw(_show, roi, face_roi, fsa_roi, landmarks, Pose(T, R), track_spd);
+            }
             return ret;
         }
 
@@ -315,12 +332,20 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
         } else {
             //std::cout << "Will unlock" << std::endl;
             detect_mtx.unlock();
+            if (settings->enable_preview) {
+                _show = frame.clone();
+                draw(_show, roi, face_roi, fsa_roi, landmarks, Pose(T, R), track_spd);
+            }
             return ret;
         }
 
     }
 
     if (roi.area() < MIN_ROI_AREA) {
+        if (settings->enable_preview) {
+            _show = frame.clone();
+            draw(_show, roi, face_roi, fsa_roi, landmarks, Pose(T, R), track_spd);
+        }
         return ret;
     }
 
@@ -362,6 +387,10 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
 
     if (landmarks.size() != landmarks_3d.size()) {
         qDebug("Landmark detection failed. 2D pts %d 3D pts %d", landmarks.size(), landmarks_3d.size());
+        if (settings->enable_preview) {
+            _show = frame.clone();
+            draw(_show, roi, face_roi, fsa_roi, landmarks, Pose(T, R), track_spd);
+        }
         return ret;
     }
 

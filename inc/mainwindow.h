@@ -57,6 +57,8 @@ private slots:
 
     void on_always_on_top_clicked();
 
+    void on_quit_clicked();
+
 private:
     QTimer* Timer;
     bool camera_preview_enabled = false;

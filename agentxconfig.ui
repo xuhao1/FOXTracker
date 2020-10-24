@@ -93,8 +93,7 @@ color: #8fbed4;</string>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">
-</string>
+       <string notr="true"/>
       </property>
       <property name="text">
        <string>Directly Control Game</string>
@@ -110,8 +109,7 @@ color: #8fbed4;</string>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">
-</string>
+       <string notr="true"/>
       </property>
       <property name="text">
        <string>EKF</string>
@@ -157,8 +155,7 @@ pt &quot;Source Code Pro&quot;;
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">
-</string>
+       <string notr="true"/>
       </property>
       <property name="text">
        <string>Send UDP</string>
@@ -575,9 +572,9 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="Hotkey1_Button">
       <property name="geometry">
        <rect>
-        <x>80</x>
+        <x>130</x>
         <y>100</y>
-        <width>81</width>
+        <width>31</width>
         <height>21</height>
        </rect>
       </property>
@@ -610,9 +607,9 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="Hotkey2_Button">
       <property name="geometry">
        <rect>
-        <x>80</x>
+        <x>120</x>
         <y>170</y>
-        <width>81</width>
+        <width>41</width>
         <height>21</height>
        </rect>
       </property>
@@ -680,12 +677,12 @@ color: #8fbed4;</string>
        <rect>
         <x>10</x>
         <y>100</y>
-        <width>41</width>
+        <width>121</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Btn:</string>
+       <string>CenterBtn:</string>
       </property>
      </widget>
      <widget class="QLabel" name="Hotkey1_Joystick_5">
@@ -693,12 +690,12 @@ color: #8fbed4;</string>
        <rect>
         <x>10</x>
         <y>170</y>
-        <width>41</width>
+        <width>111</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Btn:</string>
+       <string>PauseBtn:</string>
       </property>
      </widget>
     </widget>

@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(config_menu, &AgentXConfig::reset_camera, &hd, &HeadPoseDetector::reset);
     connect(config_menu, &AgentXConfig::recenter_hotkey_pressed, this, &MainWindow::on_center_keyboard_event);
+    connect(config_menu, &AgentXConfig::pause_hotkey_pressed, this, &MainWindow::on_pause_clicked);
 
     connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
             &EKFConfig::on_detect_pose6d);
@@ -192,12 +193,14 @@ void MainWindow::on_config_button_clicked()
 
 
 void MainWindow::on_center_keyboard_event() {
+//    hd.reset_detect();
     remapper.reset_center();
 }
 
 
 void MainWindow::on_pause_clicked()
 {
+    hd.pause();
     if(Timer->isActive()) {
         Timer->stop();
     } else {
@@ -214,7 +217,7 @@ void MainWindow::on_always_on_top_clicked()
 {
     if (is_always_on_top) {
         QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-        //this->setWindowFlags(Qt::WindowTitleHint|Qt::WindowStaysOnBottomHint);
+        this->setWindowFlags(Qt::WindowTitleHint);
         is_always_on_top = false;
         this->show();
     } else {
@@ -223,4 +226,9 @@ void MainWindow::on_always_on_top_clicked()
         is_always_on_top = true;
         this->show();
     }
+}
+
+void MainWindow::on_quit_clicked()
+{
+    QCoreApplication::quit();
 }
