@@ -381,9 +381,15 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     double dt_fsa = fsa.toc();
 
     TicToc tic1;
-    auto lmd_ret = lmd->detect(frame, fsa_roi);
-    landmarks = lmd_ret.first;
-    landmarks_3d = lmd_ret.second;
+    if (settings->landmark_detect_method < 0) {
+        auto lmd_ret = lmd->detect(frame, face_roi);
+        landmarks = lmd_ret.first;
+        landmarks_3d = lmd_ret.second;
+    } else {
+        auto lmd_ret = lmd->detect(frame, fsa_roi);
+        landmarks = lmd_ret.first;
+        landmarks_3d = lmd_ret.second;
+    }
 
     if (landmarks.size() != landmarks_3d.size()) {
         qDebug("Landmark detection failed. 2D pts %d 3D pts %d", landmarks.size(), landmarks_3d.size());
