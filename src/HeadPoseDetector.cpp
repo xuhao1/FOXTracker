@@ -417,7 +417,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
         //Pose 1 is FSA Pose
         double offset = settings->pitch_offset_fsa_pnp;
         if(settings->landmark_detect_method < 0) {
-            offset = 0;
+            // offset = 0;
         }
 
         pose.att() = pose.att() * Eigen::AngleAxisd(-offset, Eigen::Vector3d::UnitX());
