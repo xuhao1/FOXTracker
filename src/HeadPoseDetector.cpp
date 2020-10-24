@@ -415,13 +415,20 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
 
         //Pose 0 is PnP pose
         //Pose 1 is FSA Pose
+        double offset = settings->pitch_offset_fsa_pnp;
+        if(settings->landmark_detect_method < 0) {
+            offset = 0;
+        }
+
+        pose.att() = pose.att() * Eigen::AngleAxisd(-offset, Eigen::Vector3d::UnitX());
+
         ret.detected_poses.push_back(pose);
         ret.success = true;
 
         //Use FSA YPR Here
         if (settings->use_fsa) {
              R = Rcam.transpose() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
-                * Eigen::AngleAxisd(fsa_ypr(1) + settings->pitch_offset_fsa_pnp, Eigen::Vector3d::UnitY())
+                * Eigen::AngleAxisd(fsa_ypr(1), Eigen::Vector3d::UnitY())
                 * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX())*Rface.transpose();
             Eigen::Quaterniond qR(R);
             ret.detected_poses.push_back(Pose(T, qR));
