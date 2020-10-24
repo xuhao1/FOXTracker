@@ -22,7 +22,11 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Matrix19d>("Matrix19d");
 
     qInfo() << "Welcome! pliots";
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    if (argc > 1 && std::string(argv[1]) == "small") {
+    } else {
+        QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    }
+
     QApplication a(argc, argv);
 
     settings = new FlightAgxSettings;
