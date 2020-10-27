@@ -54,7 +54,7 @@ color: #8fbed4;
 background-color: rgb(31, 38, 38);</string>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="General">
     <property name="styleSheet">
@@ -359,7 +359,7 @@ color: #8fbed4;</string>
        <number>-1</number>
       </property>
       <property name="maximum">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
