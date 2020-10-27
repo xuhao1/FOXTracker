@@ -1,6 +1,6 @@
 # Introduction
 ![screenshot](./docs/screenshot.png)
-FlightAgentX is a facial head tracker for gaming usage. Perform as TrackIR or [Opentrack](https://github.com/opentrack/opentrack) (pointtracker) as track camera controller for Flight Simulation Games like DCS.
+FOXTracker is a facial head tracker for gaming usage. Perform as TrackIR or [Opentrack](https://github.com/opentrack/opentrack) (pointtracker) as track camera controller for Flight Simulation Games like DCS.
 
 ## Prerequst
 A normal web camera.
@@ -9,7 +9,7 @@ A normal web camera.
 ## Usage
 This program is still under development, not stable yet. **I will never collect any user data from your camera.**
 
-Download FlightAgentX at [Release](https://github.com/xuhao1/FlightAgentX/releases)
+Download FOXTracker at [Release](https://github.com/xuhao1/FOXTracker/releases)
 
 
 This program supports control games directly or uses Opentrack as backend. For now, the spline function is in development, so use Opentrack is a good idea. If you are using this program individually, please modify config or the config.yaml.
@@ -20,13 +20,12 @@ Just turn your opentrack input to UDP and open FlightAgentX.exe. Everything work
 ![c1](./docs/opentracker_config.PNG)
 ![c2](./docs/opentracker_config2.PNG)
 
-Also, you may use [dcs.ini](./docs/dcs.ini) here.
+Also, you may use [dcs.ini](https://github.com/xuhao1/FOXTracker/blob/master/docs/dcs.ini) here.
 
 Video can be found on https://www.bilibili.com/video/BV1ey4y1C7Za
 ## Future Plan (Maybe in a year)
 1. Try to reinforce the robust of the tracker.
-2. Will add a better pointtracker frontend.
-3. Will add spline function.
+2. Will add spline function.
 
 ## LICENSE
 MIT.
@@ -60,8 +59,7 @@ MIT.
 ## 未来一年内的开发计划
 
 1. 加强脸瞄的稳定性
-2. 加入更好的pointtracker前端
-3. 加入曲线编辑功能
+2. 加入曲线编辑功能
 
 
 ## 协议
