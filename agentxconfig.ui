@@ -14,9 +14,9 @@
    <string>Dialog</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(31, 38, 38);
-font: 10pt;
-</string>
+   <string notr="true">font: 15pt &quot;Source Code Variable&quot;;
+color: #8fbed4;
+background-color: rgb(31, 38, 38);</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -49,12 +49,12 @@ color: #2e5669;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">font: 15pt &quot;Source Code Pro&quot;;
+    <string notr="true">font: 15pt &quot;Source Code Variable&quot;;
 color: #8fbed4;
 background-color: rgb(31, 38, 38);</string>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="General">
     <property name="styleSheet">
@@ -73,7 +73,7 @@ background-color: rgb(31, 38, 38);</string>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 10pt &quot;Source Code Pro&quot;;
+      <string notr="true">font: 10pt;
 background-color: rgb(46, 86, 105);
 color: #8fbed4;</string>
      </property>
@@ -126,16 +126,15 @@ color: #8fbed4;</string>
       </property>
       <property name="font">
        <font>
-        <family>Source Code Pro</family>
-        <pointsize>10</pointsize>
-        <weight>2</weight>
+        <family>Source Code Variable</family>
+        <pointsize>23</pointsize>
+        <weight>50</weight>
         <italic>false</italic>
         <bold>false</bold>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 23
-pt &quot;Source Code Pro&quot;;
+       <string notr="true">font: 23pt;
 </string>
       </property>
       <property name="text">
@@ -403,7 +402,7 @@ pt &quot;Source Code Pro&quot;;
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+      <string notr="true">font: 14pt;
 background-color: rgb(46, 86, 105);
 color: #8fbed4;</string>
      </property>
@@ -424,7 +423,7 @@ color: #8fbed4;</string>
       </property>
       <property name="font">
        <font>
-        <family>Source Code Pro</family>
+        <family>Source Code Variable</family>
         <pointsize>25</pointsize>
         <weight>50</weight>
         <italic>false</italic>
@@ -432,7 +431,7 @@ color: #8fbed4;</string>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 25pt &quot;Source Code Pro&quot;;
+       <string notr="true">font: 25pt;
 </string>
       </property>
       <property name="text">
@@ -514,7 +513,7 @@ color: #8fbed4;</string>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+      <string notr="true">font: 14pt;
 background-color: rgb(46, 86, 105);
 color: #8fbed4;</string>
      </property>
@@ -535,7 +534,7 @@ color: #8fbed4;</string>
       </property>
       <property name="font">
        <font>
-        <family>Source Code Pro</family>
+        <family>Source Code Variable</family>
         <pointsize>25</pointsize>
         <weight>50</weight>
         <italic>false</italic>
@@ -543,7 +542,7 @@ color: #8fbed4;</string>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 25pt &quot;Source Code Pro&quot;;
+       <string notr="true">font: 25pt;
 </string>
       </property>
       <property name="text">
@@ -623,9 +622,9 @@ color: #8fbed4;</string>
      <widget class="QPushButton" name="Bind_HotKey1">
       <property name="geometry">
        <rect>
-        <x>220</x>
+        <x>260</x>
         <y>100</y>
-        <width>91</width>
+        <width>71</width>
         <height>20</height>
        </rect>
       </property>
@@ -636,9 +635,9 @@ color: #8fbed4;</string>
      <widget class="QPushButton" name="Bind_HotKey2">
       <property name="geometry">
        <rect>
-        <x>220</x>
+        <x>260</x>
         <y>180</y>
-        <width>91</width>
+        <width>71</width>
         <height>20</height>
        </rect>
       </property>
@@ -698,6 +697,38 @@ color: #8fbed4;</string>
        <string>PauseBtn:</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="Unbind_HotKey1">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>100</y>
+        <width>51</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 8pt &quot;Source Code Pro&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Unbind</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="Unbind_HotKey2">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>180</y>
+        <width>51</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 8pt &quot;Source Code Pro&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Unbind</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_2">
@@ -729,7 +760,52 @@ color: #8fbed4;</string>
     <attribute name="title">
      <string>About</string>
     </attribute>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>0</y>
+       <width>741</width>
+       <height>441</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="main.qrc">:/assets/dcs.JPG</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>530</y>
+     <width>221</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>www.xuhao1.me</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>490</y>
+     <width>261</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>foxtracker.xuhao1.me</string>
+   </property>
   </widget>
  </widget>
  <customwidgets>
@@ -739,7 +815,9 @@ color: #8fbed4;</string>
    <header>ekfconfig.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="main.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

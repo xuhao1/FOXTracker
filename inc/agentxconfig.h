@@ -22,6 +22,7 @@ public:
 
     void buttonEvent (const QJoystickButtonEvent& event);
 
+    void update_hotkeys();
 private slots:
     void on_EKF_Check_stateChanged(int arg1);
 
@@ -42,6 +43,10 @@ private slots:
     void on_FSAPnPOffset_input_valueChanged(int value);
 
     void on_LandmarkModel_input_valueChanged(int value);
+
+    void on_Unbind_HotKey1_clicked();
+
+    void on_Unbind_HotKey2_clicked();
 
 signals:
     void reset_camera();

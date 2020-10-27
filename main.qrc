@@ -1,6 +1,9 @@
 <RCC>
     <qresource prefix="/">
         <file>icon.png</file>
+        <file>assets/SourceCodeVariable-Italic.ttf</file>
+        <file>assets/SourceCodeVariable-Roman.ttf</file>
+        <file>assets/dcs.JPG</file>
     </qresource>
     <qresource prefix="/freetrack"/>
 </RCC>

@@ -16,6 +16,15 @@
     <height>570</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>Source Code Variable</family>
+    <pointsize>15</pointsize>
+    <weight>50</weight>
+    <italic>false</italic>
+    <bold>false</bold>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -23,7 +32,8 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(31, 38, 38);</string>
+   <string notr="true">background-color: rgb(31, 38, 38);
+font: 15pt &quot;Source Code Variable&quot;;</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="endbutton">
@@ -35,9 +45,18 @@
       <height>81</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <family>Source Code Variable</family>
+      <pointsize>28</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(49, 143, 197);
-font: 28pt &quot;Source Code Pro&quot;;
+font: 28pt;
 color: rgb(240, 241, 250);</string>
     </property>
     <property name="text">
@@ -54,7 +73,7 @@ color: rgb(240, 241, 250);</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+     <string notr="true">font: 14pt;
 background-color: rgb(46, 86, 105);
 color: rgb(240, 241, 250);</string>
     </property>
@@ -72,7 +91,7 @@ color: rgb(240, 241, 250);</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+     <string notr="true">font: 14pt;
 background-color: rgb(143, 190, 212);
 color: #2e5669;</string>
     </property>
@@ -104,15 +123,18 @@ color: #2e5669;</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
      <string notr="true">color: #8fbed4;</string>
     </property>
     <property name="text">
-     <string>time</string>
+     <string>Time</string>
     </property>
    </widget>
    <widget class="QLCDNumber" name="time_disp">
@@ -136,8 +158,11 @@ color: #2e5669;</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
@@ -158,8 +183,11 @@ color: #2e5669;</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
@@ -180,8 +208,11 @@ color: #2e5669;</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
@@ -232,8 +263,11 @@ color: #2e5669;</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
@@ -264,8 +298,11 @@ color: #2e5669;</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
@@ -306,8 +343,11 @@ color: #2e5669;</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
@@ -327,7 +367,7 @@ color: #2e5669;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+     <string notr="true">font: 14pt;
 background-color: rgb(46, 86, 105);
 color: rgb(240, 241, 250);</string>
     </property>
@@ -344,9 +384,18 @@ color: rgb(240, 241, 250);</string>
       <height>81</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <family>Source Code Variable</family>
+      <pointsize>28</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(49, 143, 197);
-font: 28pt &quot;Source Code Pro&quot;;
+font: 28pt;
 color: rgb(240, 241, 250);</string>
     </property>
     <property name="text">
@@ -356,7 +405,7 @@ color: rgb(240, 241, 250);</string>
    <widget class="QLCDNumber" name="fps_disp">
     <property name="geometry">
      <rect>
-      <x>620</x>
+      <x>600</x>
       <y>580</y>
       <width>64</width>
       <height>23</height>
@@ -374,8 +423,11 @@ color: rgb(240, 241, 250);</string>
     </property>
     <property name="font">
      <font>
-      <family>Adobe Pi Std</family>
-      <pointsize>20</pointsize>
+      <family>Source Code Variable</family>
+      <pointsize>15</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
@@ -396,7 +448,7 @@ color: rgb(240, 241, 250);</string>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(49, 143, 197);
-font: 15pt &quot;Source Code Pro&quot;;
+font: 15pt;
 color: rgb(240, 241, 250);</string>
     </property>
     <property name="text">
@@ -413,7 +465,7 @@ color: rgb(240, 241, 250);</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+     <string notr="true">font: 14pt;
 background-color: rgb(143, 190, 212);
 color: #2e5669;</string>
     </property>
@@ -431,7 +483,7 @@ color: #2e5669;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">font: 14pt &quot;Source Code Pro&quot;;
+     <string notr="true">font: 14pt;
 background-color: rgb(85, 0, 0);
 color: rgb(240, 241, 250);</string>
     </property>

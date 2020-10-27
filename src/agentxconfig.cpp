@@ -45,11 +45,7 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
 
     ui->SlerpRate_Input->setValue(settings->fsa_pnp_mixture_rate*100);
 
-    ui->Hotkey1_Joystick->setText(settings->hotkey_joystick_names[0].c_str());
-    ui->Hotkey1_Button->setText(QString::number(settings->hotkey_joystick_buttons[0]));
-
-    ui->Hotkey2_Joystick->setText(settings->hotkey_joystick_names[1].c_str());
-    ui->Hotkey2_Button->setText(QString::number(settings->hotkey_joystick_buttons[1]));
+    update_hotkeys();
 
     ui->FSAPnPOffset_disp->setDecMode();
     ui->FSAPnPOffset_disp->setDigitCount(5);
@@ -146,6 +142,7 @@ void AgentXConfig::buttonEvent (const QJoystickButtonEvent& event) {
             mbox->done(0);
         }
         wait_for_bind = -1;
+        update_hotkeys();
         return;
     }
 
@@ -191,4 +188,28 @@ void AgentXConfig::on_LandmarkModel_input_valueChanged(int value)
 {
     settings->landmark_detect_method = value;
     settings->set_value("landmark_detect_method", value);
+}
+
+void AgentXConfig::on_Unbind_HotKey1_clicked()
+{
+    settings->hotkey_joystick_names[0] = "";
+    settings->hotkey_joystick_buttons[0] = 0;
+
+    update_hotkeys();
+}
+
+void AgentXConfig::on_Unbind_HotKey2_clicked()
+{
+    settings->hotkey_joystick_names[1] = "";
+    settings->hotkey_joystick_buttons[1] = 0;
+
+    update_hotkeys();
+}
+
+void AgentXConfig::update_hotkeys() {
+    ui->Hotkey1_Joystick->setText(settings->hotkey_joystick_names[0].c_str());
+    ui->Hotkey1_Button->setText(QString::number(settings->hotkey_joystick_buttons[0]));
+
+    ui->Hotkey2_Joystick->setText(settings->hotkey_joystick_names[1].c_str());
+    ui->Hotkey2_Button->setText(QString::number(settings->hotkey_joystick_buttons[1]));
 }
