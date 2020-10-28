@@ -28,7 +28,7 @@ Video can be found on https://www.bilibili.com/video/BV1ey4y1C7Za
 2. Will add spline function.
 
 ## LICENSE
-MIT.
+LGPL
 
 ## Third-party Libraries
 [OpenCV](https://opencv.org/)
