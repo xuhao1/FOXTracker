@@ -12,6 +12,7 @@ using namespace std;
 
 cv::Ptr<cv::Tracker> create_tracker() {
     return cv::TrackerMedianFlow::create();
+    //return cv::TrackerMOSSE::create();
 }
 
 void HeadPoseTrackDetectWorker::run() {
@@ -500,13 +501,13 @@ void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi
     cv::Rodrigues(Rmat, rvec);
     cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, -tvec, 0.05, 3);
 
-    cv::Point2f center(face_roi.x + face_roi.width/2, face_roi.y + face_roi.height/2);
-    cv::arrowedLine(frame,  center, center+cv::Point2f(track_spd.x, track_spd.y), cv::Scalar(0, 127, 255), 3);
+    //    cv::Point2f center(face_roi.x + face_roi.width/2, face_roi.y + face_roi.height/2);
+    //    cv::arrowedLine(frame,  center, center+cv::Point2f(track_spd.x, track_spd.y), cv::Scalar(0, 127, 255), 3);
 
-    char info[100] = {0};
-    auto eul = quat2eulers(dq, true);
-    sprintf(info, "dYPR [%3.1f,%3.1f,%3.1f]", eul(0), eul(1), eul(2));
-    cv::putText(frame, info, cv::Point2f(20, 150), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
+    //    char info[100] = {0};
+    //    auto eul = quat2eulers(dq, true);
+    //    sprintf(info, "dYPR [%3.1f,%3.1f,%3.1f]", eul(0), eul(1), eul(2));
+    //    cv::putText(frame, info, cv::Point2f(20, 150), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
 
 }
 

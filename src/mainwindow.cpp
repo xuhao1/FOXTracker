@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setWindowTitle("FlightAgentX");
+    this->setWindowTitle("FOXTracker");
 
     this->hd.main_window = this;
 
