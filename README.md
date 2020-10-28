@@ -64,4 +64,5 @@ LGPL
 
 ## 协议
 
-MIT
+LGPL
+
