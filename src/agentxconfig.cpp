@@ -186,7 +186,7 @@ void AgentXConfig::on_FSAPnPOffset_input_valueChanged(int value)
 
 void AgentXConfig::on_LandmarkModel_input_valueChanged(int value)
 {
-    settings->landmark_detect_method = value;
+    settings->set_landmark_level(value);
     settings->set_value("landmark_detect_method", value);
 }
 

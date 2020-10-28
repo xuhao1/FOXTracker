@@ -23,7 +23,7 @@ void FlightAgxSettings::load_from_config_yaml() {
     cov_V = config["cov_V"].as<double>();
     cov_W = config["cov_W"].as<double>();
 
-    landmark_detect_method = config["landmark_detect_method"].as<int>();
+    set_landmark_level(config["landmark_detect_method"].as<int>());
 
     ekf_predict_dt = config["ekf_predict_dt"].as<double>();
     use_ekf = config["use_ekf"].as<bool>();

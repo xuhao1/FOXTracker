@@ -34,13 +34,20 @@ LandmarkDetector::LandmarkDetector():
 
     Ort::AllocatorWithDefaultOptions allocator;
 
-    std::vector<int64_t> input_node_dims{1, 3, EMI_NN_SIZE, EMI_NN_SIZE};
-    std::vector<int64_t> output_shape_{1, EMI_OUTPUT_CHANNELS, EMI_NN_OUTPUT_SIZE, EMI_NN_OUTPUT_SIZE};
+    std::vector<int64_t> input_node_dims{1, 3, EMI_NN_MAX_INPUT, EMI_NN_MAX_INPUT};
+    std::vector<int64_t> output_shape_{1, EMI_OUTPUT_CHANNELS, EMI_NN_MAX_OUTPUT, EMI_NN_MAX_OUTPUT};
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     input_tensor_ = Ort::Value::CreateTensor<float>(memory_info,
-               input_image, EMI_NN_SIZE*EMI_NN_SIZE*3, input_node_dims.data(), 4);
+               input_image, EMI_NN_MAX_INPUT*EMI_NN_MAX_INPUT*3, input_node_dims.data(), 4);
     output_tensor_ = Ort::Value::CreateTensor<float>(memory_info, results_.data(), results_.size(), output_shape_.data(), output_shape_.size());
 
+
+    std::vector<int64_t> input_node_dims112{1, 3, EMI_NN_MEIDUM_INPUT, EMI_NN_MEIDUM_INPUT};
+    std::vector<int64_t> output_shape14_{1, EMI_OUTPUT_CHANNELS, EMI_NN_MEIDUM_OUTPUT, EMI_NN_MEIDUM_OUTPUT};
+    auto memory_info_112 = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    input_tensor112_ = Ort::Value::CreateTensor<float>(memory_info_112,
+               input_image, EMI_NN_MEIDUM_INPUT*EMI_NN_MEIDUM_INPUT*3, input_node_dims112.data(), 4);
+    //output_tensor14_ = Ort::Value::CreateTensor<float>(memory_info_112, results_meidum_.data(), EMI_NN_MEIDUM_OUTPUT*EMI_NN_MEIDUM_OUTPUT*3, output_shape14_.data(), output_shape14_.size());
 
     std::ifstream model_file (settings->model_68);
     if (model_file.is_open())
@@ -120,17 +127,22 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
         }
         cv::Mat face_crop = frame(roi_i);
 
-        cv::resize(face_crop, face_crop, cv::Size(EMI_NN_SIZE, EMI_NN_SIZE), NULL, NULL, cv::INTER_LINEAR);
+        cv::resize(face_crop, face_crop, cv::Size(settings->emi_nn_size, settings->emi_nn_size), NULL, NULL, cv::INTER_LINEAR);
         face_crop.convertTo(face_crop, CV_32F);
         cv::cvtColor(face_crop, face_crop, cv::COLOR_BGR2RGB);
         normalize(face_crop);
-        transpose((float*)face_crop.data, input_image);
-
+        transpose((float*)face_crop.data, input_image, settings->emi_nn_size, settings->emi_nn_size);
         //here we got the data
         assert(settings->landmark_detect_method < sessions.size() && "Landmark detect method must less than models");
-        auto output_tensors = sessions[settings->landmark_detect_method]->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
-        float* output_arr = output_tensors[0].GetTensorMutableData<float>();
-        pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/EMI_NN_SIZE, ((double)roi_i.width)/EMI_NN_SIZE);
+        float* output_arr = nullptr;
+        if (settings->landmark_detect_method == 0) {
+            auto output_tensors = sessions[settings->landmark_detect_method]->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor112_, 1, output_node_names.data(), 1);
+            output_arr = output_tensors[0].GetTensorMutableData<float>();
+        } else {
+            auto output_tensors = sessions[settings->landmark_detect_method]->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
+            output_arr = output_tensors[0].GetTensorMutableData<float>();
+        }
+        pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/settings->emi_nn_size, ((double)roi_i.width)/settings->emi_nn_size);
         CvPts3d pts3d(model_points_66.begin(), model_points_66.begin() + EMI_FEATURE_NUM);
         return std::make_pair(pts, pts3d);
     }
@@ -147,17 +159,17 @@ float logit(float p)
 
     p = p / (1 - p);
 
-    if (EMI_NN_OUTPUT_SIZE == 28) {
-        return log(p) / 16;
-    } else {
+    if (settings->emi_nn_output_size == 7) {
         return log(p) / 8;
+    } else {
+        return log(p) / 16;
     }
 }
 
 CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y)
 {
     CvPts facical_landmarks;
-    int heatmap_size = EMI_NN_OUTPUT_SIZE*EMI_NN_OUTPUT_SIZE;
+    int heatmap_size = settings->emi_nn_output_size*settings->emi_nn_output_size;
     for (int landmark = 0; landmark < EMI_FEATURE_NUM; landmark++)
     {
         int offset = heatmap_size * landmark;
@@ -172,18 +184,18 @@ CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float sca
             }
         }
 
-        int x = argmax / EMI_NN_OUTPUT_SIZE;
-        int y = argmax % EMI_NN_OUTPUT_SIZE;
+        int x = argmax / settings->emi_nn_output_size;
+        int y = argmax % settings->emi_nn_output_size;
 
 
         float conf = heatmaps[offset + argmax];
-        float res = EMI_NN_SIZE - 1;
+        float res = settings->emi_nn_size - 1;
 
         float off_x = res * (logit(heatmaps[EMI_FEATURE_NUM * heatmap_size + offset + argmax]));
         float off_y = res * (logit(heatmaps[2 * EMI_FEATURE_NUM * heatmap_size + offset + argmax]));
 
-        float lm_y = (float)y0 + (float)(scale_x * (res * (float(x) / (EMI_NN_OUTPUT_SIZE-1)) + off_x));
-        float lm_x = (float)x0 + (float)(scale_y * (res * (float(y) / (EMI_NN_OUTPUT_SIZE-1)) + off_y));
+        float lm_y = (float)y0 + (float)(scale_x * (res * (float(x) / (settings->emi_nn_output_size-1)) + off_x));
+        float lm_x = (float)x0 + (float)(scale_y * (res * (float(y) / (settings->emi_nn_output_size-1)) + off_y));
 
         facical_landmarks.push_back(cv::Point2f(lm_x, lm_y));
     }

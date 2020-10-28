@@ -18,15 +18,19 @@
 //#define EMI_FEATURE_NUM 30
 //#define EMI_OUTPUT_CHANNELS (90)
 
+#define EMI_NN_MAX_INPUT (224)
+#define EMI_NN_MAX_OUTPUT (28)
 
-//#define EMI_NN_SIZE (112)
-//#define EMI_NN_OUTPUT_SIZE (14)
-//#define EMI_FEATURE_NUM 66
+#define EMI_NN_MEIDUM_INPUT (112)
+#define EMI_NN_MEIDUM_OUTPUT (14)
 
-#define EMI_NN_SIZE (224)
-#define EMI_NN_OUTPUT_SIZE (28)
 #define EMI_FEATURE_NUM 66
 #define EMI_OUTPUT_CHANNELS (198)
+
+//#define EMI_NN_SIZE (224)
+//#define EMI_NN_OUTPUT_SIZE (28)
+//#define EMI_FEATURE_NUM 66
+//#define EMI_OUTPUT_CHANNELS (198)
 
 class FlightAgxSettings {
 public:
@@ -55,11 +59,15 @@ public:
     std::string modelPath = "/assets/face_detector/res10_300x300_ssd_iter_140000.caffemodel";
 
     std::vector<std::string> emilianavt_models{
+        "/assets/landmark_models/lm_modelV_opt.onnx",
         "/assets/landmark_models/lm_model0_opt.onnx",
         "/assets/landmark_models/lm_model1_opt.onnx",
         "/assets/landmark_models/lm_model2_opt.onnx",
         "/assets/landmark_models/lm_model3_opt.onnx"
     };
+
+    int emi_nn_size = 224;
+    int emi_nn_output_size = 28;
 
 
     std::string app_path;
@@ -107,6 +115,18 @@ public:
 
     std::vector<std::string> hotkey_joystick_names;
     std::vector<int> hotkey_joystick_buttons;
+
+    void set_landmark_level(int landmark_level) {
+        qDebug() << "Use landmark mode" << landmark_level;
+        landmark_detect_method = landmark_level;
+        if(landmark_level == 0) {
+            emi_nn_size = 112;
+            emi_nn_output_size = 14;
+        } else {
+            emi_nn_size = 224;
+            emi_nn_output_size = 28;
+        }
+    }
 
     Eigen::Matrix3d Rcam;
     FlightAgxSettings(): hotkey_joystick_names(0),hotkey_joystick_buttons(0) {

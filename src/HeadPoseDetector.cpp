@@ -350,6 +350,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
         return ret;
     }
 
+    double detect_track_time = tic.toc();
     face_roi = roi;
     //Use FSA To Detect Rotation
     TicToc fsa;
@@ -402,7 +403,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     }
 
     if (frame_count % ((int)settings->fps) == 0)
-        qDebug() << "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
+        qDebug() << "Detect track" << detect_track_time <<  "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
 
     TicToc ticpnp;
     auto _ret = this->solve_face_pose(landmarks, landmarks_3d, frame);

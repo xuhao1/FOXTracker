@@ -32,10 +32,16 @@ class LandmarkDetector {
 #endif
     Ort::Env env;
     std::vector<Ort::Session*> sessions;
-    float input_image[EMI_NN_SIZE*EMI_NN_SIZE*3] = {0};
+    float input_image[EMI_NN_MAX_INPUT*EMI_NN_MAX_INPUT*3] = {0};
     Ort::Value output_tensor_{nullptr};
     Ort::Value input_tensor_{nullptr};
-    std::array<float, EMI_OUTPUT_CHANNELS*EMI_NN_OUTPUT_SIZE*EMI_NN_OUTPUT_SIZE> results_{};
+
+    Ort::Value output_tensor14_{nullptr};
+    Ort::Value input_tensor112_{nullptr};
+
+    std::array<float, EMI_OUTPUT_CHANNELS*EMI_NN_MAX_OUTPUT*EMI_NN_MAX_OUTPUT> results_{};
+    std::array<float, EMI_OUTPUT_CHANNELS*EMI_NN_MAX_OUTPUT*EMI_NN_MAX_OUTPUT> results_meidum_{};
+
     std::vector<const char*> input_node_names{"input"};
     std::vector<const char*> output_node_names{"output"};
 
@@ -56,7 +62,7 @@ public:
     CvPts proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y);
 
     void normalize(cv::Mat& image);
-    void transpose(float* from, float* dest, int dim_x = EMI_NN_SIZE, int dim_y=EMI_NN_SIZE);
+    void transpose(float* from, float* dest, int dim_x = EMI_NN_MAX_INPUT, int dim_y=EMI_NN_MAX_INPUT);
 };
 
 cv::Rect crop_roi(cv::Rect2d predict_roi, const cv::Mat & _frame, double rate = 0.6);
