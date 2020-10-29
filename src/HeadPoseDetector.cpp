@@ -51,7 +51,7 @@ void HeadPoseDetector::loop() {
     Pose pose_raw;
 
     if (ret.success) {
-        if (poses_raw.size() == 1) {
+        if (poses_raw.size() == 1 || settings->landmark_detect_method >= 0) {
             pose_raw = poses_raw[0];
         } else {
             pose_raw = (poses_raw[1].slerp(settings->fsa_pnp_mixture_rate, poses_raw[0]));
@@ -422,7 +422,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
             // offset = 0;
         }
 
-        pose.att() = pose.att() * Eigen::AngleAxisd(-offset, Eigen::Vector3d::UnitX());
+        //pose.att() = pose.att() * Eigen::AngleAxisd(-offset, Eigen::Vector3d::UnitX());
 
         ret.detected_poses.push_back(pose);
         ret.success = true;
@@ -430,7 +430,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
         //Use FSA YPR Here
         if (settings->use_fsa) {
              R = Rcam.transpose() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
-                * Eigen::AngleAxisd(fsa_ypr(1), Eigen::Vector3d::UnitY())
+                * Eigen::AngleAxisd(fsa_ypr(1) + offset, Eigen::Vector3d::UnitY())
                 * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX())*Rface.transpose();
             Eigen::Quaterniond qR(R);
             ret.detected_poses.push_back(Pose(T, qR));
@@ -515,18 +515,17 @@ void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi
 std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame, Eigen::Vector3d fsa_ypr) {
     Eigen::Vector3d T;
     Eigen::Matrix3d R;
-    // std::vector<int> indices{ 0,1,8,15,16,27,28,29,30,31,32,33,34,35,36,39,42,45 };
     std::vector<int> indices{ 0,1,15,16,27,28,29,30,31,32,33,34,35,36,39,42,45 };
 
-    if (fsa_ypr(0) > DEG2RAD*10) {
-        indices.erase(indices.begin() + 1);
-        indices.erase(indices.begin());
-    }
+//    if (fsa_ypr(0) > DEG2RAD*10) {
+//        indices.erase(indices.begin() + 1);
+//        indices.erase(indices.begin());
+//    }
 
-    if (fsa_ypr(0) < -DEG2RAD*10) {
-        indices.erase(indices.begin() + 3);
-        indices.erase(indices.begin() + 2);
-    }
+//    if (fsa_ypr(0) < -DEG2RAD*10) {
+//        indices.erase(indices.begin() + 3);
+//        indices.erase(indices.begin() + 2);
+//    }
 
     std::vector<uchar> pts_mask(landmarks_3d.size());
 

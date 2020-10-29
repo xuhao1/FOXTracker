@@ -31,17 +31,13 @@ FSANet::FSANet():env(ORT_LOGGING_LEVEL_WARNING, "test") {
 
 Eigen::Vector3d FSANet::inference(const cv::Mat &image) {
     cv::Mat data, data_F;
-
     cv::resize(image, data, cv::Size(64, 64));
     cv::normalize(data, data, 0, 255, cv::NORM_MINMAX);
     data.convertTo(data_F, CV_32FC3, 1.0);
-
     memcpy(input_image.data(), data_F.data, 64*64*3*sizeof(float));
     TicToc t;
     auto output_tensors = session->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
     float* floatarr = output_tensors.front().GetTensorMutableData<float>();
     //Yaw Pitch Roll
-    //qDebug() << "FSA T" << t.toc() << "Y " << -floatarr[0] << "P" << floatarr[1] << "R" << floatarr[2];
-
     return Eigen::Vector3d(floatarr[0], floatarr[1], floatarr[2])*3.1415926/180;
 }
