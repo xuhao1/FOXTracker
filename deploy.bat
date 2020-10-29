@@ -7,3 +7,4 @@ copy  .\\config.yaml .\\Release\config.yaml
 
 cd Release
 windeployqt FOXTracker.exe
+FOXTracker.exe

@@ -28,3 +28,4 @@ pitch_offset_fsa_pnp: 0.191986218
 cervical_face_model_x: 0.16
 cervical_face_model_y: 0.16
 cervical_face_model: -0.1
+enable_gpu: false

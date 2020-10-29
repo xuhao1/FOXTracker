@@ -9,7 +9,7 @@ INCLUDEPATH +=../third_party/eigen-3.3.7
 INCLUDEPATH += ../third_party/dlib/include
 INCLUDEPATH += ../third_party/YAML_CPP/include
 INCLUDEPATH += ./inc/
-INCLUDEPATH += ../third_party/onnxruntime-win-x86-1.5.2/include
+INCLUDEPATH += ../third_party/onnxruntime-win-x64-gpu-1.5.2/include
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
 
@@ -43,7 +43,7 @@ contains(QT_ARCH, i386) {
     win32:CONFIG(release, debug|release): LIBS += -L"../third_party/YAML_CPP/lib" -lyaml-cpp
     win32:CONFIG(debug, debug|release): LIBS += -L"../third_party/YAML_CPP/lib" -lyaml-cppd
 
-    win32:CONFIG(release, debug|release): LIBS += -L../third_party/onnxruntime-win-x64-gpu-1.5.2/lib -lonnxruntime
+    win32:CONFIG(release, debug|release): LIBS += -L../third_party/onnxruntime-win-x64-gpu-trt-1.5.2/lib -lonnxruntime
     win32:CONFIG(release, debug|release): LIBS += -L../third_party/OpenBLAS-0.3.10-x64/lib -llibopenblas
 }
 

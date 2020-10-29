@@ -406,7 +406,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
         qDebug() << "Detect track" << detect_track_time <<  "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
 
     TicToc ticpnp;
-    auto _ret = this->solve_face_pose(landmarks, landmarks_3d, frame);
+    auto _ret = this->solve_face_pose(landmarks, landmarks_3d, frame, fsa_ypr);
 
     //Estimate Planar speed of face with tracker
     ret.face_ground_speed = estimate_ground_speed_by_tracker(_ret.second.pos().z(), roi, track_spd, frame);
@@ -483,12 +483,12 @@ Eigen::Vector3d HeadPoseDetector::estimate_ground_speed_by_tracker(double z, cv:
 
 void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point3f track_spd) {
     //Head or face ROI
-    cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
+    //cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
 
     //FSANet ROI
     if (settings->use_fsa) {
         cv::rectangle(frame, fsa_roi, cv::Scalar(255, 255, 255), 2);
-        cv::rectangle(frame, face_roi, cv::Scalar(0, 255, 0), 2);
+        //cv::rectangle(frame, face_roi, cv::Scalar(0, 255, 0), 2);
     }
 
     for (auto pt: landmarks) {
@@ -512,11 +512,21 @@ void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi
 
 }
 
-std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame) {
+std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame, Eigen::Vector3d fsa_ypr) {
     Eigen::Vector3d T;
     Eigen::Matrix3d R;
     // std::vector<int> indices{ 0,1,8,15,16,27,28,29,30,31,32,33,34,35,36,39,42,45 };
     std::vector<int> indices{ 0,1,15,16,27,28,29,30,31,32,33,34,35,36,39,42,45 };
+
+    if (fsa_ypr(0) > DEG2RAD*10) {
+        indices.erase(indices.begin() + 1);
+        indices.erase(indices.begin());
+    }
+
+    if (fsa_ypr(0) < -DEG2RAD*10) {
+        indices.erase(indices.begin() + 3);
+        indices.erase(indices.begin() + 2);
+    }
 
     std::vector<uchar> pts_mask(landmarks_3d.size());
 
@@ -554,8 +564,12 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 
     CvPts reproject_landmarks;
     cv::projectPoints(landmarks_3d, rvec, tvec, settings->K, settings->D, reproject_landmarks);
-    
-    for (auto pt: landmarks) {
+
+    for (unsigned int i = 0; i < landmarks.size(); i++) {
+        auto pt = landmarks[i];
+//        char info[100] = {0};
+//        sprintf(info, "%d", indices[i]);
+//        cv::putText(frame, info, pt - cv::Point2f(0, 5), cv::FONT_HERSHEY_COMPLEX, 0.3, cv::Scalar(255, 0, 0), 1);
         cv::circle(frame, pt, 3, cv::Scalar(0, 0, 255), 1);
     }
 
@@ -564,9 +578,9 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
             first_solve_pose = false;
         }
 
-        char info[100] = {0};
-        sprintf(info, "Tpnp [%3.1f,%3.1f,%3.1f] cm", T.x()*100, T.y()*100, T.z()*100);
-        cv::putText(frame, info, cv::Point2f(20, 100), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
+        //char info[100] = {0};
+        //sprintf(info, "Tpnp [%3.1f,%3.1f,%3.1f] cm", T.x()*100, T.y()*100, T.z()*100);
+        //cv::putText(frame, info, cv::Point2f(20, 100), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
     } else {
         qDebug() << "pnp Solve failed";
     }

@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include "cuda_provider_factory.h"
 //#include "onnxruntime/core/session/dml_provider_factory.h"
-
+#include "tensorrt_provider_factory.h"
 using namespace cv;
 
 inline cv::Rect2d rect2roi(dlib::rectangle ret) {
@@ -26,7 +26,10 @@ LandmarkDetector::LandmarkDetector():
     session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     if (settings->enable_gpu) {
-        OrtSessionOptionsAppendExecutionProvider_CUDA(session_options, 0);
+        qDebug("Will use TensorRT to accelerate computing.....");
+//        OrtSessionOptionsAppendExecutionProvider_Tensorrt(session_options, 0);
+        //Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_CUDA(session_options, 0));
+        //Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Tensorrt(session_options, 0));
     }
 
     for (size_t i = 0; i < settings->emilianavt_models.size(); i ++) {

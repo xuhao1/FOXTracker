@@ -130,7 +130,7 @@ class HeadPoseDetector: public QObject {
 
     FSANet fsanet;
 
-    std::pair<bool, Pose> solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame);
+    std::pair<bool, Pose> solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame, Eigen::Vector3d fsa_ypr);
     void draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point3f track_spd);
 
     //In camera frame
