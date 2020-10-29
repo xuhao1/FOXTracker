@@ -46,6 +46,8 @@ void FlightAgxSettings::load_from_config_yaml() {
     cervical_face_model_y = config["cervical_face_model_y"].as<float>();
     cervical_face_model = config["cervical_face_model"].as<float>();
 
+    enable_gpu = config["enable_gpu"].as<bool>();
+
 }
 
 

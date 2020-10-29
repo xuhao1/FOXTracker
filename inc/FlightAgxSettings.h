@@ -113,6 +113,8 @@ public:
     int landmark_net_width = 224;
     double size = 0.09;
 
+    bool enable_gpu = false;
+
     std::vector<std::string> hotkey_joystick_names;
     std::vector<int> hotkey_joystick_buttons;
 

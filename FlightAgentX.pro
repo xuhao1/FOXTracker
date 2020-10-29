@@ -9,7 +9,7 @@ INCLUDEPATH +=../third_party/eigen-3.3.7
 INCLUDEPATH += ../third_party/dlib/include
 INCLUDEPATH += ../third_party/YAML_CPP/include
 INCLUDEPATH += ./inc/
-INCLUDEPATH += ../third_party/onnxruntime-win-x86-1.5.1/include
+INCLUDEPATH += ../third_party/onnxruntime-win-x86-1.5.2/include
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
 

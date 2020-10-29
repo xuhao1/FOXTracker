@@ -3,6 +3,8 @@
 #include <dlib/opencv.h>
 #include <opencv2/opencv.hpp>
 #include "cuda_provider_factory.h"
+//#include "onnxruntime/core/session/dml_provider_factory.h"
+
 using namespace cv;
 
 inline cv::Rect2d rect2roi(dlib::rectangle ret) {
@@ -22,14 +24,17 @@ LandmarkDetector::LandmarkDetector():
     Ort::SessionOptions session_options;
     session_options.SetIntraOpNumThreads(1);
     session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-    //OrtSessionOptionsAppendExecutionProvider_CUDA(session_options, 1);
+
+    if (settings->enable_gpu) {
+        OrtSessionOptionsAppendExecutionProvider_CUDA(session_options, 0);
+    }
 
     for (size_t i = 0; i < settings->emilianavt_models.size(); i ++) {
         std::string model_path = settings->emilianavt_models[i];
-        qDebug("Add model from %s", model_path.c_str());
         std::wstring unicode(model_path.begin(), model_path.end());
         auto session = new Ort::Session(env, unicode.c_str(), session_options);
         sessions.push_back(session);
+        qDebug("Added model from %s", model_path.c_str());
     }
 
     Ort::AllocatorWithDefaultOptions allocator;
