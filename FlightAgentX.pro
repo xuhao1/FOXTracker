@@ -9,6 +9,9 @@ INCLUDEPATH +=../third_party/eigen-3.3.7
 INCLUDEPATH += ../third_party/dlib/include
 INCLUDEPATH += ../third_party/YAML_CPP/include
 INCLUDEPATH += ./inc/
+INCLUDEPATH += ./lib/
+INCLUDEPATH += ../third_party/libusb-1.0.23/include/libusb-1.0
+
 INCLUDEPATH += ../third_party/onnxruntime-win-x64-gpu-1.5.2/include
 CONFIG += force_debug_info
 RC_ICONS = icon.ico
@@ -30,6 +33,8 @@ contains(QT_ARCH, i386) {
 
     win32:CONFIG(release, debug|release): LIBS += -L../third_party/onnxruntime-win-x86-1.5.1/lib -lonnxruntime
     win32:CONFIG(release, debug|release): LIBS += -L../third_party/OpenBLAS-0.3.10-x86/lib -llibopenblas
+
+    win32:CONFIG(release, debug|release): LIBS += -L../third_party/libusb-1.0.23/MS32/static -llibusb-1.0
 } else {
     win32:CONFIG(debug, debug|release): LIBS += ../third_party/dlib/lib/dlib19.21.0_debug_64bit_msvc1916.lib
     win32:CONFIG(release, debug|release): LIBS += ../third_party/dlib/lib/dlib19.21.0_release_64bit_msvc1916.lib
@@ -45,6 +50,7 @@ contains(QT_ARCH, i386) {
 
     win32:CONFIG(release, debug|release): LIBS += -L../third_party/onnxruntime-win-x64-gpu-trt-1.5.2/lib -lonnxruntime
     win32:CONFIG(release, debug|release): LIBS += -L../third_party/OpenBLAS-0.3.10-x64/lib -llibopenblas
+    win32:CONFIG(release, debug|release): LIBS += -L../third_party/libusb-1.0.23/X64-VS2017 -llibusb-1.0
 }
 
 SOURCES += \
@@ -58,11 +64,13 @@ SOURCES += \
     src/ekfconfig.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    freetrack/ftnoir_protocol_ft.cpp \
-    freetrack/freetrackclient/freetrackclient.c \
-    freetrack/shm.cpp \
-    freetrack/csv/csv.cpp \
-    src/poseremapper.cpp
+    lib/freetrack/ftnoir_protocol_ft.cpp \
+    lib/freetrack/freetrackclient/freetrackclient.c \
+    lib/freetrack/shm.cpp \
+    lib/freetrack/csv/csv.cpp \
+    src/poseremapper.cpp \
+    lib/PS3EYEDriver/src/ps3eye.cpp \
+    lib/PS3EYEDriver/src/ps3eye_capi.cpp
 
 HEADERS += \
     inc/FSANet.h \
@@ -75,10 +83,10 @@ HEADERS += \
     inc/ekfconfig.h \
     inc/fagx_datatype.h \
     inc/mainwindow.h \
-    freetrack/ftnoir_protocol_ft.h \
-    freetrack/freetrackclient/fttypes.h \
-    freetrack/shm.h \
-    freetrack/csv/csv.h \
+    lib/freetrack/ftnoir_protocol_ft.h \
+    lib/freetrack/freetrackclient/fttypes.h \
+    lib/freetrack/shm.h \
+    lib/freetrack/csv/csv.h \
     inc/poseremapper.h
 
 FORMS += \

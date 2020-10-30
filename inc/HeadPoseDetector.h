@@ -17,9 +17,9 @@
 #include <KalmanFilter.h>
 #include <inc/FSANet.h>
 #include "inc/FaceDetectors.h"
-#include <opencv2/aruco.hpp>
 #include <opencv2/tracking/tracker.hpp>
-
+#include <PS3EYEDriver/src/ps3eye.h>
+#include <PS3EYEDriver/src/ps3eye_capi.h>
 
 class MainWindow;
 
@@ -74,7 +74,10 @@ class HeadPoseDetector: public QObject {
     
 
     bool is_running = false;
+
     cv::VideoCapture cap;
+
+    ps3eye_t * ps3cam = nullptr;
 
     std::mutex detect_mtx;
 
@@ -121,10 +124,6 @@ class HeadPoseDetector: public QObject {
 
     bool inited = false;
 
-    cv::Ptr<cv::aruco::Dictionary> dictionary;
-
-    std::vector<cv::Point3f> landmarks3D_ARMarker;
-
     Pose P0;
 
 
@@ -134,7 +133,7 @@ class HeadPoseDetector: public QObject {
     void draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi, cv::Rect2d fsa_roi, CvPts landmarks, Pose p, cv::Point3f track_spd);
 
     //In camera frame
-    Eigen::Vector3d estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd, cv::Mat & frame);
+    Eigen::Vector3d estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd);
 
     std::ofstream log;
 
@@ -168,7 +167,7 @@ public:
                 this, SLOT(stop_slot()));
         this->moveToThread(&mainThread);
         mainThread.start();
-
+        ps3eye_init();
     }
 
     //When using FSANet. First is PnP pose, next is FSANet pose

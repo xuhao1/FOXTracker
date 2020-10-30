@@ -1,8 +1,8 @@
 #ifndef POSEDATASENDER_H
 #define POSEDATASENDER_H
-#include "HeadPoseDetector.h"
 #include "freetrack/ftnoir_protocol_ft.h"
 #include <QtNetwork>
+#include <QDebug>
 class PoseDataSender: public QObject {
     QUdpSocket * udpsock = nullptr;
     freetrack * ft = nullptr;
@@ -14,9 +14,9 @@ public:
         ft = new freetrack;
         bool success = ft->initialize();
         if (!success) {
-            qDebug() << "Initialize failed";
+            qDebug("Initialize failed");
         } else {
-            qDebug() << "Initialize freetrack OK";
+            qDebug("Initialize freetrack OK");
         }
     }
 

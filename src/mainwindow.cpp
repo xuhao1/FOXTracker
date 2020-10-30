@@ -68,7 +68,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::on_show() {
-    start_camera_preview();
+   //start_camera_preview();
    QTimer::singleShot(0, this, SLOT(show()));
 }
 
@@ -114,6 +114,10 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
 
 void MainWindow::DisplayImage() {
     cv::Mat & img = hd.get_preview_image();
+//    if (!img.empty()) {
+//        cv::imshow("FOXTracker Preview", img);
+//        cv::waitKey(10);
+//    }
     QImage imdisplay((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_BGR888); //Converts the CV image into Qt standard format
     ui->preview_camera->setPixmap(QPixmap::fromImage(imdisplay));//display the image in label that is created earlier
 }

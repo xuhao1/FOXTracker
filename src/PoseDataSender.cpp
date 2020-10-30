@@ -1,5 +1,5 @@
 #include "PoseDataSender.h"
-
+#include "FlightAgxSettings.h"
 void PoseDataSender::on_pose6d_data(double t, Pose6DoF pose) {
     if(settings->send_posedata_udp) {
         this->send_data_udp(t, pose);

@@ -1,0 +1,3 @@
+[submodule "lib/PS3EYEDriver"]
+	path = lib/PS3EYEDriver
+	url = https://github.com/inspirit/PS3EYEDriver

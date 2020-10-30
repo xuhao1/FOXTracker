@@ -262,6 +262,9 @@ color: #8fbed4;</string>
         <height>20</height>
        </rect>
       </property>
+      <property name="cursor">
+       <cursorShape>SizeHorCursor</cursorShape>
+      </property>
       <property name="minimum">
        <number>0</number>
       </property>
@@ -270,6 +273,12 @@ color: #8fbed4;</string>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TicksBelow</enum>
+      </property>
+      <property name="tickInterval">
+       <number>25</number>
       </property>
      </widget>
      <widget class="QLabel" name="label_12">
@@ -307,6 +316,9 @@ color: #8fbed4;</string>
         <height>20</height>
        </rect>
       </property>
+      <property name="cursor">
+       <cursorShape>SizeHorCursor</cursorShape>
+      </property>
       <property name="minimum">
        <number>-100</number>
       </property>
@@ -315,6 +327,12 @@ color: #8fbed4;</string>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TicksBelow</enum>
+      </property>
+      <property name="tickInterval">
+       <number>50</number>
       </property>
      </widget>
      <widget class="QLCDNumber" name="FSAPnPOffset_disp">
@@ -355,6 +373,9 @@ color: #8fbed4;</string>
         <height>20</height>
        </rect>
       </property>
+      <property name="cursor">
+       <cursorShape>SizeHorCursor</cursorShape>
+      </property>
       <property name="minimum">
        <number>-1</number>
       </property>
@@ -363,6 +384,9 @@ color: #8fbed4;</string>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TicksBelow</enum>
       </property>
      </widget>
      <widget class="QLabel" name="label_15">
@@ -398,7 +422,7 @@ color: #8fbed4;</string>
        <x>390</x>
        <y>10</y>
        <width>341</width>
-       <height>181</height>
+       <height>201</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -418,7 +442,7 @@ color: #8fbed4;</string>
         <x>110</x>
         <y>10</y>
         <width>151</width>
-        <height>61</height>
+        <height>41</height>
        </rect>
       </property>
       <property name="font">
@@ -442,7 +466,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>70</x>
-        <y>80</y>
+        <y>60</y>
         <width>61</width>
         <height>21</height>
        </rect>
@@ -454,8 +478,8 @@ color: #8fbed4;</string>
      <widget class="QSpinBox" name="CameraID_Input">
       <property name="geometry">
        <rect>
-        <x>150</x>
-        <y>80</y>
+        <x>180</x>
+        <y>60</y>
         <width>71</width>
         <height>22</height>
        </rect>
@@ -474,7 +498,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>70</x>
-        <y>130</y>
+        <y>90</y>
         <width>61</width>
         <height>21</height>
        </rect>
@@ -486,8 +510,8 @@ color: #8fbed4;</string>
      <widget class="QSpinBox" name="FPS_Input">
       <property name="geometry">
        <rect>
-        <x>150</x>
-        <y>130</y>
+        <x>180</x>
+        <y>90</y>
         <width>71</width>
         <height>22</height>
        </rect>
@@ -500,6 +524,94 @@ color: #8fbed4;</string>
       </property>
       <property name="maximum">
        <number>1000</number>
+      </property>
+     </widget>
+     <widget class="QSlider" name="FSAPnPOffset_input_2">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>130</y>
+        <width>241</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>SizeHorCursor</cursorShape>
+      </property>
+      <property name="minimum">
+       <number>0</number>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="value">
+       <number>50</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TicksBelow</enum>
+      </property>
+      <property name="tickInterval">
+       <number>25</number>
+      </property>
+     </widget>
+     <widget class="QSlider" name="LandmarkModel_input_2">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>170</y>
+        <width>241</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>SizeHorCursor</cursorShape>
+      </property>
+      <property name="minimum">
+       <number>0</number>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="value">
+       <number>50</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TicksBelow</enum>
+      </property>
+      <property name="tickInterval">
+       <number>25</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_17">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>160</y>
+        <width>51</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>GAIN</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_18">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>130</y>
+        <width>51</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>EXP</string>
       </property>
      </widget>
     </widget>

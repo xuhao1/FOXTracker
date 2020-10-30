@@ -85,3 +85,6 @@ Release.bk
 Release.x86.bk/
 .ipynb_checkpoints/convert_models-checkpoint.ipynb
 .ipynb_checkpoints/onnx_quat-checkpoint.ipynb
+docs/FAgX30FPS.PNG
+docs/FAgX60FPS.PNG
+docs/FAgX75FPS.PNG

@@ -22,7 +22,6 @@ void HeadPoseTrackDetectWorker::run() {
 
 void HeadPoseTrackDetectWorker::stop() {
     is_running = false;
-
 }
 
 void HeadPoseDetector::loop() {
@@ -32,12 +31,16 @@ void HeadPoseDetector::loop() {
 
     TicToc tic_cap;
     Mat frame;
-    cap >> frame;
+    if (ps3cam != nullptr) {
+        frame = cv::Mat(480, 640, CV_8UC3);
+        ps3eye_grab_frame(ps3cam, frame.data);
+    } else {
+        cap >> frame;
+    }
 
-//    qDebug() << "Capture takes" << tic_cap.toc();
 
     if( frame.empty() ) {
-        qDebug() << "Empty frame"    ;
+        qDebug() << "Empty frame";
         return;
     }
     double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
@@ -115,8 +118,6 @@ void HeadPoseDetector::loop() {
 }
 
 
-
-
 void HeadPoseDetector::run_detect_thread() {
     static int fc = 0;
     fc++;
@@ -191,19 +192,26 @@ void HeadPoseDetector::start_slot() {
 }
 
 void HeadPoseDetector::run_thread() {
-    if(!cap.open(settings->camera_id)) {
-        qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
-        preview_image = cv::Mat(480, 640, CV_8UC3, cv::Scalar(0, 0, 0));
-        char warn[100] = {0};
-        sprintf(warn, "Camera ID %d Error. Change it in config menu!!!", settings->camera_id);
-        cv::putText(preview_image, warn, cv::Point2f(20, 240), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
-        is_running = false;
-        detect_thread.join();
-        return;
+    if (true) {
+        ps3cam = ps3eye_open(0, 640, 480, settings->fps, PS3EYE_FORMAT_BGR);
+        ps3eye_set_parameter(ps3cam, PS3EYE_EXPOSURE, 255);
+        ps3eye_set_parameter(ps3cam, PS3EYE_GAIN, 40);
+          //ps3eye_set_parameter(ps3cam, PS3EYE_BRIGHTNESS, 255);
+    } else {
+        if(!cap.open(settings->camera_id)) {
+            qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
+            preview_image = cv::Mat(480, 640, CV_8UC3, cv::Scalar(0, 0, 0));
+            char warn[100] = {0};
+            sprintf(warn, "Camera ID %d Error. Change it in config menu!!!", settings->camera_id);
+            cv::putText(preview_image, warn, cv::Point2f(20, 240), cv::FONT_HERSHEY_COMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+            is_running = false;
+            detect_thread.join();
+            return;
+        }
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+        cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+        cap.set(cv::CAP_PROP_FPS, settings->fps);
     }
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-    cap.set(cv::CAP_PROP_FPS, settings->fps);
 
     qDebug() << "Start Timer with fps of" << settings->fps + 10 << "Cap FPS"<< cap.get(cv::CAP_PROP_FPS);
     main_loop_timer = new QTimer;
@@ -223,7 +231,14 @@ void HeadPoseDetector::stop_slot() {
         ekf.reset();
         //wait a frame
         Sleep(30);
-        cap.release();
+
+        if(cap.isOpened()) {
+            cap.release();
+        }
+
+        if(ps3cam != nullptr) {
+            ps3eye_close(ps3cam);
+        }
     }
 }
 
@@ -409,7 +424,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     auto _ret = this->solve_face_pose(landmarks, landmarks_3d, frame, fsa_ypr);
 
     //Estimate Planar speed of face with tracker
-    ret.face_ground_speed = estimate_ground_speed_by_tracker(_ret.second.pos().z(), roi, track_spd, frame);
+    ret.face_ground_speed = estimate_ground_speed_by_tracker(_ret.second.pos().z(), roi, track_spd);
 
     if (_ret.first) {
         auto pose = _ret.second;
@@ -456,7 +471,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     return ret;
 }
 
-Eigen::Vector3d HeadPoseDetector::estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd, cv::Mat & frame) {
+Eigen::Vector3d HeadPoseDetector::estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd) {
     double roi_x = roi.x + roi.width/2;
     double roi_y = roi.y + roi.height/2;
 
@@ -526,6 +541,11 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 //        indices.erase(indices.begin() + 3);
 //        indices.erase(indices.begin() + 2);
 //    }
+
+//    indices.erase(indices.begin() + 3);
+//    indices.erase(indices.begin() + 2);
+//    indices.erase(indices.begin() + 1);
+//    indices.erase(indices.begin());
 
     std::vector<uchar> pts_mask(landmarks_3d.size());
 
