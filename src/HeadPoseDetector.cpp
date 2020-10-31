@@ -15,6 +15,7 @@ cv::Ptr<cv::Tracker> create_tracker() {
     //return cv::TrackerMOSSE::create();
 }
 
+
 void HeadPoseTrackDetectWorker::run() {
     is_running = true;
 //    hd->run_detect_thrad();
@@ -23,6 +24,8 @@ void HeadPoseTrackDetectWorker::run() {
 void HeadPoseTrackDetectWorker::stop() {
     is_running = false;
 }
+
+
 
 void HeadPoseDetector::loop() {
     if (paused) {
@@ -192,11 +195,11 @@ void HeadPoseDetector::start_slot() {
 }
 
 void HeadPoseDetector::run_thread() {
-    if (true) {
-        ps3cam = ps3eye_open(0, 640, 480, settings->fps, PS3EYE_FORMAT_BGR);
-        ps3eye_set_parameter(ps3cam, PS3EYE_EXPOSURE, 255);
-        ps3eye_set_parameter(ps3cam, PS3EYE_GAIN, 40);
-          //ps3eye_set_parameter(ps3cam, PS3EYE_BRIGHTNESS, 255);
+    if (ps3eye_count_connected() > 0) {
+        ps3cam = ps3eye_open(settings->camera_id, 640, 480, settings->fps, PS3EYE_FORMAT_BGR);
+        set_auto_expo(settings->enable_auto_expo);
+        set_gain(settings->camera_gain);
+        set_expo(settings->camera_expo);
     } else {
         if(!cap.open(settings->camera_id)) {
             qDebug() << "Not able to open camera" << settings->camera_id <<  "exiting";
@@ -219,6 +222,27 @@ void HeadPoseDetector::run_thread() {
     connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()));
 
     main_loop_timer->start(1.0/(settings->fps + 10)*1000);
+
+}
+
+
+void HeadPoseDetector::set_gain(double gain) {
+    if (ps3cam != nullptr) {
+        ps3eye_set_parameter(ps3cam, PS3EYE_GAIN, (int)(gain*63));
+    }
+}
+
+void HeadPoseDetector::set_expo(double expo) {
+    if (ps3cam != nullptr) {
+        ps3eye_set_parameter(ps3cam, PS3EYE_EXPOSURE, (int)(expo*255));
+    }
+}
+
+
+void HeadPoseDetector::set_auto_expo(bool enable_auto_expo) {
+    if (ps3cam != nullptr) {
+        ps3eye_set_parameter(ps3cam, PS3EYE_AUTO_GAIN, enable_auto_expo);
+    }
 }
 
 void HeadPoseDetector::stop_slot() {

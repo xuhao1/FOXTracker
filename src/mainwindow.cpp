@@ -27,7 +27,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(config_menu, &AgentXConfig::reset_camera, &hd, &HeadPoseDetector::reset);
     connect(config_menu, &AgentXConfig::recenter_hotkey_pressed, this, &MainWindow::on_center_keyboard_event);
-    connect(config_menu, &AgentXConfig::pause_hotkey_pressed, this, &MainWindow::on_pause_clicked);
+    connect(config_menu, &AgentXConfig::set_camera_gain, &hd, &HeadPoseDetector::set_gain);
+    connect(config_menu, &AgentXConfig::set_camera_expo, &hd, &HeadPoseDetector::set_expo);
+    connect(config_menu, &AgentXConfig::set_camera_auto_expo, &hd, &HeadPoseDetector::set_auto_expo);
 
     connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
             &EKFConfig::on_detect_pose6d);

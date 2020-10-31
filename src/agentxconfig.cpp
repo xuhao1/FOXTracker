@@ -53,6 +53,10 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     ui->FSAPnPOffset_input->setValue(settings->pitch_offset_fsa_pnp*RAD2DEG/20*100);
 
     ui->LandmarkModel_input->setValue(settings->landmark_detect_method);
+
+    ui->CameraGain_Input->setValue(settings->camera_gain*100);
+    ui->CameraExp_Input->setValue(settings->camera_expo*100);
+    ui->AutoExpo_Input->setChecked(settings->enable_auto_expo);
 }
 
 AgentXConfig::~AgentXConfig()
@@ -212,4 +216,27 @@ void AgentXConfig::update_hotkeys() {
 
     ui->Hotkey2_Joystick->setText(settings->hotkey_joystick_names[1].c_str());
     ui->Hotkey2_Button->setText(QString::number(settings->hotkey_joystick_buttons[1]));
+}
+
+
+void AgentXConfig::on_CameraGain_Input_valueChanged(int value)
+{
+//    qDebug("Set camera gain");
+    set_camera_gain(((double)value)/100.0);
+    settings->camera_gain = ((double)value)/100.0;
+    settings->set_value("camera_gain", ((double)value)/100.0);
+}
+
+void AgentXConfig::on_CameraExp_Input_valueChanged(int value)
+{
+    set_camera_expo(((double)value)/100.0);
+    settings->camera_expo = ((double)value)/100.0;
+    settings->set_value("camera_expo", ((double)value)/100.0);
+}
+
+void AgentXConfig::on_AutoExpo_Input_stateChanged(int arg1)
+{
+    settings->enable_auto_expo = arg1;
+    set_camera_auto_expo(settings->enable_auto_expo);
+    settings->set_value("enable_auto_expo", arg1==1);
 }

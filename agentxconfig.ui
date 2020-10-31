@@ -465,8 +465,8 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>70</x>
-        <y>60</y>
+        <x>20</x>
+        <y>50</y>
         <width>61</width>
         <height>21</height>
        </rect>
@@ -478,8 +478,8 @@ color: #8fbed4;</string>
      <widget class="QSpinBox" name="CameraID_Input">
       <property name="geometry">
        <rect>
-        <x>180</x>
-        <y>60</y>
+        <x>80</x>
+        <y>50</y>
         <width>71</width>
         <height>22</height>
        </rect>
@@ -497,8 +497,8 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_8">
       <property name="geometry">
        <rect>
-        <x>70</x>
-        <y>90</y>
+        <x>20</x>
+        <y>80</y>
         <width>61</width>
         <height>21</height>
        </rect>
@@ -510,8 +510,8 @@ color: #8fbed4;</string>
      <widget class="QSpinBox" name="FPS_Input">
       <property name="geometry">
        <rect>
-        <x>180</x>
-        <y>90</y>
+        <x>80</x>
+        <y>80</y>
         <width>71</width>
         <height>22</height>
        </rect>
@@ -526,7 +526,7 @@ color: #8fbed4;</string>
        <number>1000</number>
       </property>
      </widget>
-     <widget class="QSlider" name="FSAPnPOffset_input_2">
+     <widget class="QSlider" name="CameraExp_Input">
       <property name="geometry">
        <rect>
         <x>70</x>
@@ -557,7 +557,7 @@ color: #8fbed4;</string>
        <number>25</number>
       </property>
      </widget>
-     <widget class="QSlider" name="LandmarkModel_input_2">
+     <widget class="QSlider" name="CameraGain_Input">
       <property name="geometry">
        <rect>
         <x>70</x>
@@ -592,7 +592,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>160</y>
+        <y>170</y>
         <width>51</width>
         <height>21</height>
        </rect>
@@ -607,11 +607,24 @@ color: #8fbed4;</string>
         <x>10</x>
         <y>130</y>
         <width>51</width>
-        <height>21</height>
+        <height>24</height>
        </rect>
       </property>
       <property name="text">
-       <string>EXP</string>
+       <string>EXPO</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="AutoExpo_Input">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>50</y>
+        <width>131</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>AUTO EXPO</string>
       </property>
      </widget>
     </widget>

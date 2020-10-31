@@ -202,6 +202,15 @@ public slots:
     void reset();
     void reset_detect();
     void pause();
+
+    void set_auto_expo(bool enable_auto_expo);
+
+    //0-1
+    void set_gain(double gain);
+
+    //0-1
+    void set_expo(double expo);
+
 public:
     template<typename T>
     void reduceVector(std::vector<T> &v, std::vector<uchar> status)

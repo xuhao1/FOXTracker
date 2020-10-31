@@ -101,6 +101,10 @@ public:
     double cervical_face_model_x = 0.12;
     double cervical_face_model_y = 0.16;
 
+    double camera_expo = 0.5;
+    double camera_gain = 0.5;
+    bool enable_auto_expo = true;
+
     double pitch_offset_fsa_pnp = 11/180*3.1415926;
 
     //-1 dlib

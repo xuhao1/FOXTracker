@@ -48,6 +48,9 @@ void FlightAgxSettings::load_from_config_yaml() {
 
     enable_gpu = config["enable_gpu"].as<bool>();
 
+    enable_auto_expo = config["enable_auto_expo"].as<bool>();
+    camera_expo = config["camera_expo"].as<double>();
+    camera_gain = config["camera_gain"].as<double>();
 }
 
 

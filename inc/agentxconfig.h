@@ -48,10 +48,19 @@ private slots:
 
     void on_Unbind_HotKey2_clicked();
 
+    void on_CameraGain_Input_valueChanged(int value);
+
+    void on_CameraExp_Input_valueChanged(int value);
+
+    void on_AutoExpo_Input_stateChanged(int arg1);
+
 signals:
     void reset_camera();
     void recenter_hotkey_pressed();
     void pause_hotkey_pressed();
+    void set_camera_gain(double gain);
+    void set_camera_expo(double expo);
+    void set_camera_auto_expo(bool enable_auto_expo);
 
 private:
     Ui::AgentXConfig *ui;
