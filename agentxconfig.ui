@@ -380,7 +380,7 @@ color: #8fbed4;</string>
        <number>-1</number>
       </property>
       <property name="maximum">
-       <number>3</number>
+       <number>4</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>

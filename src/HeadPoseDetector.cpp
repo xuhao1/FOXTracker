@@ -195,6 +195,7 @@ void HeadPoseDetector::start_slot() {
 }
 
 void HeadPoseDetector::run_thread() {
+    qDebug("%d PS3 EYE connected.", ps3eye_count_connected());
     if (ps3eye_count_connected() > 0) {
         ps3cam = ps3eye_open(settings->camera_id, 640, 480, settings->fps, PS3EYE_FORMAT_BGR);
         set_auto_expo(settings->enable_auto_expo);
@@ -391,20 +392,20 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
 
     double detect_track_time = tic.toc();
     face_roi = roi;
+    fsa_roi = crop_roi(roi, frame, 0.2);
+    static Rect2d fsa_roi_last;
+    if (fsa_roi_last.area() < MIN_ROI_AREA) {
+        fsa_roi_last = fsa_roi;
+    } else {
+        fsa_roi = fsa_roi_last = mixture_roi(fsa_roi_last, fsa_roi, settings->roi_filter_rate);
+    }
+
     //Use FSA To Detect Rotation
     TicToc fsa;
-    if(settings->use_fsa) {
-        fsa_roi = crop_roi(roi, frame, 0.2);
-        static Rect2d fsa_roi_last;
-        if (fsa_roi_last.area() < MIN_ROI_AREA) {
-            fsa_roi_last = fsa_roi;
-        } else {
-            fsa_roi = fsa_roi_last = mixture_roi(fsa_roi_last, fsa_roi, settings->roi_filter_rate);
-        }
+    if(settings->use_fsa && settings->landmark_detect_method < 0) {
 
         if (fsa_roi.area() > MIN_ROI_AREA) {
             auto fsa_ypr_raw = fsanet.inference(frame(fsa_roi));
-//            qDebug("EUL FIX Y %f P %f",eul_by_crop(roi)(0), eul_by_crop(roi)(1), eul_by_crop(roi)(2));
             fsa_ypr = fsa_ypr_raw - eul_by_crop(roi);
             if (settings->landmark_detect_method < 0) {
                 if (fsa_ypr_raw(0) > 0) {

@@ -59,8 +59,9 @@ public:
     std::string modelPath = "/assets/face_detector/res10_300x300_ssd_iter_140000.caffemodel";
 
     std::vector<std::string> emilianavt_models{
+        "/assets/landmark_models/lm_modelU_opt.onnx",
         "/assets/landmark_models/lm_modelV_opt.onnx",
-//        "/assets/landmark_models/lm_model0_opt.onnx",
+        //"/assets/landmark_models/lm_model0_opt.onnx",
         "/assets/landmark_models/lm_model1_opt.onnx",
         "/assets/landmark_models/lm_model2_opt.onnx",
         "/assets/landmark_models/lm_model3_opt.onnx"
@@ -125,7 +126,7 @@ public:
     void set_landmark_level(int landmark_level) {
         qDebug() << "Use landmark mode" << landmark_level;
         landmark_detect_method = landmark_level;
-        if(landmark_level == 0) {
+        if(landmark_level <= 1) {
             emi_nn_size = 112;
             emi_nn_output_size = 14;
         } else {

@@ -135,7 +135,7 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
         //here we got the data
         assert(settings->landmark_detect_method < sessions.size() && "Landmark detect method must less than models");
         float* output_arr = nullptr;
-        if (settings->landmark_detect_method == 0) {
+        if (settings->landmark_detect_method <= 1) {
             auto output_tensors = sessions[settings->landmark_detect_method]->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor112_, 1, output_node_names.data(), 1);
             output_arr = output_tensors[0].GetTensorMutableData<float>();
         } else {
