@@ -17,7 +17,6 @@ ekf_predict_dt: 0.01
 use_ekf: false
 disp_duration: 30
 disp_max_series_size: 10000
-detect_method: 0
 fsa_pnp_mixture_rate: 0.45000000000000001
 hotkey_joystick_name0: Saitek Pro Flight X-55 Rhino Throttle
 hotkey_joystick_button0: 1

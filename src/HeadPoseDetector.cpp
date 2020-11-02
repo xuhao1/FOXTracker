@@ -567,11 +567,6 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
 //        indices.erase(indices.begin() + 2);
 //    }
 
-//    indices.erase(indices.begin() + 3);
-//    indices.erase(indices.begin() + 2);
-//    indices.erase(indices.begin() + 1);
-//    indices.erase(indices.begin());
-
     std::vector<uchar> pts_mask(landmarks_3d.size());
 
     for (auto i : indices) {
