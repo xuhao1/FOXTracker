@@ -31,12 +31,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(config_menu, &AgentXConfig::set_camera_expo, &hd, &HeadPoseDetector::set_expo);
     connect(config_menu, &AgentXConfig::set_camera_auto_expo, &hd, &HeadPoseDetector::set_auto_expo);
 
-    connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
-            &EKFConfig::on_detect_pose6d);
-    connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, config_menu->ekf_config_menu(),
-           &EKFConfig::on_detect_pose6d_raw);
-    connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
-            &EKFConfig::on_detect_twist);
+//    connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
+//            &EKFConfig::on_detect_pose6d);
+//    connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, config_menu->ekf_config_menu(),
+//           &EKFConfig::on_detect_pose6d_raw);
+//    connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
+//            &EKFConfig::on_detect_twist);
 
     ui->time_disp->setDigitCount(5);
     ui->time_disp->setSmallDecimalPoint(false);
