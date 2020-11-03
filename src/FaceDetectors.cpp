@@ -23,7 +23,9 @@ LandmarkDetector::LandmarkDetector():
 
     Ort::SessionOptions session_options;
     session_options.SetIntraOpNumThreads(1);
-    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    //Use enable all speed up max model from 30ms to 19ms.
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL );
+//    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED );
 
     if (settings->enable_gpu) {
         qDebug("Will use TensorRT to accelerate computing.....");

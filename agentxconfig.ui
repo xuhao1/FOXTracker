@@ -253,11 +253,30 @@ color: #8fbed4;</string>
        <number>100000</number>
       </property>
      </widget>
-     <widget class="QSlider" name="SlerpRate_Input">
+     <widget class="QLabel" name="label_14">
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>260</y>
+        <y>240</y>
+        <width>281</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 23pt;</string>
+      </property>
+      <property name="text">
+       <string>Accuracy</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QSlider" name="LandmarkModel_input">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>300</y>
         <width>281</width>
         <height>20</height>
        </rect>
@@ -267,117 +286,6 @@ color: #8fbed4;</string>
       </property>
       <property name="minimum">
        <number>0</number>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="tickPosition">
-       <enum>QSlider::TicksBelow</enum>
-      </property>
-      <property name="tickInterval">
-       <number>25</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_12">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>230</y>
-        <width>221</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>FSA/PnP Slerp Rate</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_13">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>290</y>
-        <width>221</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>FSA/PnP Pitch Offset</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="FSAPnPOffset_input">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>320</y>
-        <width>281</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>SizeHorCursor</cursorShape>
-      </property>
-      <property name="minimum">
-       <number>-100</number>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="tickPosition">
-       <enum>QSlider::TicksBelow</enum>
-      </property>
-      <property name="tickInterval">
-       <number>50</number>
-      </property>
-     </widget>
-     <widget class="QLCDNumber" name="FSAPnPOffset_disp">
-      <property name="geometry">
-       <rect>
-        <x>243</x>
-        <y>290</y>
-        <width>71</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="smallDecimalPoint">
-       <bool>true</bool>
-      </property>
-      <property name="digitCount">
-       <number>3</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_14">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>350</y>
-        <width>171</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Landmark Model</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="LandmarkModel_input">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>370</y>
-        <width>281</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>SizeHorCursor</cursorShape>
-      </property>
-      <property name="minimum">
-       <number>-1</number>
       </property>
       <property name="maximum">
        <number>4</number>
@@ -392,8 +300,8 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_15">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>400</y>
+        <x>10</x>
+        <y>370</y>
         <width>171</width>
         <height>16</height>
        </rect>
@@ -405,14 +313,79 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_16">
       <property name="geometry">
        <rect>
-        <x>210</x>
-        <y>400</y>
+        <x>220</x>
+        <y>370</y>
         <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
        <string>SLOW/ACCURACY</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_12">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>330</y>
+        <width>54</width>
+        <height>12</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_13">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>330</y>
+        <width>54</width>
+        <height>12</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_19">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>330</y>
+        <width>54</width>
+        <height>12</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>2</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_20">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>330</y>
+        <width>54</width>
+        <height>12</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>3</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_21">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>330</y>
+        <width>54</width>
+        <height>12</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>4</string>
       </property>
      </widget>
     </widget>

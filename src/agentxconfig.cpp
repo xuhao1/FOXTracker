@@ -43,14 +43,14 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     ui->DetectDura_Input->setValue(settings->detect_duration);
     ui->IP_Input->setText(settings->udp_host.c_str());
 
-    ui->SlerpRate_Input->setValue(settings->fsa_pnp_mixture_rate*100);
+    //ui->SlerpRate_Input->setValue(settings->fsa_pnp_mixture_rate*100);
 
     update_hotkeys();
 
-    ui->FSAPnPOffset_disp->setDecMode();
-    ui->FSAPnPOffset_disp->setDigitCount(5);
-    ui->FSAPnPOffset_disp->display(settings->pitch_offset_fsa_pnp*RAD2DEG);
-    ui->FSAPnPOffset_input->setValue(settings->pitch_offset_fsa_pnp*RAD2DEG/20*100);
+//    ui->FSAPnPOffset_disp->setDecMode();
+//    ui->FSAPnPOffset_disp->setDigitCount(5);
+//    ui->FSAPnPOffset_disp->display(settings->pitch_offset_fsa_pnp*RAD2DEG);
+//    ui->FSAPnPOffset_input->setValue(settings->pitch_offset_fsa_pnp*RAD2DEG/20*100);
 
     ui->LandmarkModel_input->setValue(settings->landmark_detect_method);
 
@@ -185,7 +185,7 @@ void AgentXConfig::on_FSAPnPOffset_input_valueChanged(int value)
     float offset = offset_degree*DEG2RAD;
     settings->pitch_offset_fsa_pnp = offset;
     settings->set_value("pitch_offset_fsa_pnp", offset);
-    ui->FSAPnPOffset_disp->display(offset_degree);
+    //ui->FSAPnPOffset_disp->display(offset_degree);
 }
 
 void AgentXConfig::on_LandmarkModel_input_valueChanged(int value)
@@ -238,5 +238,5 @@ void AgentXConfig::on_AutoExpo_Input_stateChanged(int arg1)
 {
     settings->enable_auto_expo = arg1;
     set_camera_auto_expo(settings->enable_auto_expo);
-    settings->set_value("enable_auto_expo", arg1==1);
+    settings->set_value("enable_auto_expo", settings->enable_auto_expo);
 }
