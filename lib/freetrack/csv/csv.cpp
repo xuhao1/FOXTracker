@@ -156,8 +156,11 @@ bool CSV::getGameData(int id, unsigned char* table, QString csv_path, QString& g
                 return true;
             }
         }
-        else
+        else{
             qDebug() << "malformed csv line" << lineno;
+            qDebug() << "unknown game connected" << id;
+            return false;
+        }
     }
 
     if (id)

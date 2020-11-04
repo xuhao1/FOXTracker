@@ -454,6 +454,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     if (_ret.first) {
         auto pose = _ret.second;
         T = pose.pos();
+        R = pose.att().toRotationMatrix();
 
         //Pose 0 is PnP pose
         //Pose 1 is FSA Pose
@@ -468,7 +469,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
         ret.success = true;
 
         //Use FSA YPR Here
-        if (settings->use_fsa) {
+        if (settings->use_fsa && settings->landmark_detect_method < 0) {
              R = Rcam.transpose() * Eigen::AngleAxisd(fsa_ypr(0), Eigen::Vector3d::UnitZ())
                 * Eigen::AngleAxisd(fsa_ypr(1) + offset, Eigen::Vector3d::UnitY())
                 * Eigen::AngleAxisd(-fsa_ypr(2), Eigen::Vector3d::UnitX())*Rface.transpose();
@@ -599,7 +600,7 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     cv::cv2eigen(Rcv, R);
     T = -T;
 
-    cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
+    //cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
 
     CvPts reproject_landmarks;
     cv::projectPoints(landmarks_3d, rvec, tvec, settings->K, settings->D, reproject_landmarks);
