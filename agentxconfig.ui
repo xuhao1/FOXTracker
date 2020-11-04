@@ -83,38 +83,6 @@ color: #8fbed4;</string>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QCheckBox" name="DCtrl_Check">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>60</y>
-        <width>191</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="text">
-       <string>Directly Control Game</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="EKF_Check">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>60</y>
-        <width>71</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="text">
-       <string>EKF</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
@@ -144,27 +112,11 @@ color: #8fbed4;</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QCheckBox" name="SendUDP_Check">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>100</y>
-        <width>101</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="text">
-       <string>Send UDP</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="IP_Input">
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>150</y>
+        <y>60</y>
         <width>131</width>
         <height>20</height>
        </rect>
@@ -179,8 +131,8 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>150</y>
+        <x>20</x>
+        <y>60</y>
         <width>31</width>
         <height>21</height>
        </rect>
@@ -193,7 +145,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>210</x>
-        <y>150</y>
+        <y>60</y>
         <width>54</width>
         <height>21</height>
        </rect>
@@ -205,8 +157,8 @@ color: #8fbed4;</string>
      <widget class="QSpinBox" name="DetectDura_Input">
       <property name="geometry">
        <rect>
-        <x>240</x>
-        <y>190</y>
+        <x>230</x>
+        <y>130</y>
         <width>71</width>
         <height>22</height>
        </rect>
@@ -224,8 +176,8 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>190</y>
+        <x>60</x>
+        <y>130</y>
         <width>161</width>
         <height>21</height>
        </rect>
@@ -238,7 +190,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>150</y>
+        <y>60</y>
         <width>61</width>
         <height>22</height>
        </rect>
@@ -829,31 +781,6 @@ color: #8fbed4;</string>
      </widget>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab_2">
-    <attribute name="title">
-     <string>EKFConfig</string>
-    </attribute>
-    <widget class="QWidget" name="ekfconf" native="true">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>691</width>
-       <height>451</height>
-      </rect>
-     </property>
-     <widget class="EKFConfig" name="ekfconfig" native="true">
-      <property name="geometry">
-       <rect>
-        <x>-10</x>
-        <y>0</y>
-        <width>841</width>
-        <height>511</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-   </widget>
    <widget class="QWidget" name="tab_3">
     <attribute name="title">
      <string>About</string>
@@ -906,13 +833,6 @@ color: #8fbed4;</string>
    </property>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>EKFConfig</class>
-   <extends>QWidget</extends>
-   <header>ekfconfig.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="main.qrc"/>
  </resources>

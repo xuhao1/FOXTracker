@@ -19,23 +19,6 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     QJoysticks::getInstance()->setVirtualJoystickEnabled (true);
     connect(QJoysticks::getInstance(), &QJoysticks::buttonEvent, this, &AgentXConfig::buttonEvent);
 
-    if(settings->use_ekf) {
-        ui->EKF_Check->setCheckState(Qt::Checked);
-    } else {
-        ui->EKF_Check->setCheckState(Qt::Unchecked);
-    }
-
-    if(settings->use_ft || settings->use_npclient) {
-        ui->DCtrl_Check->setCheckState(Qt::Checked);
-    } else {
-        ui->DCtrl_Check->setCheckState(Qt::Unchecked);
-    }
-
-    if(settings->send_posedata_udp) {
-        ui->SendUDP_Check->setCheckState(Qt::Checked);
-    } else {
-        ui->SendUDP_Check->setCheckState(Qt::Unchecked);
-    }
 
     ui->Port_Input->setValue(settings->port);
     ui->FPS_Input->setValue(settings->fps);
@@ -63,11 +46,6 @@ AgentXConfig::~AgentXConfig()
 {
     delete ui;
 }
-
-EKFConfig * AgentXConfig::ekf_config_menu() {
-    return  ui->ekfconfig;
-}
-
 
 void AgentXConfig::on_EKF_Check_stateChanged(int arg1)
 {
