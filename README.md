@@ -6,6 +6,8 @@ FOXTracker is a facial head tracker for gaming usage. Perform as TrackIR or [Ope
 A normal web camera.
 
 [opentrack](https://github.com/opentrack/opentrack) is recommend to install now.
+
+Windows 10 x64 is the only supported platform.
 ## Usage
 This program is still under development, not stable yet. **I will never collect any user data from your camera.**
 
