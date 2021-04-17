@@ -22,8 +22,8 @@ freetrack::~freetrack()
     dummyTrackIR.close();
 }
 
-static_assert(sizeof(LONG) == sizeof(std::int32_t));
-static_assert(sizeof(LONG) == 4u);
+//static_assert(sizeof(LONG) == sizeof(std::int32_t));
+//static_assert(sizeof(LONG) == 4u);
 
 #define TX 0
 #define TY 1
@@ -43,8 +43,8 @@ never_inline void store(float volatile& place, const float value)
 
     value_.f32 = value;
 
-    static_assert(sizeof(value_) == sizeof(float));
-    static_assert(offsetof(decltype(value_), f32) == offsetof(decltype(value_), i32));
+//    static_assert(sizeof(value_) == sizeof(float));
+//    static_assert(offsetof(decltype(value_), f32) == offsetof(decltype(value_), i32));
 
     (void)InterlockedExchange((LONG volatile*)&place, value_.i32);
 }
@@ -52,7 +52,7 @@ never_inline void store(float volatile& place, const float value)
 template<typename t>
 static void store(t volatile& place, t value)
 {
-    static_assert(sizeof(t) == 4u);
+//    static_assert(sizeof(t) == 4u);
     (void)InterlockedExchange((LONG volatile*) &place, (LONG)value);
 }
 
@@ -124,7 +124,7 @@ void freetrack::pose(const double* headpose, const double* raw)
         {
             // FTHeap pMemData happens to be aligned on a page boundary by virtue of
             // memory mapping usage (MS Windows equivalent of mmap(2)).
-            static_assert((offsetof(FTHeap, table) & (sizeof(LONG)-1)) == 0);
+//            static_assert((offsetof(FTHeap, table) & (sizeof(LONG)-1)) == 0);
 
             for (unsigned k = 0; k < 2; k++)
                 store(pMemData->table_ints[k], t.ints[k]);

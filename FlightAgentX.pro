@@ -3,7 +3,7 @@ QT += widgets
 
 CONFIG += c++17
 DEFINES += QT_DEPRECATED_WARNINGS
-
+QMAKE_CXXFLAGS *= /std:c++17
 INCLUDEPATH += ../third_party/opencv-4.4.0-build/include
 INCLUDEPATH +=../third_party/eigen-3.3.7
 INCLUDEPATH += ../third_party/dlib/include
