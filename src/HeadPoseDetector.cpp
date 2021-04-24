@@ -70,7 +70,9 @@ void HeadPoseDetector::loop() {
                 pose = ekf.update_raw_pose_data(t, poses_raw[1], 1);
             }
 
-            // pose = ekf.update_ground_speed(t, ret.face_ground_speed);
+            if (settings->enable_face_spd_est) {
+                pose = ekf.update_ground_speed(t, ret.face_ground_speed);
+            }
 
         } else {
             pose = pose_raw;
@@ -543,8 +545,10 @@ void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi
     cv::Rodrigues(Rmat, rvec);
     cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, -tvec, 0.05, 3);
 
-    //    cv::Point2f center(face_roi.x + face_roi.width/2, face_roi.y + face_roi.height/2);
-    //    cv::arrowedLine(frame,  center, center+cv::Point2f(track_spd.x, track_spd.y), cv::Scalar(0, 127, 255), 3);
+    if (settings->enable_face_spd_est) {
+        cv::Point2f center(face_roi.x + face_roi.width/2, face_roi.y + face_roi.height/2);
+        cv::arrowedLine(frame,  center, center+cv::Point2f(track_spd.x, track_spd.y), cv::Scalar(0, 127, 255), 3);
+    }
 
     //    char info[100] = {0};
     //    auto eul = quat2eulers(dq, true);

@@ -43,9 +43,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->x_disp->setDigitCount(4);
     ui->y_disp->setDigitCount(4);
     ui->z_disp->setDigitCount(4);
-    ui->yaw_disp->setDigitCount(3);
-    ui->pitch_disp->setDigitCount(3);
-    ui->roll_disp->setDigitCount(3);
+    ui->yaw_disp->setDigitCount(4);
+    ui->pitch_disp->setDigitCount(4);
+    ui->roll_disp->setDigitCount(4);
 
     ui->fps_disp->setDigitCount(3);
 
@@ -137,7 +137,6 @@ void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
     ui->x_disp->display(_pose.second.x() * 100);
     ui->y_disp->display(_pose.second.y() * 100);
     ui->z_disp->display(_pose.second.z() * 100);
-
     ui->yaw_disp->display(_pose.first.x());
     ui->pitch_disp->display(_pose.first.y());
     ui->roll_disp->display(_pose.first.z());

@@ -51,6 +51,32 @@ void FlightAgxSettings::load_from_config_yaml() {
     enable_auto_expo = config["enable_auto_expo"].as<bool>();
     camera_expo = config["camera_expo"].as<double>();
     camera_gain = config["camera_gain"].as<double>();
+
+    enable_face_spd_est = config["enable_face_spd_est"].as<bool>();
+    //Curve mapping
+    inp_bound_trans.x() = config["inp_bound_x"].as<double>();
+    inp_bound_trans.y() = config["inp_bound_y"].as<double>();
+    inp_bound_trans.z() = config["inp_bound_z"].as<double>();
+
+    inp_bound_eul(2) = config["inp_bound_roll"].as<double>();
+    inp_bound_eul(1) = config["inp_bound_pitch"].as<double>();
+    inp_bound_eul(0) = config["inp_bound_yaw"].as<double>();
+
+    out_bound_trans.x() = config["out_bound_x"].as<double>();
+    out_bound_trans.y() = config["out_bound_y"].as<double>();
+    out_bound_trans.z() = config["out_bound_z"].as<double>();
+
+    out_bound_eul(2) = config["out_bound_roll"].as<double>();
+    out_bound_eul(1) = config["out_bound_pitch"].as<double>();
+    out_bound_eul(0) = config["out_bound_yaw"].as<double>();
+
+    expo_trans.x() = config["expo_trans_x"].as<double>();
+    expo_trans.y() = config["expo_trans_y"].as<double>();
+    expo_trans.z() = config["expo_trans_z"].as<double>();
+
+    expo_eul(0) = config["expo_eul_yaw"].as<double>();
+    expo_eul(1) = config["expo_eul_pitch"].as<double>();
+    expo_eul(2) = config["expo_eul_roll"].as<double>();
 }
 
 

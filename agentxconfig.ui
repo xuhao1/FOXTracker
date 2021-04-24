@@ -882,27 +882,36 @@ color: #8fbed4;</string>
   <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>30</x>
      <y>530</y>
-     <width>221</width>
+     <width>531</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>www.xuhao1.me</string>
+    <string> See more on foxtracker.xuhao1.me and www.xuhao1.me</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>40</x>
      <y>490</y>
-     <width>261</width>
+     <width>481</width>
      <height>31</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Source Code Variable</family>
+     <pointsize>15</pointsize>
+     <weight>50</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
    <property name="text">
-    <string>foxtracker.xuhao1.me</string>
+    <string>This software is create by Xuhao.</string>
    </property>
   </widget>
  </widget>

@@ -8,7 +8,13 @@ void PoseDataSender::on_pose6d_data(double t, Pose6DoF pose) {
     if(settings->use_ft || settings->use_npclient) {
 
         //Has bug of conversion here!!! Roll is inverted
+        auto _pose = pose;
         pose.first(2) = - pose.first(2);
+
+        pose.second.x() = _pose.second.y();
+        pose.second.y() = -_pose.second.z();
+        pose.second.z() = _pose.second.x();
+
         ft->on_pose6d_data(t, pose);
     }
 }

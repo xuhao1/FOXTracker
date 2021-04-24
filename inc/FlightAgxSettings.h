@@ -105,6 +105,11 @@ public:
     double camera_gain = 0.5;
     bool enable_auto_expo = true;
 
+    bool enable_face_spd_est = true;
+
+    Eigen::Vector3d inp_bound_trans, inp_bound_eul;
+    Eigen::Vector3d out_bound_trans, out_bound_eul, expo_trans, expo_eul;
+
     double pitch_offset_fsa_pnp = 11/180*3.1415926;
 
     //-1 dlib
