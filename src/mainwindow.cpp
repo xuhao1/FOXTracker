@@ -33,8 +33,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 //    connect(&hd, &HeadPoseDetector::on_detect_pose6d, config_menu->ekf_config_menu(),
 //            &EKFConfig::on_detect_pose6d);
-//    connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, config_menu->ekf_config_menu(),
-//           &EKFConfig::on_detect_pose6d_raw);
+    connect(&hd, &HeadPoseDetector::on_detect_pose6d_raw, this,
+        &MainWindow::on_pose6d_data_raw);
 //    connect(&hd, &HeadPoseDetector::on_detect_twist, config_menu->ekf_config_menu(),
 //            &EKFConfig::on_detect_twist);
 
@@ -126,13 +126,6 @@ void MainWindow::DisplayImage() {
 
 
 void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
-//    qDebug() << "Pose 6D!!!" << t;
-    static double t_last = 0;
-    static double fps = 0;
-    if (t_last != 0) {
-        fps = 1/(t - t_last)*0.05 + fps*0.95;
-    }
-    t_last = t;
     ui->time_disp->display(t);
     ui->x_disp->display(_pose.second.x() * 100);
     ui->y_disp->display(_pose.second.y() * 100);
@@ -140,7 +133,15 @@ void MainWindow::on_pose6d_data(double t, Pose6DoF _pose) {
     ui->yaw_disp->display(_pose.first.x());
     ui->pitch_disp->display(_pose.first.y());
     ui->roll_disp->display(_pose.first.z());
+}
 
+void MainWindow::on_pose6d_data_raw(double t, Pose6DoF _pose) {
+    static double t_last = 0;
+    static double fps = 0;
+    if (t_last != 0) {
+        fps = 1/(t - t_last)*0.05 + fps*0.95;
+    }
+    t_last = t;
     ui->fps_disp->display(fps);
 }
 

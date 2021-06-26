@@ -7,10 +7,6 @@
 
 QT_CHARTS_USE_NAMESPACE
 
-double log_v(double v, double min, double max) {
-    return min*exp(v*log(max/ min));
-}
-
 double log_v_inv(double value, double min, double max) {
     return log(value / min)/log(max/min);
 }

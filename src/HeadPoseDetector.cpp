@@ -47,6 +47,7 @@ void HeadPoseDetector::loop() {
         return;
     }
     double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+    t_last = t;
     dt = t - last_t;
     last_t = t;
     TicToc tic;
@@ -127,14 +128,14 @@ void HeadPoseDetector::pose_callback_loop() {
 
     //This pose is in world frame
     if (last_succ || (settings->use_ekf && inited)) {
-        this->on_detect_pose(t, make_pair(R*Rface, T));
+        this->on_detect_pose(t_last, make_pair(R*Rface, T));
 
         auto omg = ekf.get_angular_velocity();
         auto spd = ekf.get_linear_velocity();
         auto eul = quat2eulers(q0_inv*q);
-        this->on_detect_pose6d(t, make_pair(eul, q0_inv*T));
+        this->on_detect_pose6d(t_last, make_pair(eul, q0_inv*T));
         if (settings->use_ekf) {
-            this->on_detect_twist(t, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
+            this->on_detect_twist(t_last, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
         }
     
 

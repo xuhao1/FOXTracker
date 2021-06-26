@@ -63,6 +63,7 @@ SOURCES += \
     src/PoseDataSender.cpp \
     src/agentxconfig.cpp \
     src/ekfconfig.cpp \
+    src/filterconfig.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     lib/freetrack/ftnoir_protocol_ft.cpp \
@@ -84,6 +85,7 @@ HEADERS += \
     inc/agentxconfig.h \
     inc/ekfconfig.h \
     inc/fagx_datatype.h \
+    inc/filterconfig.h \
     inc/mainwindow.h \
     inc/utils.h \
     lib/freetrack/ftnoir_protocol_ft.h \
@@ -97,6 +99,7 @@ HEADERS += \
 FORMS += \
     agentxconfig.ui \
     ekfconfig.ui \
+    filterconfig.ui \
     mainwindow.ui
 
 TRANSLATIONS += \

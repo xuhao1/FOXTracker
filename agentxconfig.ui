@@ -54,7 +54,7 @@ color: #8fbed4;
 background-color: rgb(31, 38, 38);</string>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="General">
     <property name="styleSheet">
@@ -97,22 +97,6 @@ color: #8fbed4;</string>
       </property>
       <property name="text">
        <string>Directly Control Game</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="EKF_Check">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>60</y>
-        <width>71</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="text">
-       <string>EKF</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_5">
@@ -829,9 +813,34 @@ color: #8fbed4;</string>
      </widget>
     </widget>
    </widget>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>Filter</string>
+    </attribute>
+    <widget class="QWidget" name="filtercontab" native="true">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>10</y>
+       <width>691</width>
+       <height>451</height>
+      </rect>
+     </property>
+     <widget class="FilterConfig" name="filterconfig" native="true">
+      <property name="geometry">
+       <rect>
+        <x>-10</x>
+        <y>0</y>
+        <width>841</width>
+        <height>511</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+   </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
-     <string>EKFConfig</string>
+     <string>EKF</string>
     </attribute>
     <widget class="QWidget" name="ekfconf" native="true">
      <property name="geometry">
@@ -889,7 +898,7 @@ color: #8fbed4;</string>
     </rect>
    </property>
    <property name="text">
-    <string> See more on foxtracker.xuhao1.me and www.xuhao1.me</string>
+    <string> See more on foxt.xuhao1.me and www.xuhao1.me</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_6">

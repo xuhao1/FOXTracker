@@ -60,6 +60,19 @@ static Eigen::Vector3d R2ypr(const Eigen::Matrix3d &R, int degress = true)
     }
 }
 
+static double log_v(double v, double min, double max) {
+    return min*exp(v*log(max/ min));
+}
+
+static double range_v(double v, double min, double max) {
+    return v * (max-min) + min;
+}
+
+static double range_v_inv(double v, double min, double max) {
+    return (v - min)/(max-min);
+}
+
+
 template <typename T>
 static T clamp(T v, T min_, T max_)
 {

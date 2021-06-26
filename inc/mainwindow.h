@@ -44,6 +44,7 @@ private slots:
     void DisplayImage();
 
     void on_pose6d_data(double t, Pose6DoF _pose);
+    void on_pose6d_data_raw(double t, Pose6DoF _pose);
 
     void on_config_button_clicked();
 

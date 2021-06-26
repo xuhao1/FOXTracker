@@ -19,12 +19,6 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
     QJoysticks::getInstance()->setVirtualJoystickEnabled (true);
     connect(QJoysticks::getInstance(), &QJoysticks::buttonEvent, this, &AgentXConfig::buttonEvent);
 
-    if(settings->use_ekf) {
-        ui->EKF_Check->setCheckState(Qt::Checked);
-    } else {
-        ui->EKF_Check->setCheckState(Qt::Unchecked);
-    }
-
     if(settings->use_ft || settings->use_npclient) {
         ui->DCtrl_Check->setCheckState(Qt::Checked);
     } else {
