@@ -77,6 +77,13 @@ void FlightAgxSettings::load_from_config_yaml() {
     expo_eul(0) = config["expo_eul_yaw"].as<double>();
     expo_eul(1) = config["expo_eul_pitch"].as<double>();
     expo_eul(2) = config["expo_eul_roll"].as<double>();
+
+    use_accela = config["use_accela"].as<bool>();
+    accela_s.rot_smoothing = config["accela_rot_smoothing"].as<double>();
+    accela_s.rot_deadzone = config["accela_rot_deadzone"].as<double>();
+
+    accela_s.pos_smoothing = config["accela_pos_smoothing"].as<double>();
+    accela_s.pos_deadzone = config["accela_pos_deadzone"].as<double>();
 }
 
 

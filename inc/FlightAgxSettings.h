@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <yaml-cpp/yaml.h>
+#include <accela-settings.hpp>
 
 #define MIN_ROI_AREA 10
 
@@ -32,6 +33,7 @@
 //#define EMI_FEATURE_NUM 66
 //#define EMI_OUTPUT_CHANNELS (198)
 
+
 class FlightAgxSettings {
 public:
     cv::Mat K;
@@ -47,24 +49,7 @@ public:
     int port = 4242;
     std::string udp_host = "127.0.0.1";
 
-    std::string cfg_name = "/config.yaml";
-    std::string trackir_path = "/assets/TrackIR.exe";
-    std::string support_games_csv = "/assets/facetracknoir supported games.csv";
-    std::string model_66 = "/assets/landmark_models/model_66.txt";
-    std::string model_68 = "/assets/landmark_models/model_68.txt";
 
-    std::string landmark_model = "/assets/landmark_models/shape_predictor_68_face_landmarks.dat";
-    std::string fsanet_model = "/assets/fsanet_capsule.onnx";
-    std::string protoPath ="/assets/face_detector/deploy.prototxt";
-    std::string modelPath = "/assets/face_detector/res10_300x300_ssd_iter_140000.caffemodel";
-
-    std::vector<std::string> emilianavt_models{
-        "/assets/landmark_models/lm_modelU_opt.onnx",
-        "/assets/landmark_models/lm_modelV_opt.onnx",
-        "/assets/landmark_models/lm_model1_opt.onnx",
-        "/assets/landmark_models/lm_model2_opt.onnx",
-        "/assets/landmark_models/lm_model3_opt.onnx"
-    };
 
     int emi_nn_size = 224;
     int emi_nn_output_size = 28;
@@ -86,6 +71,7 @@ public:
     double ekf_predict_dt = 0.01;
 
     bool use_ekf = false;
+    bool use_accela = false;
 
     bool use_fsa = true;
 
@@ -127,6 +113,10 @@ public:
     std::vector<std::string> hotkey_joystick_names;
     std::vector<int> hotkey_joystick_buttons;
 
+    Eigen::Matrix3d Rcam;
+
+    settings_accela accela_s;
+
     void set_landmark_level(int landmark_level) {
         qDebug() << "Use landmark mode" << landmark_level;
         landmark_detect_method = landmark_level;
@@ -139,7 +129,26 @@ public:
         }
     }
 
-    Eigen::Matrix3d Rcam;
+    std::string cfg_name = "/config.yaml";
+    std::string trackir_path = "/assets/TrackIR.exe";
+    std::string support_games_csv = "/assets/facetracknoir supported games.csv";
+    std::string model_66 = "/assets/landmark_models/model_66.txt";
+    std::string model_68 = "/assets/landmark_models/model_68.txt";
+
+    std::string landmark_model = "/assets/landmark_models/shape_predictor_68_face_landmarks.dat";
+    std::string fsanet_model = "/assets/fsanet_capsule.onnx";
+    std::string protoPath ="/assets/face_detector/deploy.prototxt";
+    std::string modelPath = "/assets/face_detector/res10_300x300_ssd_iter_140000.caffemodel";
+
+    std::vector<std::string> emilianavt_models{
+        "/assets/landmark_models/lm_modelU_opt.onnx",
+        "/assets/landmark_models/lm_modelV_opt.onnx",
+        "/assets/landmark_models/lm_model1_opt.onnx",
+        "/assets/landmark_models/lm_model2_opt.onnx",
+        "/assets/landmark_models/lm_model3_opt.onnx"
+    };
+
+
     FlightAgxSettings(): hotkey_joystick_names(0),hotkey_joystick_buttons(0) {
         Eigen::Matrix3d K_eigen;
         Eigen::VectorXd D_eigen(5);

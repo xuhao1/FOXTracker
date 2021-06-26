@@ -10,6 +10,7 @@ INCLUDEPATH += ../third_party/dlib/include
 INCLUDEPATH += ../third_party/YAML_CPP/include
 INCLUDEPATH += ./inc/
 INCLUDEPATH += ./lib/
+INCLUDEPATH += ./lib/accela_filter/
 INCLUDEPATH += ../third_party/libusb-1.0.23/include/libusb-1.0
 
 INCLUDEPATH += ../third_party/onnxruntime-win-x64-gpu-1.5.2/include
@@ -70,7 +71,8 @@ SOURCES += \
     lib/freetrack/csv/csv.cpp \
     src/poseremapper.cpp \
     lib/PS3EYEDriver/src/ps3eye.cpp \
-    lib/PS3EYEDriver/src/ps3eye_capi.cpp
+    lib/PS3EYEDriver/src/ps3eye_capi.cpp \
+    lib/accela_filter/filter_accela.cpp
 
 HEADERS += \
     inc/FSANet.h \
@@ -83,11 +85,14 @@ HEADERS += \
     inc/ekfconfig.h \
     inc/fagx_datatype.h \
     inc/mainwindow.h \
+    inc/utils.h \
     lib/freetrack/ftnoir_protocol_ft.h \
     lib/freetrack/freetrackclient/fttypes.h \
     lib/freetrack/shm.h \
     lib/freetrack/csv/csv.h \
-    inc/poseremapper.h
+    inc/poseremapper.h \
+    lib/accela_filter/filter_accela.h \
+    lib/accela_filter/accela-settings.hpp
 
 FORMS += \
     agentxconfig.ui \

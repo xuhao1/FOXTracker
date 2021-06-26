@@ -74,6 +74,9 @@ void HeadPoseDetector::loop() {
                 pose = ekf.update_ground_speed(t, ret.face_ground_speed);
             }
 
+        } else if (settings->use_accela) {
+            qDebug() << "filter with accela\n";
+            pose = _accela.filter(pose_raw, dt);
         } else {
             pose = pose_raw;
         }
