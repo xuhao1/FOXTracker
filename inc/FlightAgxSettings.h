@@ -33,6 +33,7 @@
 //#define EMI_FEATURE_NUM 66
 //#define EMI_OUTPUT_CHANNELS (198)
 
+#define POSE_OUTPUT_FREQ 250.0
 
 class FlightAgxSettings {
 public:

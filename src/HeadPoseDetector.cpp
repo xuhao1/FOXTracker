@@ -74,9 +74,6 @@ void HeadPoseDetector::loop() {
                 pose = ekf.update_ground_speed(t, ret.face_ground_speed);
             }
 
-        } else if (settings->use_accela) {
-            qDebug() << "filter with accela\n";
-            pose = _accela.filter(pose_raw, dt);
         } else {
             pose = pose_raw;
         }
@@ -86,17 +83,42 @@ void HeadPoseDetector::loop() {
         }
     }
 
-    auto q0_inv = P0.att().inverse();
-    q0_inv = Eigen::Quaterniond::Identity();
+    // auto q0_inv = P0.att().inverse();
+    auto q0_inv = Eigen::Quaterniond::Identity();
     this->on_detect_pose6d_raw(t, make_pair(R2ypr(q0_inv*pose_raw.R()), q0_inv*pose_raw.pos()));
 
-    t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
-    TicToc tic_ekf;
+    pose_last = pose;
+    last_succ = ret.success;
 
-    if(inited && settings->use_ekf) {
+    // auto _T = pose_raw.pos();
+    // qDebug("Angular*l %f %f GSPD %f %f", -omg(1)*l, omg(0)*ly, ret.face_ground_speed(0), ret.face_ground_speed(1));
+    // log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
+    //     << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
+    //     << T(0) << "," << T(1) << "," << T(2) << std::endl;
+
+    if (settings->enable_preview) {
+        _show.copyTo(preview_image);
+    }
+}
+
+
+void HeadPoseDetector::pose_callback_loop() {
+    Pose pose;
+    if (!inited) {
+        return;
+    }
+
+    double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+    double dt = t - t_last;
+    t_last = t;
+    auto q0_inv = Eigen::Quaterniond::Identity();
+
+    if (settings->use_accela) {
+        pose = _accela.filter(pose_last, dt);
+    } else if(settings->use_ekf) {
         pose = ekf.predict(t);
     }
-    
+
     auto R = pose.R();
     auto q = pose.att();
     auto T = pose.pos();
@@ -104,27 +126,22 @@ void HeadPoseDetector::loop() {
     auto ly = fabs(settings->cervical_face_model_y);
 
     //This pose is in world frame
-    if (ret.success || (settings->use_ekf && inited)) {
+    if (last_succ || (settings->use_ekf && inited)) {
         this->on_detect_pose(t, make_pair(R*Rface, T));
 
         auto omg = ekf.get_angular_velocity();
         auto spd = ekf.get_linear_velocity();
         auto eul = quat2eulers(q0_inv*q);
         this->on_detect_pose6d(t, make_pair(eul, q0_inv*T));
-        this->on_detect_twist(t, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
+        if (settings->use_ekf) {
+            this->on_detect_twist(t, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
+        }
     
-        auto _T = pose_raw.pos();
-        // qDebug("Angular*l %f %f GSPD %f %f", -omg(1)*l, omg(0)*ly, ret.face_ground_speed(0), ret.face_ground_speed(1));
-        log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
-            << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
-            << T(0) << "," << T(1) << "," << T(2) << std::endl;
+
     }
 
-    if (settings->enable_preview) {
-        _show.copyTo(preview_image);
-    }
+
 }
-
 
 void HeadPoseDetector::run_detect_thread() {
     static int fc = 0;
@@ -226,8 +243,12 @@ void HeadPoseDetector::run_thread() {
     main_loop_timer = new QTimer;
     main_loop_timer->moveToThread(&mainThread);
     connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()));
-
     main_loop_timer->start(1.0/(settings->fps + 10)*1000);
+
+    pose_callback_timer = new QTimer;
+    pose_callback_timer->moveToThread(&mainThread);
+    connect(pose_callback_timer, SIGNAL(timeout()), this, SLOT(pose_callback_loop()));
+    pose_callback_timer->start(1000/POSE_OUTPUT_FREQ);
 
 }
 

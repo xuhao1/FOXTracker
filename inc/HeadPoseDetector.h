@@ -93,6 +93,7 @@ class HeadPoseDetector: public QObject {
 
     QThread mainThread;
     QTimer * main_loop_timer;
+    QTimer * pose_callback_timer;
     QThread detectThread;
 
     cv::Mat rvec_init, tvec_init;
@@ -138,6 +139,10 @@ class HeadPoseDetector: public QObject {
     Eigen::Vector3d estimate_ground_speed_by_tracker(double z, cv::Rect2d roi, cv::Point3f track_spd);
 
     std::ofstream log;
+
+    double t_last;
+    Pose pose_last;
+    bool last_succ = false;
 
 public:
     MainWindow * main_window;
@@ -197,6 +202,7 @@ signals:
 
 private slots:
     void loop();
+    void pose_callback_loop();
     void start_slot();
     void stop_slot();
 
