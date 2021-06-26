@@ -20,7 +20,6 @@
 #include <opencv2/tracking/tracker.hpp>
 #include <PS3EYEDriver/src/ps3eye.h>
 #include <PS3EYEDriver/src/ps3eye_capi.h>
-#include <filter_accela.h>
 
 class MainWindow;
 
@@ -71,7 +70,6 @@ class HeadPoseDetector: public QObject {
     LandmarkDetector * lmd = nullptr;
 
      ExtendKalmanFilter12DOF_13 ekf;
-     accela _accela, _accela2;
 //    ExtendKalmanFilter12DOF_19 ekf;
     
 
@@ -93,7 +91,6 @@ class HeadPoseDetector: public QObject {
 
     QThread mainThread;
     QTimer * main_loop_timer;
-    QTimer * pose_callback_timer;
     QThread detectThread;
 
     cv::Mat rvec_init, tvec_init;
@@ -147,8 +144,7 @@ class HeadPoseDetector: public QObject {
 public:
     MainWindow * main_window;
 
-    HeadPoseDetector(): last_roi(0, 0, 0, 0), _accela(&(settings->accela_s)), 
-        _accela2(&(settings->accela_s)) {
+    HeadPoseDetector(): last_roi(0, 0, 0, 0) {
         cv::setNumThreads(1);
         log.open(settings->app_path + "/debug.txt", std::ofstream::out);
         is_running = false;
@@ -185,6 +181,7 @@ public:
 
     void run_detect_thread();
 
+    void pose_callback(double t, Pose pose);
 
 public:
     cv::Mat & get_preview_image() {
@@ -203,7 +200,6 @@ signals:
 
 private slots:
     void loop();
-    void pose_callback_loop();
     void start_slot();
     void stop_slot();
 

@@ -57,20 +57,17 @@ static void do_deltas(const double* deltas, double* output, F&& fun)
     }
 }
 
-Pose accela::filter(Pose raw, double dt)
+std::pair<Eigen::Vector3d, Eigen::Vector3d> accela::filter(Eigen::Vector3d eul, Eigen::Vector3d T, double dt)
 {
     double input[6] = {0};
     double output[6] = {0};
 
-    auto T = raw.pos();
-    auto ypr_deg = quat2eulers(raw.att(), true);
-            
     input[TX] = T[0];
     input[TY] = T[1];
     input[TZ] = T[2];
-    input[Yaw] = ypr_deg(0);
-    input[Pitch] = ypr_deg(1);
-    input[Roll] = ypr_deg(2);
+    input[Yaw] = eul(0);
+    input[Pitch] = eul(1);
+    input[Roll] = eul(2);
 
     static constexpr double full_turn = 360.0;	
     static constexpr double half_turn = 180.0;	
@@ -86,7 +83,7 @@ Pose accela::filter(Pose raw, double dt)
             last_output[i] = f;
         }
 
-        return raw;
+        return std::make_pair(eul, T);
     }
 
     const double rot_thres{s->rot_smoothing};
@@ -146,7 +143,6 @@ Pose accela::filter(Pose raw, double dt)
     }
 
     Eigen::Vector3d ret_T(output[TX], output[TY], output[TZ]);
-    Eigen::Vector3d ret_att(output[Yaw]/57.3, output[Pitch]/57.3, output[Roll]/57.3);
-    Pose ret(ret_T, ret_att);
-    return ret;
+    Eigen::Vector3d ret_att(output[Yaw], output[Pitch], output[Roll]);
+    return std::make_pair(ret_att, ret_T);
 }

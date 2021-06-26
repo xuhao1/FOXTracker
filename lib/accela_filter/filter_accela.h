@@ -27,7 +27,7 @@ enum Axis : int
 struct accela
 {
     accela(settings_accela * _s);
-    Pose filter(Pose raw, double dt);
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> filter(Eigen::Vector3d eul, Eigen::Vector3d T, double dt);
     void center() { first_run = true; }
 private:
     settings_accela * s = nullptr;

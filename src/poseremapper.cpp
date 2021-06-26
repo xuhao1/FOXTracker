@@ -3,11 +3,19 @@
 #include <QDebug>
 #include <FlightAgxSettings.h>
 
-PoseRemapper::PoseRemapper(QObject *parent) : QObject(parent)
+PoseRemapper::PoseRemapper(QObject *parent) : QObject(parent), _accela(&(settings->accela_s)), 
+        _accela2(&(settings->accela_s))
 {
     Rcam << 0, 0, -1,
            -1, 0, 0,
             0, 1, 0;
+
+
+    pose_callback_timer = new QTimer;
+    connect(pose_callback_timer, SIGNAL(timeout()), this, SLOT(pose_callback_loop()));
+    pose_callback_timer->start(1000/POSE_OUTPUT_FREQ);
+
+    t0 = QDateTime::currentMSecsSinceEpoch()/1000.0;
 }
 
 double double_constrain(double v, double vmin, double vmax) {
@@ -40,6 +48,28 @@ double remap(double v, double input_bound, double output_bound, double _expo) {
     //return v/input_bound*output_bound;
 }
 
+void PoseRemapper::pose_callback_loop() {
+    if (settings->use_ft || settings->use_npclient) {
+        double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+        double dt = t - t_last;
+        t_last = t;
+
+        Eigen::Vector3d eul, T;
+        if (settings->use_accela) {
+            auto ret = _accela.filter(eul_last, T_last, dt);
+            eul = ret.first;
+            T = ret.second;
+            if (settings->double_accela) {
+                auto ret = _accela2.filter(eul, T, dt);
+                eul = ret.first;
+                T = ret.second;
+            }
+        }
+
+        this->send_mapped_posedata(t, std::make_pair(eul, T));
+    }
+}
+
 void PoseRemapper::on_pose_data(double t, Pose_ pose_) {
     Pose pose(pose_.second, pose_.first);
     if(!is_inited) {
@@ -65,9 +95,12 @@ void PoseRemapper::on_pose_data(double t, Pose_ pose_) {
 
         eul.y() = remap(eul.y(), settings->inp_bound_eul.y(), settings->out_bound_eul.y(), settings->expo_eul.y());
         eul.z() = remap(eul.z(), settings->inp_bound_eul.z(), settings->out_bound_eul.z(), settings->expo_eul.z());
+        eul_last = eul;
+        T_last = T;
+    } else {
+        this->send_mapped_posedata(t, std::make_pair(eul, T));
     }
 
-    this->send_mapped_posedata(t, std::make_pair(eul, T));
 }
 
 void PoseRemapper::reset_center() {

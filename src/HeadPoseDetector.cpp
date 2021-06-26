@@ -96,34 +96,23 @@ void HeadPoseDetector::loop() {
     // log << -omg(1)*l << "," <<  omg(0)*ly << "," << ret.face_ground_speed(0) << "," << ret.face_ground_speed(1) << ","
     //     << spd(0) << "," << spd(1)  << "," << spd(2) << "," << _T(0) << "," << _T(1) << "," << _T(2) << ","
     //     << T(0) << "," << T(1) << "," << T(2) << std::endl;
-
+    pose_callback(t, pose);
     if (settings->enable_preview) {
         _show.copyTo(preview_image);
     }
 }
 
 
-void HeadPoseDetector::pose_callback_loop() {
-    Pose pose;
+void HeadPoseDetector::pose_callback(double t, Pose pose) {
     if (!inited) {
         return;
     }
 
-    double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
-    double dt = t - t_last;
-    t_last = t;
     auto q0_inv = Eigen::Quaterniond::Identity();
 
-    if (settings->use_accela) {
-        pose = _accela.filter(pose_last, dt);
-        if (settings->double_accela) {
-            pose = _accela2.filter(pose, dt);
-        }
-    } else if(settings->use_ekf) {
+    if(settings->use_ekf) {
         pose = ekf.predict(t);
-    } else {
-        pose = pose_last;
-    }
+    } 
 
     auto R = pose.R();
     auto q = pose.att();
@@ -251,10 +240,6 @@ void HeadPoseDetector::run_thread() {
     connect(main_loop_timer, SIGNAL(timeout()), this, SLOT(loop()));
     main_loop_timer->start(1.0/(settings->fps + 10)*1000);
 
-    pose_callback_timer = new QTimer;
-    pose_callback_timer->moveToThread(&mainThread);
-    connect(pose_callback_timer, SIGNAL(timeout()), this, SLOT(pose_callback_loop()));
-    pose_callback_timer->start(1000/POSE_OUTPUT_FREQ);
 
 }
 
