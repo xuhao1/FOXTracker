@@ -73,6 +73,7 @@ public:
 
     bool use_ekf = false;
     bool use_accela = false;
+    bool double_accela = false;
 
     bool use_fsa = true;
 

@@ -14,6 +14,12 @@ FilterConfig::FilterConfig(QWidget *parent) :
         ui->Accela_Check->setCheckState(Qt::Unchecked);
     }
 
+    if (settings->double_accela) {
+        ui->Accela_Check_2->setCheckState(Qt::Checked);
+    } else {
+        ui->Accela_Check_2->setCheckState(Qt::Unchecked);
+    }
+
     ui->rot_smooth_sld->setSliderPosition(range_v_inv(settings->accela_s.rot_smoothing, rot_smooth_min, rot_smooth_max)*100);
 
     ui->rot_deadzone_sld->setSliderPosition(range_v_inv(settings->accela_s.rot_deadzone, rot_deadzone_min, rot_deadzone_max)*100);
@@ -228,4 +234,16 @@ void FilterConfig::on_trans_expo_sld_x_valueChanged(int value)
     settings->expo_trans.x() = range_v(v, expo_min, expo_max);
     settings->set_value<double>("expo_trans_x", settings->expo_trans.x());
     ui->trans_expo_label_x->setText(QString::number(settings->expo_trans.x()));
+}
+
+void FilterConfig::on_Accela_Check_stateChanged(int arg1)
+{
+    settings->use_accela = arg1;
+    settings->set_value<bool>("use_accela", settings->use_accela);
+}
+
+void FilterConfig::on_Accela_Check_2_stateChanged(int arg1)
+{
+    settings->double_accela = arg1;
+    settings->set_value<bool>("double_accela", settings->double_accela);
 }

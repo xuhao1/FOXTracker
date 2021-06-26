@@ -249,7 +249,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_smooth_label">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>90</y>
      <width>54</width>
      <height>12</height>
@@ -301,7 +301,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_input_max_sld_z">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>160</y>
      <width>101</width>
      <height>16</height>
@@ -327,7 +327,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_deadzone_label">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>110</y>
      <width>54</width>
      <height>12</height>
@@ -340,7 +340,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_output_max_sld_z">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>180</y>
      <width>101</width>
      <height>16</height>
@@ -353,7 +353,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_deadzone_sld">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>110</y>
      <width>101</width>
      <height>16</height>
@@ -366,7 +366,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_smooth_sld">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>90</y>
      <width>101</width>
      <height>16</height>
@@ -379,7 +379,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_input_max_label_z">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>160</y>
      <width>54</width>
      <height>12</height>
@@ -392,7 +392,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_output_max_label_z">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>180</y>
      <width>54</width>
      <height>12</height>
@@ -753,7 +753,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_expo_label_z">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>200</y>
      <width>54</width>
      <height>12</height>
@@ -766,7 +766,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_expo_sld_z">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>200</y>
      <width>101</width>
      <height>20</height>
@@ -794,7 +794,7 @@ background-color: rgb(31, 38, 38);</string>
     <rect>
      <x>400</x>
      <y>140</y>
-     <width>181</width>
+     <width>91</width>
      <height>16</height>
     </rect>
    </property>
@@ -817,7 +817,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_input_max_label_y">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>270</y>
      <width>54</width>
      <height>12</height>
@@ -843,7 +843,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_input_max_sld_y">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>270</y>
      <width>101</width>
      <height>16</height>
@@ -856,7 +856,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_output_max_sld_y">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>290</y>
      <width>101</width>
      <height>16</height>
@@ -884,7 +884,7 @@ background-color: rgb(31, 38, 38);</string>
     <rect>
      <x>400</x>
      <y>250</y>
-     <width>181</width>
+     <width>101</width>
      <height>16</height>
     </rect>
    </property>
@@ -907,7 +907,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_expo_label_y">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>310</y>
      <width>54</width>
      <height>12</height>
@@ -920,7 +920,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_expo_sld_y">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>310</y>
      <width>101</width>
      <height>20</height>
@@ -933,7 +933,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_output_max_label_y">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>290</y>
      <width>54</width>
      <height>12</height>
@@ -961,7 +961,7 @@ background-color: rgb(31, 38, 38);</string>
     <rect>
      <x>400</x>
      <y>350</y>
-     <width>181</width>
+     <width>91</width>
      <height>16</height>
     </rect>
    </property>
@@ -984,7 +984,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_expo_label_x">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>410</y>
      <width>54</width>
      <height>12</height>
@@ -1010,7 +1010,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_input_max_sld_x">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>370</y>
      <width>101</width>
      <height>16</height>
@@ -1023,7 +1023,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_output_max_label_x">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>390</y>
      <width>54</width>
      <height>12</height>
@@ -1049,7 +1049,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_output_max_sld_x">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>390</y>
      <width>101</width>
      <height>16</height>
@@ -1075,7 +1075,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QSlider" name="trans_expo_sld_x">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>520</x>
      <y>410</y>
      <width>101</width>
      <height>20</height>
@@ -1088,7 +1088,7 @@ background-color: rgb(31, 38, 38);</string>
   <widget class="QLabel" name="trans_input_max_label_x">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>630</x>
      <y>370</y>
      <width>54</width>
      <height>12</height>
@@ -1096,6 +1096,37 @@ background-color: rgb(31, 38, 38);</string>
    </property>
    <property name="text">
     <string>Smoothing</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="Accela_Check_2">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>20</y>
+     <width>261</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>黑体</family>
+     <pointsize>12</pointsize>
+     <weight>50</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 12pt &quot;黑体&quot;;</string>
+   </property>
+   <property name="text">
+    <string>Double Accela Filter</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>20</width>
+     <height>20</height>
+    </size>
    </property>
   </widget>
  </widget>

@@ -96,6 +96,10 @@ private slots:
 
     void on_trans_expo_sld_x_valueChanged(int value);
 
+    void on_Accela_Check_stateChanged(int arg1);
+
+    void on_Accela_Check_2_stateChanged(int arg1);
+
 private:
     Ui::FilterConfig *ui;
 };

@@ -79,6 +79,7 @@ void FlightAgxSettings::load_from_config_yaml() {
     expo_eul(2) = config["expo_eul_roll"].as<double>();
 
     use_accela = config["use_accela"].as<bool>();
+    double_accela = config["double_accela"].as<bool>();
     accela_s.rot_smoothing = config["accela_rot_smoothing"].as<double>();
     accela_s.rot_deadzone = config["accela_rot_deadzone"].as<double>();
 

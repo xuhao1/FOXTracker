@@ -116,8 +116,13 @@ void HeadPoseDetector::pose_callback_loop() {
 
     if (settings->use_accela) {
         pose = _accela.filter(pose_last, dt);
+        if (settings->double_accela) {
+            pose = _accela2.filter(pose, dt);
+        }
     } else if(settings->use_ekf) {
         pose = ekf.predict(t);
+    } else {
+        pose = pose_last;
     }
 
     auto R = pose.R();

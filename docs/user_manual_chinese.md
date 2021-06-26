@@ -9,7 +9,7 @@ FOXTracker是一个基于面部识别的头瞄，用于模拟类游戏。和Trac
 
 请事先安装[opentrack](https://github.com/opentrack/opentrack)
 
-FOXTracker-0.0.8以及以前支持32位windows 10系统，FOXTracker-0.1.0以后只支持Windows X64。
+FOXTracker-0.0.8以及以前支持32位windows 10系统，FOXTracker-0.1.0以后**只支持Windows X64**。
 ## 使用
 首先这玩意还没有成熟，问题很多。体验党慎用。**作者永远不会从你的摄像头里收集任何用户数据。**
 
