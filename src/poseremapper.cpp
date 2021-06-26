@@ -53,7 +53,6 @@ void PoseRemapper::pose_callback_loop() {
         double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
         double dt = t - t_last;
         t_last = t;
-
         Eigen::Vector3d eul, T;
         if (settings->use_accela) {
             auto ret = _accela.filter(eul_last, T_last, dt);

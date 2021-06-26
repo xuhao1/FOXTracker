@@ -21,10 +21,10 @@ class FilterConfig : public QWidget
     Q_OBJECT
 
     double rot_smooth_min = 0.01;
-    double rot_smooth_max = 2.5;
+    double rot_smooth_max = 0.3;
 
     double rot_deadzone_min = 0.01;
-    double rot_deadzone_max = 0.3;
+    double rot_deadzone_max = 3.0;
 
     double trans_smooth_min = 0.01;
     double trans_smooth_max = 0.2;
