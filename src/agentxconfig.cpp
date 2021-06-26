@@ -25,12 +25,6 @@ AgentXConfig::AgentXConfig(QWidget *parent) :
         ui->DCtrl_Check->setCheckState(Qt::Unchecked);
     }
 
-    if(settings->send_posedata_udp) {
-        ui->SendUDP_Check->setCheckState(Qt::Checked);
-    } else {
-        ui->SendUDP_Check->setCheckState(Qt::Unchecked);
-    }
-
     ui->Port_Input->setValue(settings->port);
     ui->FPS_Input->setValue(settings->fps);
     ui->CameraID_Input->setValue(settings->camera_id);
@@ -57,11 +51,6 @@ AgentXConfig::~AgentXConfig()
 {
     delete ui;
 }
-
-EKFConfig * AgentXConfig::ekf_config_menu() {
-    return  ui->ekfconfig;
-}
-
 
 void AgentXConfig::on_EKF_Check_stateChanged(int arg1)
 {

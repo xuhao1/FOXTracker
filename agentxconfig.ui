@@ -54,7 +54,7 @@ color: #8fbed4;
 background-color: rgb(31, 38, 38);</string>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="General">
     <property name="styleSheet">
@@ -86,8 +86,8 @@ color: #8fbed4;</string>
      <widget class="QCheckBox" name="DCtrl_Check">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>60</y>
+        <x>20</x>
+        <y>80</y>
         <width>191</width>
         <height>61</height>
        </rect>
@@ -128,27 +128,11 @@ color: #8fbed4;</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QCheckBox" name="SendUDP_Check">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>100</y>
-        <width>101</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="text">
-       <string>Send UDP</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="IP_Input">
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>150</y>
+        <y>60</y>
         <width>131</width>
         <height>20</height>
        </rect>
@@ -163,8 +147,8 @@ color: #8fbed4;</string>
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>150</y>
+        <x>20</x>
+        <y>60</y>
         <width>31</width>
         <height>21</height>
        </rect>
@@ -177,7 +161,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>210</x>
-        <y>150</y>
+        <y>60</y>
         <width>54</width>
         <height>21</height>
        </rect>
@@ -190,7 +174,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>240</x>
-        <y>190</y>
+        <y>140</y>
         <width>71</width>
         <height>22</height>
        </rect>
@@ -209,7 +193,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>190</y>
+        <y>140</y>
         <width>161</width>
         <height>21</height>
        </rect>
@@ -222,7 +206,7 @@ color: #8fbed4;</string>
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>150</y>
+        <y>60</y>
         <width>61</width>
         <height>22</height>
        </rect>
@@ -929,6 +913,11 @@ color: #8fbed4;</string>
    <class>EKFConfig</class>
    <extends>QWidget</extends>
    <header>ekfconfig.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FilterConfig</class>
+   <extends>QWidget</extends>
+   <header>filterconfig.h</header>
   </customwidget>
  </customwidgets>
  <resources>

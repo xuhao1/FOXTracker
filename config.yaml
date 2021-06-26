@@ -49,10 +49,10 @@ out_bound_pitch: 178.5
 out_bound_yaw: 178.5
 expo_eul_roll: 0.37
 expo_eul_pitch: 0.34999999999999998
-expo_eul_yaw: 0.38
+expo_eul_yaw: 0.28000000000000003
 use_accela: true
 accela_rot_smoothing: 0.029000000000000005
-accela_rot_deadzone: 0.7874000000000001
+accela_rot_deadzone: 1.0266000000000002
 accela_pos_smoothing: 0.029000000000000005
 accela_pos_deadzone: 0.029999999999999999
 double_accela: true

@@ -25,7 +25,10 @@ Just turn your opentrack input to UDP and open FlightAgentX.exe. Everything work
 
 Also, you may use [dcs.ini](https://github.com/xuhao1/FOXTracker/blob/master/docs/dcs.ini) here.
 
-Video can be found on https://www.bilibili.com/video/BV1ey4y1C7Za
+Video can be found on 
+https://www.bilibili.com/video/BV1fv411k778
+
+Chinese Commentary https://www.bilibili.com/video/BV1ey4y1C7Za
 ## Future Plan (Maybe in a year)
 1. Try to reinforce the robust of the tracker.
 2. Will add spline function.
