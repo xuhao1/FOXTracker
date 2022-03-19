@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <FlightAgxSettings.h>
 
+#define HIGH_FREQ_ACCELA
+
 PoseRemapper::PoseRemapper(QObject *parent) : QObject(parent), _accela(&(settings->accela_s)), 
         _accela2(&(settings->accela_s))
 {
@@ -11,9 +13,11 @@ PoseRemapper::PoseRemapper(QObject *parent) : QObject(parent), _accela(&(setting
             0, 1, 0;
 
 
+#ifdef HIGH_FREQ_ACCELA
     pose_callback_timer = new QTimer;
     connect(pose_callback_timer, SIGNAL(timeout()), this, SLOT(pose_callback_loop()));
     pose_callback_timer->start(1000/POSE_OUTPUT_FREQ);
+#endif
 
     t0 = QDateTime::currentMSecsSinceEpoch()/1000.0;
 }
@@ -96,6 +100,25 @@ void PoseRemapper::on_pose_data(double t, Pose_ pose_) {
         eul.z() = remap(eul.z(), settings->inp_bound_eul.z(), settings->out_bound_eul.z(), settings->expo_eul.z());
         eul_last = eul;
         T_last = T;
+
+#ifndef HIGH_FREQ_ACCELA
+        double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
+        double dt = t - t_last;
+        t_last = t;
+
+        if (settings->use_accela) {
+            auto ret = _accela.filter(eul_last, T_last, dt);
+            eul = ret.first;
+            T = ret.second;
+            if (settings->double_accela) {
+                auto ret = _accela2.filter(eul, T, dt);
+                eul = ret.first;
+                T = ret.second;
+            }
+        }
+
+        this->send_mapped_posedata(t, std::make_pair(eul, T));
+#endif
     } else {
         this->send_mapped_posedata(t, std::make_pair(eul, T));
     }
