@@ -109,8 +109,9 @@ void LandmarkDetector::transpose(float* from, float* dest, int dim_x, int dim_y)
 }
 
 
-std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
+Landmarks LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi) {
     CvPts pts;
+    Landmarks ret;
     if (settings->landmark_detect_method < 0) {
 #ifndef Q_OS_ANDROID
         dlib::cv_image<dlib::rgb_pixel> dlib_img(frame);
@@ -120,12 +121,14 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
             auto p = shape.part(i);
             pts.push_back(cv::Point2d(p.x(), p.y()));
         }
-        return std::make_pair(pts, model_points_68);
+        ret.landmarks2d = pts;
+        ret.landmarks3d = model_points_68;
+        return ret;
 #endif
     } else {
         cv::Rect2i roi_i = roi;
         if (roi_i.area() < MIN_ROI_AREA) {
-            return std::make_pair(pts, model_points_66);
+            return ret;
         }
         cv::Mat face_crop = frame(roi_i);
 
@@ -144,12 +147,14 @@ std::pair<CvPts,CvPts3d> LandmarkDetector::detect(cv::Mat & frame, cv::Rect roi)
             auto output_tensors = sessions[settings->landmark_detect_method]->Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor_, 1, output_node_names.data(), 1);
             output_arr = output_tensors[0].GetTensorMutableData<float>();
         }
-        pts = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/settings->emi_nn_size, ((double)roi_i.width)/settings->emi_nn_size);
+        auto heatpeaks = proc_heatmaps(output_arr, roi_i.x, roi_i.y, ((double)roi_i.height)/settings->emi_nn_size, ((double)roi_i.width)/settings->emi_nn_size);
         CvPts3d pts3d(model_points_66.begin(), model_points_66.begin() + EMI_FEATURE_NUM);
-        return std::make_pair(pts, pts3d);
+        ret.landmarks3d = pts3d;
+        ret.landmarks2d = heatpeaks.first;
+        ret.confs = heatpeaks.second;
+        return ret;
     }
-
-    return std::make_pair(pts, model_points_66);
+    return ret;
 }
 
 float logit(float p)
@@ -168,9 +173,10 @@ float logit(float p)
     }
 }
 
-CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y)
+std::pair<CvPts, std::vector<float>> LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y)
 {
     CvPts facical_landmarks;
+    std::vector<float> confs;
     int heatmap_size = settings->emi_nn_output_size*settings->emi_nn_output_size;
     for (int landmark = 0; landmark < EMI_FEATURE_NUM; landmark++)
     {
@@ -200,8 +206,9 @@ CvPts LandmarkDetector::proc_heatmaps(float* heatmaps, int x0, int y0, float sca
         float lm_x = (float)x0 + (float)(scale_y * (res * (float(y) / (settings->emi_nn_output_size-1)) + off_y));
 
         facical_landmarks.push_back(cv::Point2f(lm_x, lm_y));
+        confs.push_back(conf);
     }
-    return facical_landmarks;
+    return std::make_pair(facical_landmarks, confs);
 }
 
 

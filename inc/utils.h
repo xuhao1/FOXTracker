@@ -1,5 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
+#include <cmath>
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 

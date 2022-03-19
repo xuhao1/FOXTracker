@@ -13,9 +13,12 @@ FlightAgxSettings * settings = nullptr;
 #      undef main
 #   endif
 #endif
-
+int math_tests();
 int main(int argc, char *argv[])
 {
+//    math_tests();
+//    return 0;
+
     qRegisterMetaType<Pose_>("Pose_");
     qRegisterMetaType<Pose6DoF>("Pose6DoF");
     qRegisterMetaType<Eigen::Vector3d>("Eigen::Vector3d");

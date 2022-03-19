@@ -57,11 +57,15 @@ void PoseRemapper::pose_callback_loop() {
         double t = QDateTime::currentMSecsSinceEpoch()/1000.0 - t0;
         double dt = t - t_last;
         t_last = t;
-        Eigen::Vector3d eul, T;
+        Eigen::Vector3d eul = eul_last, T = T_last;
+        if (isnan(eul(0)) || isnan(eul(1)) || isnan(eul(2))) {
+            return;
+        }
         if (settings->use_accela) {
             auto ret = _accela.filter(eul_last, T_last, dt);
             eul = ret.first;
             T = ret.second;
+
             if (settings->double_accela) {
                 auto ret = _accela2.filter(eul, T, dt);
                 eul = ret.first;
@@ -127,4 +131,6 @@ void PoseRemapper::on_pose_data(double t, Pose_ pose_) {
 
 void PoseRemapper::reset_center() {
     is_inited = false;
+    _accela.center();
+    _accela2.center();
 }

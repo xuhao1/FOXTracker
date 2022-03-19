@@ -25,6 +25,11 @@ public:
 
 
 
+struct Landmarks {
+    CvPts landmarks2d;
+    CvPts3d landmarks3d;
+    std::vector<float> confs;
+};
 
 class LandmarkDetector {
 #ifndef Q_OS_ANDROID
@@ -55,11 +60,11 @@ public:
 
     virtual ~LandmarkDetector() {}
 
-    virtual std::pair<CvPts,CvPts3d> detect(cv::Mat & frame, cv::Rect roi);
+    virtual Landmarks detect(cv::Mat & frame, cv::Rect roi);
 
     //This part of code is derived from AIRLegend's aitrack
     //See https://github.com/AIRLegend/aitrack/blob/master/AITracker/src/model.cpp
-    CvPts proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y);
+    std::pair<CvPts, std::vector<float>> proc_heatmaps(float* heatmaps, int x0, int y0, float scale_x, float scale_y);
 
     void normalize(cv::Mat& image);
     void transpose(float* from, float* dest, int dim_x = EMI_NN_MAX_INPUT, int dim_y=EMI_NN_MAX_INPUT);

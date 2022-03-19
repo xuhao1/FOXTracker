@@ -7,8 +7,11 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <mainwindow.h>
+#include <stereo_bundle_adjustment.h>
 using namespace cv;
 using namespace std;
+
+#define USE_BA
 
 cv::Ptr<cv::Tracker> create_tracker() {
     return cv::TrackerMedianFlow::create();
@@ -131,11 +134,7 @@ void HeadPoseDetector::pose_callback(double t, Pose pose) {
         if (settings->use_ekf) {
             this->on_detect_twist(t_last, q0_inv*ekf.get_angular_velocity(), q0_inv*ekf.get_linear_velocity());
         }
-    
-
     }
-
-
 }
 
 void HeadPoseDetector::run_detect_thread() {
@@ -440,14 +439,15 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
     double dt_fsa = fsa.toc();
 
     TicToc tic1;
+    Landmarks lmd_ret;
     if (settings->landmark_detect_method < 0) {
-        auto lmd_ret = lmd->detect(frame, face_roi);
-        landmarks = lmd_ret.first;
-        landmarks_3d = lmd_ret.second;
+        lmd_ret = lmd->detect(frame, face_roi);
+        landmarks = lmd_ret.landmarks2d;
+        landmarks_3d = lmd_ret.landmarks3d;
     } else {
-        auto lmd_ret = lmd->detect(frame, fsa_roi);
-        landmarks = lmd_ret.first;
-        landmarks_3d = lmd_ret.second;
+        lmd_ret = lmd->detect(frame, fsa_roi);
+        landmarks = lmd_ret.landmarks2d;
+        landmarks_3d = lmd_ret.landmarks3d;
     }
 
     if (landmarks.size() != landmarks_3d.size()) {
@@ -463,7 +463,7 @@ HeadPoseDetectionResult HeadPoseDetector::detect_head_pose(cv::Mat frame, cv::Ma
         qDebug() << "Detect track" << detect_track_time <<  "Landmark detector cost " << tic1.toc() << "FSA " << dt_fsa;
 
     TicToc ticpnp;
-    auto _ret = this->solve_face_pose(landmarks, landmarks_3d, frame, fsa_ypr);
+    auto _ret = this->solve_face_pose(landmarks, landmarks_3d, lmd_ret.confs, frame, fsa_ypr);
 
     //Estimate Planar speed of face with tracker
     ret.face_ground_speed = estimate_ground_speed_by_tracker(_ret.second.pos().z(), roi, track_spd);
@@ -572,20 +572,10 @@ void HeadPoseDetector::draw(cv::Mat & frame, cv::Rect2d roi, cv::Rect2d face_roi
 
 }
 
-std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, cv::Mat & frame, Eigen::Vector3d fsa_ypr) {
+std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::vector<cv::Point3f> landmarks_3d, std::vector<float> confs, cv::Mat & frame, Eigen::Vector3d fsa_ypr) {
     Eigen::Vector3d T;
     Eigen::Matrix3d R;
     std::vector<int> indices{ 0,1,15,16,27,28,29,30,31,32,33,34,35,36,39,42,45 };
-
-//    if (fsa_ypr(0) > DEG2RAD*10) {
-//        indices.erase(indices.begin() + 1);
-//        indices.erase(indices.begin());
-//    }
-
-//    if (fsa_ypr(0) < -DEG2RAD*10) {
-//        indices.erase(indices.begin() + 3);
-//        indices.erase(indices.begin() + 2);
-//    }
 
     std::vector<uchar> pts_mask(landmarks_3d.size());
 
@@ -600,6 +590,7 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
         return make_pair(false, Pose(T, R));
     }
 
+#ifndef USE_BA
     auto rvec = rvec_init.clone();
     auto tvec = tvec_init.clone();
 
@@ -607,22 +598,36 @@ std::pair<bool, Pose> HeadPoseDetector::solve_face_pose(CvPts landmarks, std::ve
     std::vector<uchar> inlier(landmarks.size());
     bool success = cv::solvePnP(landmarks_3d, landmarks, settings->K, settings->D, rvec, tvec, true);
 
-    if (tic.toc() > 30) {
+    if (tic.toc() > 0) {
         qDebug() << "PnP Time" << tic.toc();
     }
 
-
+    
     cv::cv2eigen(tvec, T);
     cv::Mat Rcv;
     cv::Rodrigues(rvec, Rcv);
-
     cv::cv2eigen(Rcv, R);
     T = -T;
 
-    //cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
-
+    if (tic.toc() > 0) {
+        qDebug() << "BA Time" << tic.toc();
+    }
     CvPts reproject_landmarks;
     cv::projectPoints(landmarks_3d, rvec, tvec, settings->K, settings->D, reproject_landmarks);
+#else
+    TicToc tic_ba;
+    if (confs.size() > 0) {
+        // qDebug() << "Use BA to refine result";
+        auto ba_adjuster = StereoBundleAdjustment::create_from_cv_points(landmarks_3d, landmarks, confs, settings->K, settings->D);
+        // Pose pose_face(R, T);
+        Pose pose_face;
+        auto ret = ba_adjuster->solve(pose_face, false);
+        T = ret.first.pos();
+        R = ret.first.R();
+    }
+    bool success = true;
+#endif
+    //cv::drawFrameAxes(frame, settings->K, cv::Mat(), rvec, tvec, 0.1, 1);
 
     for (unsigned int i = 0; i < landmarks.size(); i++) {
         auto pt = landmarks[i];
